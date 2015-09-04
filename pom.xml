@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.icgc.dcc</groupId>
+    <artifactId>dcc-parent</artifactId>
+    <version>18</version>
+  </parent>
+
+  <artifactId>dcc-import</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>${project.artifactId}</name>
+  <description>${project.name}</description>
+
+  <modules>
+    <module>dcc-import-client</module>
+  </modules>
+
+  <repositories>
+    <repository>
+      <id>dcc-releases</id>
+      <url>http://seqwaremaven.oicr.on.ca/artifactory/dcc-release</url>
+    </repository>
+  </repositories>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- DCC -->
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>dcc-common-core</artifactId>
+        <version>${dcc-common.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>dcc-common-hadoop</artifactId>
+        <version>${dcc-common.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>dcc-common-cascading</artifactId>
+        <version>${dcc-common.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>dcc-common-client</artifactId>
+        <version>${dcc-common.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>dcc-common-resources</artifactId>
+        <version>${dcc-common.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>dcc-submission-core</artifactId>
+        <version>${dcc-submission-core.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>dcc-identifier</artifactId>
+        <version>${dcc-identifier.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <!-- JSON -->
+      <dependency>
+        <groupId>com.nebhale.jsonpath</groupId>
+        <artifactId>jsonpath</artifactId>
+        <version>${json-path.version}</version>
+      </dependency>
+
+      <!-- Utilities -->
+      <dependency>
+        <groupId>commons-lang</groupId>
+        <artifactId>commons-lang</artifactId>
+        <version>${commons-lang.version}</version>
+      </dependency>
+
+      <!-- Testing - DCC -->
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>dcc-common-test</artifactId>
+        <version>${dcc-common.version}</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <!-- Utilities -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>joda-time</groupId>
+      <artifactId>joda-time</artifactId>
+    </dependency>
+
+    <!-- Mail -->
+    <dependency>
+      <groupId>javax.mail</groupId>
+      <artifactId>mail</artifactId>
+    </dependency>
+
+    <!-- Testing - DCC -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>dcc-cghub</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>dcc-resources</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- Test -->
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>**/*ClusterIntegrationTest.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <properties>
+    <!-- Versions - DCC -->
+    <dcc-common.version>3.8.13.0</dcc-common.version>
+    <dcc-submission-core.version>3.8.5.9</dcc-submission-core.version>
+    <dcc-etl.version>3.8.11.4</dcc-etl.version>
+
+    <!-- Versions - JSON -->
+    <json-path.version>1.2</json-path.version>
+
+    <!-- Versions - Utilities -->
+    <commons-lang.version>2.6</commons-lang.version>
+  </properties>
+
+</project>
