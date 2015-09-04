@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.icgc.dcc</groupId>
     <artifactId>dcc-parent</artifactId>
-    <version>18</version>
+    <version>19</version>
   </parent>
 
   <artifactId>dcc-import</artifactId>
@@ -17,6 +17,17 @@
 
   <modules>
     <module>dcc-import-client</module>
+
+    <module>dcc-import-project</module>
+    <module>dcc-import-diagram</module>
+    <module>dcc-import-gene</module>
+
+    <module>dcc-import-geneset</module>
+    <module>dcc-import-cgc</module>
+    <module>dcc-import-go</module>
+    <module>dcc-import-pathway</module>
+
+    <module>dcc-import-core</module>
   </modules>
 
   <repositories>
@@ -28,22 +39,50 @@
 
   <dependencyManagement>
     <dependencies>
-      <!-- DCC -->
+
+      <!-- DCC - Import -->
       <dependency>
         <groupId>${project.groupId}</groupId>
-        <artifactId>dcc-common-core</artifactId>
-        <version>${dcc-common.version}</version>
+        <artifactId>dcc-import-core</artifactId>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
-        <artifactId>dcc-common-hadoop</artifactId>
-        <version>${dcc-common.version}</version>
+        <artifactId>dcc-import-cgc</artifactId>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
-        <artifactId>dcc-common-cascading</artifactId>
-        <version>${dcc-common.version}</version>
+        <artifactId>dcc-import-diagram</artifactId>
+        <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>dcc-import-gene</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>dcc-import-geneset</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>dcc-import-go</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>dcc-import-pathway</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>dcc-import-project</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <!-- DCC - Common -->
       <dependency>
         <groupId>${project.groupId}</groupId>
         <artifactId>dcc-common-client</artifactId>
@@ -54,16 +93,12 @@
         <artifactId>dcc-common-resources</artifactId>
         <version>${dcc-common.version}</version>
       </dependency>
+
+      <!-- DCC - ETL -->
       <dependency>
         <groupId>${project.groupId}</groupId>
-        <artifactId>dcc-submission-core</artifactId>
-        <version>${dcc-submission-core.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>dcc-identifier</artifactId>
-        <version>${dcc-identifier.version}</version>
-        <scope>test</scope>
+        <artifactId>dcc-etl-core</artifactId>
+        <version>${dcc-etl.version}</version>
       </dependency>
 
       <!-- JSON -->
@@ -72,12 +107,17 @@
         <artifactId>jsonpath</artifactId>
         <version>${json-path.version}</version>
       </dependency>
+      <dependency>
+        <groupId>com.github.fge</groupId>
+        <artifactId>json-schema-validator</artifactId>
+        <version>${json-schema-validator.version}</version>
+      </dependency>
 
       <!-- Utilities -->
       <dependency>
-        <groupId>commons-lang</groupId>
-        <artifactId>commons-lang</artifactId>
-        <version>${commons-lang.version}</version>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>${commons-lang3.version}</version>
       </dependency>
 
       <!-- Testing - DCC -->
@@ -87,10 +127,38 @@
         <version>${dcc-common.version}</version>
         <scope>test</scope>
       </dependency>
+
     </dependencies>
   </dependencyManagement>
 
   <dependencies>
+
+    <!-- DCC - Common -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>dcc-common-resources</artifactId>
+    </dependency>
+
+    <!-- JSON -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+
+    <!-- Mongo -->
+    <dependency>
+      <groupId>org.jongo</groupId>
+      <artifactId>jongo</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongo-java-driver</artifactId>
+    </dependency>
+
     <!-- Utilities -->
     <dependency>
       <groupId>org.projectlombok</groupId>
@@ -101,55 +169,27 @@
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
     </dependency>
-    <dependency>
-      <groupId>joda-time</groupId>
-      <artifactId>joda-time</artifactId>
-    </dependency>
-
-    <!-- Mail -->
-    <dependency>
-      <groupId>javax.mail</groupId>
-      <artifactId>mail</artifactId>
-    </dependency>
 
     <!-- Testing - DCC -->
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>dcc-cghub</artifactId>
+      <artifactId>dcc-common-test</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>dcc-resources</artifactId>
-      <scope>test</scope>
-    </dependency>
+    
   </dependencies>
-
-  <build>
-    <plugins>
-      <!-- Test -->
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <excludes>
-            <exclude>**/*ClusterIntegrationTest.java</exclude>
-          </excludes>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 
   <properties>
     <!-- Versions - DCC -->
     <dcc-common.version>3.8.13.0</dcc-common.version>
-    <dcc-submission-core.version>3.8.5.9</dcc-submission-core.version>
     <dcc-etl.version>3.8.11.4</dcc-etl.version>
 
     <!-- Versions - JSON -->
     <json-path.version>1.2</json-path.version>
+    <json-schema-validator.version>1.5.3</json-schema-validator.version>
 
     <!-- Versions - Utilities -->
-    <commons-lang.version>2.6</commons-lang.version>
+    <commons-lang3.version>3.3.2</commons-lang3.version>
   </properties>
 
 </project>

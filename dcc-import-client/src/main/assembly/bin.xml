@@ -10,7 +10,7 @@
       <directory>src/main/bin</directory>
       <outputDirectory>bin</outputDirectory>
       <includes>
-        <include>db-importer.sh</include>
+        <include>dcc-import-client.sh</include>
       </includes>
       <fileMode>0755</fileMode>
     </fileSet>
