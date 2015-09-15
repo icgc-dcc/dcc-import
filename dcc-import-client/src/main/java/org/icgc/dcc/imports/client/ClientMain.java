@@ -28,6 +28,7 @@ import static org.icgc.dcc.etl.core.config.ICGCClientConfigs.createICGCConfig;
 
 import java.io.File;
 
+import org.icgc.dcc.common.core.mail.Mailer;
 import org.icgc.dcc.etl.core.config.EtlConfig;
 import org.icgc.dcc.etl.core.config.EtlConfigFile;
 import org.icgc.dcc.imports.client.cli.Options;
@@ -91,8 +92,9 @@ public class ClientMain {
     log.info("         collections    - {}", options.collections);
     log.info("         config file    - {}", options.configFilePath);
 
+    val mailer = Mailer.builder().enabled(true).build();
     val geneMongoUri = config.getGeneMongoUri();
-    val dbImporter = new Importer(geneMongoUri, createICGCConfig(config));
+    val dbImporter = new Importer(geneMongoUri, mailer, createICGCConfig(config));
 
     dbImporter.execute(collections);
   }

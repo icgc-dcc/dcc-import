@@ -181,7 +181,7 @@
 
   <properties>
     <!-- Versions - DCC -->
-    <dcc-common.version>3.8.13.0</dcc-common.version>
+    <dcc-common.version>3.8.14.0</dcc-common.version>
     <dcc-etl.version>3.8.11.4</dcc-etl.version>
 
     <!-- Versions - JSON -->

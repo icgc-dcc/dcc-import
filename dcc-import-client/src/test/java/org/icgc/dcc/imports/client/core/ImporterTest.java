@@ -27,17 +27,17 @@ import static org.icgc.dcc.imports.core.util.Jongos.createJongo;
 import java.io.File;
 import java.util.Arrays;
 
-import lombok.val;
-
+import org.icgc.dcc.common.core.mail.Mailer;
 import org.icgc.dcc.etl.core.config.EtlConfig;
 import org.icgc.dcc.etl.core.config.EtlConfigFile;
 import org.icgc.dcc.imports.core.CollectionName;
-import org.icgc.dcc.imports.client.core.Importer;
 import org.jongo.Jongo;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import com.mongodb.MongoClientURI;
+
+import lombok.val;
 
 @Ignore("This is tested in ETLIntegration")
 public class ImporterTest {
@@ -55,13 +55,17 @@ public class ImporterTest {
 
   @Test
   public void testExecute() {
-    val dbImporter = new Importer(CONFIG.getGeneMongoUri(), createICGCConfig(CONFIG));
+    val dbImporter = new Importer(CONFIG.getGeneMongoUri(), createMailer(), createICGCConfig(CONFIG));
     val collections = Arrays.asList(CollectionName.values());
     dbImporter.execute(collections);
 
     assertThat(getCollectionSize(PROJECT_COLLECTION.getId())).isGreaterThan(0);
     assertThat(getCollectionSize(GENE_COLLECTION.getId())).isGreaterThan(0);
     assertThat(getCollectionSize(GENE_SET_COLLECTION.getId())).isGreaterThan(0);
+  }
+
+  private Mailer createMailer() {
+    return Mailer.builder().enabled(false).build();
   }
 
   private long getCollectionSize(String collectionName) {

@@ -67,12 +67,15 @@ public class Importer {
   @NonNull
   private final String esUri = "es://localhost:9300";
   @NonNull
+  private final Mailer mailer;
+  @NonNull
   private final ICGCClientConfig icgcConfig;
   @NonNull
   private final Map<CollectionName, SourceImporter> importers;
 
-  public Importer(@NonNull String mongoUri, @NonNull ICGCClientConfig icgcConfig) {
+  public Importer(@NonNull String mongoUri, @NonNull Mailer mailer, @NonNull ICGCClientConfig icgcConfig) {
     this.mongoUri = new MongoClientURI(mongoUri);
+    this.mailer = mailer;
     this.icgcConfig = icgcConfig;
     this.importers = createImporters();
   }
@@ -92,14 +95,14 @@ public class Importer {
       }
     } catch (Exception e) {
       log.error("Unknown error:", e);
-      new Mailer().sendMail("DCC - Importer - FAILED", getStackTraceAsString(e));
+      mailer.sendMail("DCC Importer - FAILED", getStackTraceAsString(e));
 
       throw e;
     }
 
-    val subject = "DCC - Importer - SUCCESS";
+    val subject = "DCC Importer - SUCCESS";
     val body = "Finished in " + watch + "\n\n";
-    new Mailer().sendMail(subject, body);
+    mailer.sendMail(subject, body);
   }
 
   private Map<CollectionName, SourceImporter> createImporters() {
