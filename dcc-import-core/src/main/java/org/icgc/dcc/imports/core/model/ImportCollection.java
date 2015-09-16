@@ -15,10 +15,15 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.core;
+package org.icgc.dcc.imports.core.model;
+
+import static lombok.AccessLevel.PRIVATE;
+
+import org.icgc.dcc.common.core.model.Identifiable;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 /**
@@ -26,23 +31,40 @@ import lombok.val;
  */
 
 @Getter
-public enum CollectionName {
+@RequiredArgsConstructor(access = PRIVATE)
+public enum ImportCollection implements Identifiable {
 
-  PROJECTS,
-  CGC,
-  GO,
-  PATHWAYS,
-  GENES,
-  DIAGRAMS;
+  PROJECTS("Projects", ImportSource.PROJECTS),
+  CGC("CGC", ImportSource.CGC),
+  GO("GO", ImportSource.GO),
+  PATHWAYS("Pathways", ImportSource.PATHWAYS),
+  GENES("Genes", ImportSource.GENES),
+  DIAGRAMS("Diagrams", ImportSource.DIAGRAMS);
 
-  public static CollectionName byName(@NonNull String name) {
+  @NonNull
+  private final String id;
+
+  @NonNull
+  private final ImportSource source;
+
+  public static ImportCollection forSource(@NonNull ImportSource source) {
+    for (val value : values()) {
+      if (source == value.getSource()) {
+        return value;
+      }
+    }
+
+    return null;
+  }
+
+  public static ImportCollection byName(@NonNull String name) {
     for (val value : values()) {
       if (name.equalsIgnoreCase(value.name())) {
         return value;
       }
     }
 
-    throw new IllegalArgumentException("No '" + CollectionName.class.getName() + "' value with name '" + name
+    throw new IllegalArgumentException("No '" + ImportCollection.class.getName() + "' value with name '" + name
         + "' found");
   }
 

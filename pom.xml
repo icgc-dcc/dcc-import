@@ -85,6 +85,11 @@
       <!-- DCC - Common -->
       <dependency>
         <groupId>${project.groupId}</groupId>
+        <artifactId>dcc-common-core</artifactId>
+        <version>${dcc-common.version}</version>
+      </dependency>      
+      <dependency>
+        <groupId>${project.groupId}</groupId>
         <artifactId>dcc-common-client</artifactId>
         <version>${dcc-common.version}</version>
       </dependency>
@@ -92,13 +97,6 @@
         <groupId>${project.groupId}</groupId>
         <artifactId>dcc-common-resources</artifactId>
         <version>${dcc-common.version}</version>
-      </dependency>
-
-      <!-- DCC - ETL -->
-      <dependency>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>dcc-etl-core</artifactId>
-        <version>${dcc-etl.version}</version>
       </dependency>
 
       <!-- JSON -->
@@ -182,7 +180,6 @@
   <properties>
     <!-- Versions - DCC -->
     <dcc-common.version>3.8.14.0</dcc-common.version>
-    <dcc-etl.version>3.8.11.4</dcc-etl.version>
 
     <!-- Versions - JSON -->
     <json-path.version>1.2</json-path.version>

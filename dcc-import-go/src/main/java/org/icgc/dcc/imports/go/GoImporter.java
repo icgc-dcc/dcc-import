@@ -30,15 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import lombok.Cleanup;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
-import org.icgc.dcc.imports.core.CollectionName;
 import org.icgc.dcc.imports.core.SourceImporter;
+import org.icgc.dcc.imports.core.model.ImportSource;
 import org.icgc.dcc.imports.geneset.model.go.GoInferredTreeNode;
 import org.icgc.dcc.imports.go.core.GoAssociationProcessor;
 import org.icgc.dcc.imports.go.core.GoTermProcessor;
@@ -54,6 +47,13 @@ import org.obolibrary.oboformat.parser.OBOFormatParserException;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 
 import com.mongodb.MongoClientURI;
+
+import lombok.Cleanup;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Gene Ontology (GO) importer.
@@ -116,15 +116,14 @@ public class GoImporter implements SourceImporter {
     this.oboUrl = DEFAULT_OBO_URL;
     this.gafUrl = DEFAULT_GAF_URL;
     this.owlUrl = DEFAULT_OWL_URL;
-    this.ontologies = new URL[] {
-        DEFAULT_OWL_URL
+    this.ontologies = new URL[] { DEFAULT_OWL_URL
     };
     this.mongoUri = mongoUri;
   }
 
   @Override
-  public CollectionName getCollectionName() {
-    return CollectionName.GO;
+  public ImportSource getSource() {
+    return ImportSource.GO;
   }
 
   @Override

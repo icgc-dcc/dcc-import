@@ -1,0 +1,55 @@
+#
+# DCC Importe Client - Defaults
+#
+ 
+###################################################################################################
+# Profile Activation
+###################################################################################################
+
+# One of:
+# - development
+# - production
+
+spring:
+  profiles.active: development
+
+###################################################################################################
+# Common
+###################################################################################################
+
+# Empty
+repository:
+  mail: true
+  sources: # All
+
+---
+
+###################################################################################################
+# Development
+###################################################################################################
+
+# Spring
+spring:
+  profiles: development
+
+# Imports
+imports:
+  mail: false
+  esUri: es://localhost:9300
+  mongoUri: mongodb://localhost/dcc-genome
+
+# ICGC Client configuration
+icgc:
+
+  # CGP/DACO API endpoint
+  cgpUrl: "https://***REMOVED***/ud_oauth/1/search"
+  
+  # OAuth credentials
+  # To generate the credentials go to icgc.org, log in, go to the "OAuth Settings" tab and request "Regenerate all tokens"
+  consumerKey: "***REMOVED***"
+  consumerSecret: "***REMOVED***"
+  accessToken: "***REMOVED***"
+  accessSecret: "***REMOVED***"
+  
+  enableHttpLogging: false
+  enableStrictSSL: true  

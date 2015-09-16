@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2015 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,17 +15,28 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.client.cli;
+package org.icgc.dcc.imports.client.config;
 
-import org.icgc.dcc.imports.core.CollectionName;
+import org.icgc.dcc.common.client.api.cgp.CGPClient;
+import org.icgc.dcc.common.core.mail.Mailer;
+import org.icgc.dcc.imports.client.core.Importer;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import com.beust.jcommander.IStringConverter;
+import lombok.val;
 
-public class CollectionNameConverter implements IStringConverter<CollectionName> {
+@Configuration
+public class ClientConfig {
 
-  @Override
-  public CollectionName convert(String value) {
-    return CollectionName.byName(value);
+  @Bean
+  public Mailer mailer(ClientProperties properties) {
+    val enabled = properties.getImports().isEmail();
+    return Mailer.builder().enabled(enabled).build();
+  }
+
+  @Bean
+  public Importer importer(ClientProperties properties, CGPClient cgpClient, Mailer mailer) {
+    return new Importer(properties.getImports().getMongoUri(), mailer, cgpClient);
   }
 
 }

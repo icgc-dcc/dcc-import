@@ -26,8 +26,10 @@ import java.util.Map;
 
 import org.icgc.dcc.imports.cgc.reader.CgcReader;
 import org.icgc.dcc.imports.cgc.writer.CgcWriter;
-import org.icgc.dcc.imports.core.CollectionName;
 import org.icgc.dcc.imports.core.SourceImporter;
+import org.icgc.dcc.imports.core.model.ImportSource;
+
+import com.mongodb.MongoClientURI;
 
 import lombok.Cleanup;
 import lombok.NonNull;
@@ -35,8 +37,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-
-import com.mongodb.MongoClientURI;
 
 /**
  * "Cancer Gene Census" gene list importer.
@@ -59,8 +59,8 @@ public class CgcImporter implements SourceImporter {
   }
 
   @Override
-  public CollectionName getCollectionName() {
-    return CollectionName.CGC;
+  public ImportSource getSource() {
+    return ImportSource.CGC;
   }
 
   @Override

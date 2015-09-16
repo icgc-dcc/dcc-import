@@ -26,11 +26,13 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.UnknownHostException;
 
-import org.icgc.dcc.imports.core.CollectionName;
 import org.icgc.dcc.imports.core.SourceImporter;
+import org.icgc.dcc.imports.core.model.ImportSource;
 import org.icgc.dcc.imports.pathway.core.PathwayModel;
 import org.icgc.dcc.imports.pathway.reader.PathwayModelReader;
 import org.icgc.dcc.imports.pathway.writer.PathwayWriter;
+
+import com.mongodb.MongoClientURI;
 
 import lombok.Cleanup;
 import lombok.NonNull;
@@ -38,8 +40,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-
-import com.mongodb.MongoClientURI;
 
 /**
  * Create Pathway collection in mongodb, and subsequently embed pathway information into the gene-collection
@@ -68,8 +68,8 @@ public class PathwayImporter implements SourceImporter {
   }
 
   @Override
-  public CollectionName getCollectionName() {
-    return CollectionName.PATHWAYS;
+  public ImportSource getSource() {
+    return ImportSource.PATHWAYS;
   }
 
   @Override

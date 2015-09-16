@@ -17,9 +17,11 @@
  */
 package org.icgc.dcc.imports.core;
 
+import org.icgc.dcc.imports.core.model.ImportSource;
+
 public interface SourceImporter {
 
-  CollectionName getCollectionName();
+  ImportSource getSource();
 
   void execute();
 

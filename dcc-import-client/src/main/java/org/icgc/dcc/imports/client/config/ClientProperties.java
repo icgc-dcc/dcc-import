@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2015 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,29 +15,45 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.client.cli;
+package org.icgc.dcc.imports.client.config;
 
-import static java.lang.String.format;
+import java.net.URI;
+import java.util.Set;
 
-import java.io.File;
+import javax.validation.Valid;
 
-import com.beust.jcommander.IValueValidator;
-import com.beust.jcommander.ParameterException;
+import org.icgc.dcc.imports.client.util.MongoURI;
+import org.icgc.dcc.imports.core.model.ImportSource;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
-public class FileValidator implements IValueValidator<File> {
+import com.mongodb.MongoClientURI;
 
-  @Override
-  public void validate(String name, File file) throws ParameterException {
-    if (file.exists() == false) {
-      parameterException(name, file, "does not exist");
+import lombok.Data;
+
+@Data
+@Component
+@ConfigurationProperties
+public class ClientProperties {
+
+  @Valid
+  ImportsProperties imports;
+
+  @Data
+  public static class ImportsProperties {
+
+    boolean email;
+
+    Set<ImportSource> sources;
+
+    @MongoURI
+    MongoClientURI mongoUri;
+    URI esUri;
+
+    public Set<ImportSource> getSources() {
+      return sources == null || sources.isEmpty() ? ImportSource.all() : sources;
     }
-    if (file.isFile() == false) {
-      parameterException(name, file, "is not a file");
-    }
-  }
 
-  private static void parameterException(String name, File file, String message) throws ParameterException {
-    throw new ParameterException(format("Invalid option: %s: %s %s", name, file.getAbsolutePath(), message));
   }
 
 }

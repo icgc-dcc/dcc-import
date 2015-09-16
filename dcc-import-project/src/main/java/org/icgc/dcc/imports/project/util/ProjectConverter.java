@@ -27,9 +27,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import lombok.NoArgsConstructor;
-import lombok.val;
-
 import org.icgc.dcc.common.client.api.cgp.CancerGenomeProject;
 import org.icgc.dcc.common.client.api.cgp.DataLevelProject;
 import org.icgc.dcc.imports.project.model.Project;
@@ -37,20 +34,23 @@ import org.icgc.dcc.imports.project.model.Project;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import lombok.NoArgsConstructor;
+import lombok.val;
+
 @NoArgsConstructor(access = PRIVATE)
 public final class ProjectConverter {
 
   /**
    * Constants.
    */
-  private static final String _PROJECT_ID_KEY = "field_dcc_project_code";
-  private static final String ALIAS_KEY = "field_dcc_project_alias";
-  private static final String PROJECT_NAME_KEY = "field_dcc_project_name";
-  private static final String TUMOR_TYPE_KEY = "field_cgp_tumor_type";
-  private static final String TUMOR_SUBTYPE_KEY = "field_cgp_tumor_subtype";
-  private static final String PRIMARY_COUNTRIES_KEY = "field_cgp_cou_pri";
-  private static final String PARTNER_COUNTRIES_KEY = "field_cgp_cou_part";
-  private static final String PUBMED_IDS_KEY = "field_pmid";
+  public static final String _PROJECT_ID_KEY = "field_dcc_project_code";
+  public static final String ALIAS_KEY = "field_dcc_project_alias";
+  public static final String PROJECT_NAME_KEY = "field_dcc_project_name";
+  public static final String TUMOR_TYPE_KEY = "field_cgp_tumor_type";
+  public static final String TUMOR_SUBTYPE_KEY = "field_cgp_tumor_subtype";
+  public static final String PRIMARY_COUNTRIES_KEY = "field_cgp_cou_pri";
+  public static final String PARTNER_COUNTRIES_KEY = "field_cgp_cou_part";
+  public static final String PUBMED_IDS_KEY = "field_pmid";
 
   private static final List<String> SEPARATORS = ImmutableList.of(",", " ", "\\n");
   private static final Map<String, String> PRIMARY_SITE_MAPPING = ImmutableMap.<String, String> builder()

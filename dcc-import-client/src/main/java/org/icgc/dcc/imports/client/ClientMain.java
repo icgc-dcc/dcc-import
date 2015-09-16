@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2015 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -17,34 +17,23 @@
  */
 package org.icgc.dcc.imports.client;
 
-import static com.google.common.base.Charsets.UTF_8;
-import static com.google.common.base.Objects.firstNonNull;
-import static com.google.common.base.Strings.padEnd;
-import static com.google.common.io.Resources.getResource;
-import static com.google.common.io.Resources.readLines;
-import static org.apache.commons.lang.StringUtils.repeat;
-import static org.icgc.dcc.common.core.util.VersionUtils.getScmInfo;
-import static org.icgc.dcc.etl.core.config.ICGCClientConfigs.createICGCConfig;
+import static java.lang.System.err;
+import static java.lang.System.exit;
 
-import java.io.File;
-
-import org.icgc.dcc.common.core.mail.Mailer;
-import org.icgc.dcc.etl.core.config.EtlConfig;
-import org.icgc.dcc.etl.core.config.EtlConfigFile;
-import org.icgc.dcc.imports.client.cli.Options;
+import org.icgc.dcc.imports.client.config.ClientProperties;
 import org.icgc.dcc.imports.client.core.Importer;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.ConfigurableApplicationContext;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.ParameterException;
-
-import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Entry point for the {@link Importer}.
+ * Entry point for the {@link RepositoryImporter}.
  */
 @Slf4j
+@SpringBootApplication
 public class ClientMain {
 
   /**
@@ -60,75 +49,30 @@ public class ClientMain {
    * @param args command line arguments
    */
   public static void main(String... args) {
-
-    val options = new Options();
-    val cli = new JCommander(options);
-    cli.setAcceptUnknownOptions(true);
-    cli.setProgramName(APPLICATION_NAME);
-
     try {
-      cli.parse(args);
-      run(options);
-      System.exit(SUCCESS_STATUS_CODE);
-    } catch (ParameterException e) {
-      System.err.println("Missing parameters: " + e.getMessage());
-      usage(cli);
-      System.exit(FAILURE_STATUS_CODE);
+      run(args);
+      exit(SUCCESS_STATUS_CODE);
     } catch (Exception e) {
       log.error("Unknown error: ", e);
-      System.err.println("Command error. Please check the log for detailed error messages: " + e.getMessage());
-      usage(cli);
-      System.exit(FAILURE_STATUS_CODE);
+      err.println(
+          "An an error occurred while processing. Please check the log for detailed error messages: " + e.getMessage());
+      exit(FAILURE_STATUS_CODE);
     }
   }
 
-  @SneakyThrows
-  private static void run(Options options) {
-    val collections = options.collections;
-    val configFilePath = options.configFilePath;
+  private static void run(String... args) {
+    val applicationContext = createApplicationContext(args);
+    val properties = applicationContext.getBean(ClientProperties.class);
+    val importer = applicationContext.getBean(Importer.class);
 
-    val config = EtlConfigFile.read(new File(configFilePath));
-    logBanner(config);
-    log.info("         collections    - {}", options.collections);
-    log.info("         config file    - {}", options.configFilePath);
-
-    val mailer = Mailer.builder().enabled(true).build();
-    val geneMongoUri = config.getGeneMongoUri();
-    val dbImporter = new Importer(geneMongoUri, mailer, createICGCConfig(config));
-
-    dbImporter.execute(collections);
+    // Main point of execution
+    importer.execute(properties.getImports().getSources());
   }
 
-  private static void usage(JCommander cli) {
-    cli.usage();
-  }
-
-  @SneakyThrows
-  private static void logBanner(EtlConfig config) {
-    log.info("{}", repeat("-", 100));
-    for (String line : readLines(getResource("banner.txt"), UTF_8)) {
-      log.info(line);
-    }
-    log.info("{}", repeat("-", 100));
-    log.info("Version: {}", getVersion());
-    log.info("Built:   {}", getBuildTimestamp());
-    log.info("SCM:");
-    for (val entry : getScmInfo().entrySet()) {
-      val key = entry.getKey();
-      val value = firstNonNull(entry.getValue(), "").replaceAll("\n", " ");
-
-      log.info("         {}: {}", padEnd(key, 24, ' '), value);
-    }
-
-    log.info("Config:  {}", config);
-  }
-
-  private static String getVersion() {
-    return firstNonNull(ClientMain.class.getPackage().getImplementationVersion(), "[unknown version]");
-  }
-
-  private static String getBuildTimestamp() {
-    return firstNonNull(ClientMain.class.getPackage().getSpecificationVersion(), "[unknown build timestamp]");
+  private static ConfigurableApplicationContext createApplicationContext(String... args) {
+    return new SpringApplicationBuilder()
+        .sources(ClientMain.class)
+        .run(args);
   }
 
 }

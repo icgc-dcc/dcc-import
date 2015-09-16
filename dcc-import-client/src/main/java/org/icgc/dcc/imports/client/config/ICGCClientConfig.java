@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2015 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,47 +15,35 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.client.cli;
+package org.icgc.dcc.imports.client.config;
 
-import static java.lang.String.format;
+import org.icgc.dcc.common.client.api.ICGCClient;
+import org.icgc.dcc.common.client.api.cgp.CGPClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import java.io.IOException;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import lombok.val;
 
-import com.beust.jcommander.IValueValidator;
-import com.beust.jcommander.ParameterException;
-import com.mongodb.Mongo;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
+@Configuration
+public class ICGCClientConfig {
 
-public class MongoValidator implements IValueValidator<String> {
+  @Autowired
+  private ICGCProperties properties;
 
-  @Override
-  public void validate(String name, String uri) throws ParameterException {
-    MongoClientURI mongoUri = new MongoClientURI(uri);
-    try {
-      Mongo mongo = new MongoClient(mongoUri);
-      try {
-        // Test connectivity
-        Socket socket = mongo.getMongoOptions().socketFactory.createSocket();
-        socket.connect(mongo.getAddress().getSocketAddress());
+  @Bean
+  public CGPClient cgpClient() {
+    val icgcConfig = org.icgc.dcc.common.client.api.ICGCClientConfig.builder()
+        .cgpServiceUrl(properties.cgpUrl)
+        .consumerKey(properties.consumerKey)
+        .consumerSecret(properties.consumerSecret)
+        .accessToken(properties.accessToken)
+        .accessSecret(properties.accessSecret)
+        .requestLoggingEnabled(properties.enableHttpLogging)
+        .strictSSLCertificates(properties.enableStrictSSL)
+        .build();
 
-        // All good
-        socket.close();
-      } catch (IOException ex) {
-        parameterException(name, mongoUri, "is not accessible");
-      } finally {
-        mongo.close();
-      }
-    } catch (UnknownHostException e) {
-      parameterException(name, mongoUri, "host IP address could not be determined.");
-    }
-  }
-
-  private static void parameterException(String name, MongoClientURI mongoUri, String message)
-      throws ParameterException {
-    throw new ParameterException(format("Invalid option: %s: %s %s", name, mongoUri, message));
+    return ICGCClient.create(icgcConfig).cgp();
   }
 
 }

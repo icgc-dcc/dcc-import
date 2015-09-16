@@ -21,17 +21,9 @@ import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
 
 import java.io.IOException;
 
-import lombok.Cleanup;
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
-import org.icgc.dcc.common.client.api.ICGCClient;
-import org.icgc.dcc.common.client.api.ICGCClientConfig;
 import org.icgc.dcc.common.client.api.cgp.CGPClient;
-import org.icgc.dcc.imports.core.CollectionName;
 import org.icgc.dcc.imports.core.SourceImporter;
+import org.icgc.dcc.imports.core.model.ImportSource;
 import org.icgc.dcc.imports.project.model.Project;
 import org.icgc.dcc.imports.project.reader.ProjectReader;
 import org.icgc.dcc.imports.project.writer.ProjectWriter;
@@ -39,30 +31,32 @@ import org.icgc.dcc.imports.project.writer.ProjectWriter;
 import com.google.common.base.Stopwatch;
 import com.mongodb.MongoClientURI;
 
+import lombok.Cleanup;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
+@RequiredArgsConstructor
 public class ProjectImporter implements SourceImporter {
 
   /**
    * Configuration
    */
-  private final ICGCClientConfig config;
+  @NonNull
   private final MongoClientURI mongoUri;
 
   /**
    * Dependencies.
    */
-  private final CGPClient client;
-
-  public ProjectImporter(@NonNull ICGCClientConfig config,
-      @NonNull MongoClientURI mongoUri) {
-    this.config = config;
-    this.mongoUri = mongoUri;
-    this.client = ICGCClient.create(config).cgp().details();
-  }
+  @NonNull
+  private final CGPClient cgpClient;
 
   @Override
-  public CollectionName getCollectionName() {
-    return CollectionName.PROJECTS;
+  public ImportSource getSource() {
+    return ImportSource.PROJECTS;
   }
 
   @Override
@@ -70,7 +64,7 @@ public class ProjectImporter implements SourceImporter {
   public void execute() {
     val watch = Stopwatch.createStarted();
 
-    log.info("Reading projects using {}...", config);
+    log.info("Reading projects using {}...", cgpClient);
     val projects = readProjects();
 
     log.info("Writing {} projects to {}...", formatCount(projects), mongoUri);
@@ -81,7 +75,7 @@ public class ProjectImporter implements SourceImporter {
   }
 
   private Iterable<Project> readProjects() {
-    return new ProjectReader(client).read();
+    return new ProjectReader(cgpClient).read();
   }
 
   private void writeProjects(Iterable<Project> specifiedProjects) throws IOException {

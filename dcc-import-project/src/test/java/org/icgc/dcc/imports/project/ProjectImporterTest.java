@@ -19,19 +19,27 @@ package org.icgc.dcc.imports.project;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.common.core.model.ReleaseCollection.PROJECT_COLLECTION;
-import static org.icgc.dcc.etl.core.config.ICGCClientConfigs.createICGCConfig;
 import static org.icgc.dcc.imports.core.util.Importers.getLocalMongoClientUri;
+import static org.mockito.Mockito.when;
 
 import java.util.Set;
 
-import org.icgc.dcc.common.client.api.ICGCClientConfig;
+import org.icgc.dcc.common.client.api.cgp.CGPClient;
+import org.icgc.dcc.common.client.api.cgp.CancerGenomeProject;
+import org.icgc.dcc.common.client.api.cgp.DataLevelProject;
 import org.icgc.dcc.common.test.mongodb.EmbeddedMongo;
+import org.icgc.dcc.imports.project.util.ProjectConverter;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.mongodb.MongoClientURI;
 
@@ -39,25 +47,40 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@RunWith(MockitoJUnitRunner.class)
 public class ProjectImporterTest {
+
+  @Mock
+  CGPClient cgpClient;
 
   /**
    * Constants.
    */
   private static final String MONGO_DB_NAME = "project-importer-test";
   private static final String MONGO_RELEASE_PROJECT_DB_NAME = MONGO_DB_NAME + "." + PROJECT_COLLECTION.getId();
-  private static final ICGCClientConfig CLIENT_CONFIG =
-      createICGCConfig("../dcc-import-client/src/test/conf/config.yaml");
 
   @Rule
   public final static EmbeddedMongo embeddedMongo = new EmbeddedMongo();
 
   @Test
   public void testImport() {
-    Set<String> includedProjects = ImmutableSet.<String> of("ALL-US");
+    // Test data
+    val projectName = "RTBL-FR";
+    val nid = "1";
+    val details = ImmutableMap.<String, String> of(ProjectConverter._PROJECT_ID_KEY, projectName);
+    val dlp = DataLevelProject.builder().details(details).build();
+    val dlps = ImmutableList.of(dlp);
+    val cgp = CancerGenomeProject.builder().name(projectName).nid(nid).dlps(dlps).details(details).build();
+    val cgps = ImmutableList.of(cgp);
+
+    when(cgpClient.getCancerGenomeProjects()).thenReturn(cgps);
+    when(cgpClient.getCancerGenomeProject(nid)).thenReturn(cgp);
+
+    val includedProjects = ImmutableSet.<String> of(projectName);
 
     val mongoClientUri = getLocalMongoClientUri(embeddedMongo.getPort(), MONGO_DB_NAME);
-    val importer = new ProjectImporter(CLIENT_CONFIG, mongoClientUri);
+
+    val importer = new ProjectImporter(mongoClientUri, cgpClient);
     importer.execute();
 
     assertImport(includedProjects);

@@ -24,11 +24,14 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.icgc.dcc.imports.core.CollectionName;
 import org.icgc.dcc.imports.core.SourceImporter;
+import org.icgc.dcc.imports.core.model.ImportSource;
 import org.icgc.dcc.imports.diagram.model.DiagramModel;
 import org.icgc.dcc.imports.diagram.reader.DiagramReader;
 import org.icgc.dcc.imports.diagram.writer.DiagramWriter;
+
+import com.google.common.base.Strings;
+import com.mongodb.MongoClientURI;
 
 import lombok.Cleanup;
 import lombok.NonNull;
@@ -36,9 +39,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-
-import com.google.common.base.Strings;
-import com.mongodb.MongoClientURI;
 
 /**
  * Imports all the Reactome Pathway Diagram Data
@@ -70,8 +70,8 @@ public class DiagramImporter implements SourceImporter {
   public final static String INCLUDED_REACTOME_DIAGRAMS = DiagramImporter.class + ".diagramIds";
 
   @Override
-  public CollectionName getCollectionName() {
-    return CollectionName.DIAGRAMS;
+  public ImportSource getSource() {
+    return ImportSource.DIAGRAMS;
   }
 
   @Override

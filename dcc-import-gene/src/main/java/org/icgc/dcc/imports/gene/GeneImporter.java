@@ -24,10 +24,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 
-import org.icgc.dcc.imports.core.CollectionName;
 import org.icgc.dcc.imports.core.SourceImporter;
+import org.icgc.dcc.imports.core.model.ImportSource;
 import org.icgc.dcc.imports.gene.core.GeneFilter;
 import org.icgc.dcc.imports.gene.writer.GeneWriter;
+
+import com.mongodb.MongoClientURI;
 
 import lombok.Cleanup;
 import lombok.NonNull;
@@ -35,8 +37,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-
-import com.mongodb.MongoClientURI;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -53,8 +53,8 @@ public class GeneImporter implements SourceImporter {
   }
 
   @Override
-  public CollectionName getCollectionName() {
-    return CollectionName.GENES;
+  public ImportSource getSource() {
+    return ImportSource.GENES;
   }
 
   @Override

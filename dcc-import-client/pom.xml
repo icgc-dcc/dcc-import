@@ -66,16 +66,28 @@
       <artifactId>spring-boot-starter</artifactId>
     </dependency>
 
-    <!-- Command line -->
+    <!-- Validation -->
     <dependency>
-      <groupId>com.beust</groupId>
-      <artifactId>jcommander</artifactId>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-validator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.el</groupId>
+      <artifactId>javax.el-api</artifactId>
+      <version>2.2.4</version>
     </dependency>
 
     <!-- Mail -->
     <dependency>
       <groupId>javax.mail</groupId>
       <artifactId>mail</artifactId>
+    </dependency>
+
+    <!-- Test - Spring -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>
@@ -105,8 +117,8 @@
             </goals>
           </execution>
         </executions>
-      </plugin>    
-      
+      </plugin>
+
       <!-- Assembly -->
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
@@ -134,7 +146,7 @@
     <!-- Spring -->
     <main.class>org.icgc.dcc.imports.client.ClientMain</main.class>
     <start-class>${main.class}</start-class>
-      
+
     <!-- Versions - Spring -->
     <spring-boot.version>1.2.5.RELEASE</spring-boot.version>
     <spring-maven-plugin.version>1.2.5.RELEASE</spring-maven-plugin.version>

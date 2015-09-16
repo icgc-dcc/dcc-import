@@ -27,11 +27,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.icgc.dcc.common.client.api.ICGCClientConfig;
+import org.icgc.dcc.common.client.api.cgp.CGPClient;
 import org.icgc.dcc.common.core.mail.Mailer;
 import org.icgc.dcc.imports.cgc.CgcImporter;
-import org.icgc.dcc.imports.core.CollectionName;
 import org.icgc.dcc.imports.core.SourceImporter;
+import org.icgc.dcc.imports.core.model.ImportSource;
 import org.icgc.dcc.imports.diagram.DiagramImporter;
 import org.icgc.dcc.imports.gene.GeneImporter;
 import org.icgc.dcc.imports.go.GoImporter;
@@ -51,13 +51,13 @@ public class Importer {
   /**
    * Processing order.
    */
-  private static List<CollectionName> COLLECTION_ORDER = ImmutableList.of(
-      CollectionName.PROJECTS,
-      CollectionName.GENES,
-      CollectionName.CGC,
-      CollectionName.PATHWAYS,
-      CollectionName.GO,
-      CollectionName.DIAGRAMS);
+  private static List<ImportSource> SOURCE_ORDER = ImmutableList.of(
+      ImportSource.PROJECTS,
+      ImportSource.GENES,
+      ImportSource.CGC,
+      ImportSource.PATHWAYS,
+      ImportSource.GO,
+      ImportSource.DIAGRAMS);
 
   /**
    * Configuration
@@ -65,32 +65,31 @@ public class Importer {
   @NonNull
   private final MongoClientURI mongoUri;
   @NonNull
-  private final String esUri = "es://localhost:9300";
-  @NonNull
   private final Mailer mailer;
   @NonNull
-  private final ICGCClientConfig icgcConfig;
-  @NonNull
-  private final Map<CollectionName, SourceImporter> importers;
+  private final Map<ImportSource, SourceImporter> importers;
 
-  public Importer(@NonNull String mongoUri, @NonNull Mailer mailer, @NonNull ICGCClientConfig icgcConfig) {
-    this.mongoUri = new MongoClientURI(mongoUri);
+  public Importer(@NonNull MongoClientURI mongoUri, @NonNull Mailer mailer, @NonNull CGPClient cgpClient) {
+    this.mongoUri = mongoUri;
     this.mailer = mailer;
-    this.icgcConfig = icgcConfig;
-    this.importers = createImporters();
+    this.importers = createImporters(cgpClient);
   }
 
-  public void execute(@NonNull Collection<CollectionName> collectionNames) {
+  public void execute() {
+    execute(ImportSource.all());
+  }
+
+  public void execute(@NonNull Collection<ImportSource> sources) {
     val watch = createStarted();
     try {
-      for (val collectionName : COLLECTION_ORDER) {
-        if (collectionNames.contains(collectionName)) {
-          val importer = importers.get(collectionName);
+      for (val source : SOURCE_ORDER) {
+        if (sources.contains(source)) {
+          val importer = importers.get(source);
 
           val timer = createStarted();
-          log.info("Importing '{}'...", collectionName);
+          log.info("Importing '{}'...", source);
           importer.execute();
-          log.info("Finished importing '{}' in {}", collectionName, timer);
+          log.info("Finished importing '{}' in {}", source, timer);
         }
       }
     } catch (Exception e) {
@@ -105,16 +104,16 @@ public class Importer {
     mailer.sendMail(subject, body);
   }
 
-  private Map<CollectionName, SourceImporter> createImporters() {
+  private Map<ImportSource, SourceImporter> createImporters(CGPClient cgpClient) {
     val importers = ImmutableList.<SourceImporter> of(
-        new ProjectImporter(icgcConfig, mongoUri),
+        new ProjectImporter(mongoUri, cgpClient),
         new GeneImporter(mongoUri, getRemoteGenesBsonUri()),
         new CgcImporter(mongoUri, getRemoteCgsUri()),
         new PathwayImporter(mongoUri),
         new GoImporter(mongoUri),
         new DiagramImporter(mongoUri));
 
-    return uniqueIndex(importers, (SourceImporter importer) -> importer.getCollectionName());
+    return uniqueIndex(importers, (SourceImporter importer) -> importer.getSource());
   }
 
 }

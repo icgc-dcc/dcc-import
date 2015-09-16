@@ -21,43 +21,43 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.common.core.model.ReleaseCollection.GENE_COLLECTION;
 import static org.icgc.dcc.common.core.model.ReleaseCollection.GENE_SET_COLLECTION;
 import static org.icgc.dcc.common.core.model.ReleaseCollection.PROJECT_COLLECTION;
-import static org.icgc.dcc.etl.core.config.ICGCClientConfigs.createICGCConfig;
 import static org.icgc.dcc.imports.core.util.Jongos.createJongo;
 
-import java.io.File;
-import java.util.Arrays;
-
+import org.icgc.dcc.common.client.api.cgp.CGPClient;
 import org.icgc.dcc.common.core.mail.Mailer;
-import org.icgc.dcc.etl.core.config.EtlConfig;
-import org.icgc.dcc.etl.core.config.EtlConfigFile;
-import org.icgc.dcc.imports.core.CollectionName;
+import org.icgc.dcc.imports.client.ClientMain;
 import org.jongo.Jongo;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.mongodb.MongoClientURI;
 
 import lombok.val;
 
-@Ignore("This is tested in ETLIntegration")
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(classes = ClientMain.class, inheritLocations = true)
+@Ignore("This is tested in ETLIntegration. This is useful for development though")
 public class ImporterTest {
 
-  /**
-   * Test settings.
-   */
-  private static final String TEST_CONFIG_FILE = "src/test/conf/config.yaml";
-  private static final EtlConfig CONFIG = EtlConfigFile.read(new File(TEST_CONFIG_FILE));
+  @Autowired
+  CGPClient cgpClient;
 
   /**
    * Test environment.
    */
-  private final Jongo jongo = createJongo(new MongoClientURI(CONFIG.getGeneMongoUri()));
+  // TODO: Fix
+  private final MongoClientURI mongoUri = new MongoClientURI("mongodb://localhost/dcc-genome");
+  private final Jongo jongo = createJongo(mongoUri);
 
   @Test
   public void testExecute() {
-    val dbImporter = new Importer(CONFIG.getGeneMongoUri(), createMailer(), createICGCConfig(CONFIG));
-    val collections = Arrays.asList(CollectionName.values());
-    dbImporter.execute(collections);
+    // TODO: Fix
+    val dbImporter = new Importer(mongoUri, createMailer(), cgpClient);
+    dbImporter.execute();
 
     assertThat(getCollectionSize(PROJECT_COLLECTION.getId())).isGreaterThan(0);
     assertThat(getCollectionSize(GENE_COLLECTION.getId())).isGreaterThan(0);

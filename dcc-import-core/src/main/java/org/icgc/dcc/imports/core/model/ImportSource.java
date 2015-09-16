@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2015 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,39 +15,37 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.client.cli;
+package org.icgc.dcc.imports.core.model;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
-import static java.lang.String.format;
+import static lombok.AccessLevel.PRIVATE;
 
-import com.beust.jcommander.IParameterValidator;
-import com.beust.jcommander.ParameterException;
-import com.mongodb.MongoClientURI;
+import java.util.Set;
 
-public class MongoURIValidator implements IParameterValidator {
+import org.icgc.dcc.common.core.model.Identifiable;
 
-  @Override
-  public void validate(String name, String uri) throws ParameterException {
-    try {
-      MongoClientURI mongoUri = new MongoClientURI(uri);
+import com.google.common.collect.ImmutableSet;
 
-      String database = mongoUri.getDatabase();
-      if (!isNullOrEmpty(database)) {
-        parameterException(name, "uri must not contain a database name");
-      }
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Accessors;
 
-      String collection = mongoUri.getCollection();
-      if (!isNullOrEmpty(collection)) {
-        parameterException(name, "uri must not contain a collection name");
-      }
-    } catch (IllegalArgumentException e) {
-      parameterException(name, e.getMessage()
-          + ". See http://docs.mongodb.org/manual/reference/connection-string/ for more information.");
-    }
-  }
+@Getter
+@RequiredArgsConstructor(access = PRIVATE)
+public enum ImportSource implements Identifiable {
 
-  private static void parameterException(String name, String message) throws ParameterException {
-    throw new ParameterException(format("Invalid option: %s: %s", name, message));
-  }
+  PROJECTS("Projects"),
+  CGC("CGC"),
+  GO("GO"),
+  PATHWAYS("Pathways"),
+  GENES("Genes"),
+  DIAGRAMS("Diagrams");
+
+  @NonNull
+  private final String id;
+
+  @Getter(lazy = true)
+  @Accessors(fluent = true)
+  private static final Set<ImportSource> all = ImmutableSet.copyOf(values());
 
 }

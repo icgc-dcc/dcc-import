@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2015 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,29 +15,19 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.client.cli;
+package org.icgc.dcc.imports.client.util;
 
-import static java.lang.String.format;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component;
 
-import java.io.File;
+import com.mongodb.MongoClientURI;
 
-import com.beust.jcommander.IValueValidator;
-import com.beust.jcommander.ParameterException;
-
-public class DirectoryValidator implements IValueValidator<File> {
+@Component
+public class MongoClientURIConverter implements Converter<String, MongoClientURI> {
 
   @Override
-  public void validate(String name, File file) throws ParameterException {
-    if (file.exists() == false) {
-      parameterException(name, file, "does not exist");
-    }
-    if (file.isDirectory() == false) {
-      parameterException(name, file, "is not a directory");
-    }
-  }
-
-  private static void parameterException(String name, File file, String message) throws ParameterException {
-    throw new ParameterException(format("Invalid option: %s: %s %s", name, file.getAbsolutePath(), message));
+  public MongoClientURI convert(String uri) {
+    return new MongoClientURI(uri);
   }
 
 }
