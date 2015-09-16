@@ -73,6 +73,7 @@ public class ProjectImporterTest {
     val cgp = CancerGenomeProject.builder().name(projectName).nid(nid).dlps(dlps).details(details).build();
     val cgps = ImmutableList.of(cgp);
 
+    when(cgpClient.details()).thenReturn(cgpClient);
     when(cgpClient.getCancerGenomeProjects()).thenReturn(cgps);
     when(cgpClient.getCancerGenomeProject(nid)).thenReturn(cgp);
 
