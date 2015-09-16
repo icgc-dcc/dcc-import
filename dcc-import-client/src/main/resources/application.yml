@@ -1,5 +1,5 @@
 #
-# DCC Importe Client - Defaults
+# DCC Import Client - Defaults
 #
  
 ###################################################################################################
@@ -35,7 +35,6 @@ spring:
 # Imports
 imports:
   mail: false
-  esUri: es://localhost:9300
   mongoUri: mongodb://localhost/dcc-genome
 
 # ICGC Client configuration
@@ -52,4 +51,4 @@ icgc:
   accessSecret: "***REMOVED***"
   
   enableHttpLogging: false
-  enableStrictSSL: true  
+  enableStrictSSL: false  

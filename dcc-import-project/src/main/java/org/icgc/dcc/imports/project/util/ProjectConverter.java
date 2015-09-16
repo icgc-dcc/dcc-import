@@ -108,20 +108,24 @@ public final class ProjectConverter {
   }
 
   private static String convertPrimarySite(CancerGenomeProject cgp, String projectId) {
-    if (projectId.equals("RTBL-FR")) {
-      return "Eye";
-    } else if (projectId.equals("NACA-CN")) {
-      return "Nasopharynx";
-    } else if (projectId.equals("SARC-US")) {
-      return "Mesenchymal";
-    } else {
-      val organSystem = cgp.getOrganSystem();
-      val primarySite = PRIMARY_SITE_MAPPING.get(organSystem);
+    try {
+      if ("RTBL-FR".equals(projectId)) {
+        return "Eye";
+      } else if ("NACA-CN".equals(projectId)) {
+        return "Nasopharynx";
+      } else if ("SARC-US".equals(projectId)) {
+        return "Mesenchymal";
+      } else {
+        val organSystem = cgp.getOrganSystem();
+        val primarySite = PRIMARY_SITE_MAPPING.get(organSystem);
 
-      checkState(primarySite != null, "Mapping not found for project id '%s' and primary site '%s'",
-          projectId, organSystem);
+        checkState(primarySite != null, "Mapping not found for project id '%s' and primary site '%s'",
+            projectId, organSystem);
 
-      return primarySite;
+        return primarySite;
+      }
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to convert " + cgp + " with projectId " + projectId, e);
     }
   }
 

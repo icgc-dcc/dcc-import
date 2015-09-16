@@ -26,6 +26,7 @@ import static org.icgc.dcc.imports.core.util.Jongos.createJongo;
 import org.icgc.dcc.common.client.api.cgp.CGPClient;
 import org.icgc.dcc.common.core.mail.Mailer;
 import org.icgc.dcc.imports.client.ClientMain;
+import org.icgc.dcc.imports.core.model.ImportSource;
 import org.jongo.Jongo;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -49,15 +50,13 @@ public class ImporterTest {
   /**
    * Test environment.
    */
-  // TODO: Fix
   private final MongoClientURI mongoUri = new MongoClientURI("mongodb://localhost/dcc-genome");
   private final Jongo jongo = createJongo(mongoUri);
 
   @Test
   public void testExecute() {
-    // TODO: Fix
     val dbImporter = new Importer(mongoUri, createMailer(), cgpClient);
-    dbImporter.execute();
+    dbImporter.execute(ImportSource.PROJECTS);
 
     assertThat(getCollectionSize(PROJECT_COLLECTION.getId())).isGreaterThan(0);
     assertThat(getCollectionSize(GENE_COLLECTION.getId())).isGreaterThan(0);

@@ -17,13 +17,13 @@
  */
 package org.icgc.dcc.imports.client.config;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+
 import lombok.Data;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-
 @Data
-@Configuration
+@Component
 @ConfigurationProperties("icgc")
 public class ICGCProperties {
 
@@ -32,7 +32,7 @@ public class ICGCProperties {
   String consumerSecret;
   String accessToken;
   String accessSecret;
-  Boolean enableHttpLogging;
-  Boolean enableStrictSSL;
+  boolean enableHttpLogging;
+  boolean enableStrictSSL = true;
 
 }

@@ -79,6 +79,10 @@ public class Importer {
     execute(ImportSource.all());
   }
 
+  public void execute(ImportSource... sources) {
+    execute(ImmutableList.copyOf(sources));
+  }
+
   public void execute(@NonNull Collection<ImportSource> sources) {
     val watch = createStarted();
     try {
