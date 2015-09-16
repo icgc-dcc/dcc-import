@@ -75,7 +75,7 @@ public class ProjectImporter implements SourceImporter {
   }
 
   private Iterable<Project> readProjects() {
-    return new ProjectReader(cgpClient).read();
+    return new ProjectReader(cgpClient.details()).read();
   }
 
   private void writeProjects(Iterable<Project> specifiedProjects) throws IOException {
