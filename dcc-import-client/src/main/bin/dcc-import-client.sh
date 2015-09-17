@@ -16,7 +16,7 @@ java \
 	${java_opts} \
   -Dlog.dir=${base_dir}/logs \
   -Dlogging.config=${base_dir}/conf/logback.xml \
-  -Dspring.config.location=${base_dir}/conf/application.yml \
+  -Dspring.config.location=file:${base_dir}/conf/ \
   -Dcom.sun.management.jmxremote.port=10001 \
   -Dcom.sun.management.jmxremote.ssl=false \
   -Dcom.sun.management.jmxremote.authenticate=false \
