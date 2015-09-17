@@ -38,11 +38,13 @@ public class ClientProperties {
 
   @Valid
   ImportsProperties imports;
+  @Valid
+  ICGCProperties icgc;
+  @Valid
+  MailProperties mail;
 
   @Data
   public static class ImportsProperties {
-
-    boolean email;
 
     Set<ImportSource> sources;
 
@@ -53,6 +55,26 @@ public class ClientProperties {
     public Set<ImportSource> getSources() {
       return sources == null || sources.isEmpty() ? ImportSource.all() : sources;
     }
+
+  }
+
+  @Data
+  public static class MailProperties {
+
+    boolean enabled;
+
+  }
+
+  @Data
+  public static class ICGCProperties {
+
+    String cgpUrl;
+    String consumerKey;
+    String consumerSecret;
+    String accessToken;
+    String accessSecret;
+    boolean enableHttpLogging;
+    boolean enableStrictSSL = true;
 
   }
 

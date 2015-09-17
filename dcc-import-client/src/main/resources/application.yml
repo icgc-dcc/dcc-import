@@ -1,5 +1,5 @@
 #
-# DCC Import Client - Defaults
+# DCC Import Client - Configuration
 #
  
 ###################################################################################################
@@ -17,9 +17,8 @@ spring:
 # Common
 ###################################################################################################
 
-# Empty
+# Repository
 repository:
-  mail: true
   sources: # All
 
 ---
@@ -51,4 +50,8 @@ icgc:
   accessSecret: "***REMOVED***"
   
   enableHttpLogging: false
-  enableStrictSSL: false  
+  enableStrictSSL: false
+  
+# Mail
+mail:
+	enabled: false  

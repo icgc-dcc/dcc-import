@@ -18,7 +18,6 @@
 package org.icgc.dcc.imports.client.core;
 
 import static com.google.common.base.Stopwatch.createStarted;
-import static com.google.common.base.Throwables.getStackTraceAsString;
 import static com.google.common.collect.Maps.uniqueIndex;
 import static org.icgc.dcc.imports.core.util.Importers.getRemoteCgsUri;
 import static org.icgc.dcc.imports.core.util.Importers.getRemoteGenesBsonUri;
@@ -38,10 +37,13 @@ import org.icgc.dcc.imports.go.GoImporter;
 import org.icgc.dcc.imports.pathway.PathwayImporter;
 import org.icgc.dcc.imports.project.ProjectImporter;
 
+import com.google.common.base.Stopwatch;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.mongodb.MongoClientURI;
 
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -98,14 +100,15 @@ public class Importer {
       }
     } catch (Exception e) {
       log.error("Unknown error:", e);
-      mailer.sendMail("DCC Importer - FAILED", getStackTraceAsString(e));
+
+      val message = new ReportMessage(watch, ImmutableList.<Exception> of(e));
+      mailer.sendMail(message.getSubject(), message.getBody());
 
       throw e;
     }
 
-    val subject = "DCC Importer - SUCCESS";
-    val body = "Finished in " + watch + "\n\n";
-    mailer.sendMail(subject, body);
+    val message = new ReportMessage(watch, ImmutableList.<Exception> of());
+    mailer.sendMail(message.getSubject(), message.getBody());
   }
 
   private Map<ImportSource, SourceImporter> createImporters(CGPClient cgpClient) {
@@ -118,6 +121,68 @@ public class Importer {
         new DiagramImporter(mongoUri));
 
     return uniqueIndex(importers, (SourceImporter importer) -> importer.getSource());
+  }
+
+  /**
+   * Report email send to recipients.
+   */
+  @RequiredArgsConstructor
+  static class ReportMessage {
+
+    private final Stopwatch watch;
+    private final List<Exception> exceptions;
+
+    public String getSubject() {
+      return "DCC Importer - " + getStatus();
+    }
+
+    public String getBody() {
+      val body = new StringBuilder();
+      body.append("<html>");
+      body.append("<body>");
+      body.append("<h1 style='color: " + getColor() + "; border: 3px solid " + getColor()
+          + "; border-left: none; border-right: none; padding: 5px 0;'>");
+      body.append(getStatus());
+      body.append("</h1>");
+      body.append("Finished in ").append("<b>").append(watch).append("</b>");
+      body.append("<br>");
+
+      if (!isSuccess()) {
+        body.append("<h2>Exceptions</h2>");
+        body.append("<ol>");
+        for (val exception : exceptions) {
+          body.append("<h3>Message</h3>");
+          body.append("<pre>");
+          body.append(exception.getMessage());
+          body.append("</pre>");
+          body.append("<h3>Stack Trace</h3>");
+          body.append("<pre>");
+          body.append(Throwables.getStackTraceAsString(exception));
+          body.append("</pre>");
+          body.append(
+              "<div style='border-top: 1px dotted " + getColor() + "; margin-top 4px; margin-bottom: 5px;'></div>");
+        }
+        body.append("</ol>");
+      }
+
+      body.append("</body>");
+      body.append("</html>");
+
+      return body.toString();
+    }
+
+    private String getColor() {
+      return isSuccess() ? "#1a9900" : "red";
+    }
+
+    private String getStatus() {
+      return isSuccess() ? "SUCCESS" : "ERROR";
+    }
+
+    private boolean isSuccess() {
+      return exceptions.isEmpty();
+    }
+
   }
 
 }

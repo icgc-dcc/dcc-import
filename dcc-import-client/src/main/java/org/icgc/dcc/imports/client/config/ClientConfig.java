@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.imports.client.config;
 
+import org.icgc.dcc.common.client.api.ICGCClient;
+import org.icgc.dcc.common.client.api.ICGCClientConfig;
 import org.icgc.dcc.common.client.api.cgp.CGPClient;
 import org.icgc.dcc.common.core.mail.Mailer;
 import org.icgc.dcc.imports.client.core.Importer;
@@ -30,13 +32,31 @@ public class ClientConfig {
 
   @Bean
   public Mailer mailer(ClientProperties properties) {
-    val enabled = properties.getImports().isEmail();
+    val enabled = properties.getMail().isEnabled();
     return Mailer.builder().enabled(enabled).build();
   }
 
   @Bean
   public Importer importer(ClientProperties properties, CGPClient cgpClient, Mailer mailer) {
-    return new Importer(properties.getImports().getMongoUri(), mailer, cgpClient);
+    val mongoUri = properties.getImports().getMongoUri();
+    return new Importer(mongoUri, mailer, cgpClient);
+  }
+
+  @Bean
+  public CGPClient cgpClient(ClientProperties properties) {
+    val icgc = properties.getIcgc();
+
+    val config = ICGCClientConfig.builder()
+        .cgpServiceUrl(icgc.cgpUrl)
+        .consumerKey(icgc.consumerKey)
+        .consumerSecret(icgc.consumerSecret)
+        .accessToken(icgc.accessToken)
+        .accessSecret(icgc.accessSecret)
+        .requestLoggingEnabled(icgc.enableHttpLogging)
+        .strictSSLCertificates(icgc.enableStrictSSL)
+        .build();
+
+    return ICGCClient.create(config).cgp();
   }
 
 }

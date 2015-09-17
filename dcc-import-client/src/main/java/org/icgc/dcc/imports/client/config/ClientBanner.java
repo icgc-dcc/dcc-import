@@ -21,16 +21,20 @@ import static com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_
 import static com.google.common.base.Objects.firstNonNull;
 import static com.google.common.base.Strings.padEnd;
 import static com.google.common.base.Strings.repeat;
+import static org.icgc.dcc.common.core.util.Joiners.WHITESPACE;
 import static org.icgc.dcc.common.core.util.VersionUtils.getScmInfo;
 
+import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.config.RandomValuePropertySource;
 import org.springframework.core.env.EnumerablePropertySource;
-import org.springframework.core.env.MapPropertySource;
-import org.springframework.core.env.SimpleCommandLinePropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.env.SystemEnvironmentPropertySource;
 import org.springframework.stereotype.Component;
@@ -61,10 +65,12 @@ public class ClientBanner {
   @PostConstruct
   public void log() {
     log.info("{}", line());
-    log.info("Version: {}", getVersion());
-    log.info("Built:   {}", getBuildTimestamp());
+    log.info("Command:  {}", formatArguments());
+    log.info("Version:  {}", getVersion());
+    log.info("Built:    {}", getBuildTimestamp());
     log.info("SCM:");
     log(getScmInfo());
+    log.info("Profiles: {}", Arrays.toString(env.getActiveProfiles()));
     log(properties);
     log(env);
     log.info("{}\n\n", line());
@@ -90,25 +96,15 @@ public class ClientBanner {
   private static void log(StandardEnvironment env) {
     log.info("{}:", env);
     for (val source : env.getPropertySources()) {
-      if (source instanceof SystemEnvironmentPropertySource) {
-        // Skip because this will cause issues with terminal display
+      if (source instanceof SystemEnvironmentPropertySource || source instanceof RandomValuePropertySource) {
+        // Skip because this will cause issues with terminal display or is useless
         continue;
       }
 
       log.info("         {}:", source.getName());
-      if (source instanceof SimpleCommandLinePropertySource) {
-        val simple = (SimpleCommandLinePropertySource) source;
-        for (val propertyName : simple.getPropertyNames()) {
-          log.info("            - {}: {}", propertyName, simple.getProperty(propertyName));
-        }
-      } else if (source instanceof MapPropertySource) {
-        val map = (MapPropertySource) source;
-        for (val propertyName : Sets.newTreeSet(ImmutableSet.copyOf(map.getPropertyNames()))) {
-          log.info("            - {}: {}", propertyName, map.getProperty(propertyName));
-        }
-      } else if (source instanceof EnumerablePropertySource) {
+      if (source instanceof EnumerablePropertySource) {
         val enumerable = (EnumerablePropertySource<?>) source;
-        for (val propertyName : enumerable.getPropertyNames()) {
+        for (val propertyName : Sets.newTreeSet(ImmutableSet.copyOf(enumerable.getPropertyNames()))) {
           log.info("            - {}: {}", propertyName, enumerable.getProperty(propertyName));
         }
       }
@@ -122,6 +118,18 @@ public class ClientBanner {
 
   private static String line() {
     return repeat("-", 100);
+  }
+
+  private String formatArguments() {
+    return "java " + WHITESPACE.join(getJavaArguments()) + " -jar " + getJarName() + " ...";
+  }
+
+  private List<String> getJavaArguments() {
+    return ManagementFactory.getRuntimeMXBean().getInputArguments();
+  }
+
+  private String getJarName() {
+    return new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath()).getName();
   }
 
   private static String getVersion() {
