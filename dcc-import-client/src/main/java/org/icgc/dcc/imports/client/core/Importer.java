@@ -18,6 +18,7 @@
 package org.icgc.dcc.imports.client.core;
 
 import static com.google.common.base.Stopwatch.createStarted;
+import static com.google.common.base.Strings.repeat;
 import static com.google.common.collect.Maps.uniqueIndex;
 import static org.icgc.dcc.imports.core.util.Importers.getRemoteCgsUri;
 import static org.icgc.dcc.imports.core.util.Importers.getRemoteGenesBsonUri;
@@ -28,6 +29,8 @@ import java.util.Map;
 
 import org.icgc.dcc.common.client.api.cgp.CGPClient;
 import org.icgc.dcc.common.core.mail.Mailer;
+import org.icgc.dcc.common.core.report.BufferedReport;
+import org.icgc.dcc.common.core.report.ReportEmail;
 import org.icgc.dcc.imports.cgc.CgcImporter;
 import org.icgc.dcc.imports.core.SourceImporter;
 import org.icgc.dcc.imports.core.model.ImportSource;
@@ -37,13 +40,10 @@ import org.icgc.dcc.imports.go.GoImporter;
 import org.icgc.dcc.imports.pathway.PathwayImporter;
 import org.icgc.dcc.imports.project.ProjectImporter;
 
-import com.google.common.base.Stopwatch;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.mongodb.MongoClientURI;
 
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -87,28 +87,34 @@ public class Importer {
 
   public void execute(@NonNull Collection<ImportSource> sources) {
     val watch = createStarted();
+    val report = new BufferedReport();
+
     try {
       for (val source : SOURCE_ORDER) {
         if (sources.contains(source)) {
           val importer = importers.get(source);
 
-          val timer = createStarted();
-          log.info("Importing '{}'...", source);
-          importer.execute();
-          log.info("Finished importing '{}' in {}", source, timer);
+          try {
+            val timer = createStarted();
+            logBanner("Importing '" + importer.getSource() + "' sourced files");
+            importer.execute();
+            report.addTimer(timer.stop());
+            log.info("Finished importing '{}' in {}", source, timer);
+          } catch (Exception e) {
+            log.error("Error procesing '" + importer.getSource() + "': ", e);
+            report.addException(e);
+          }
         }
       }
     } catch (Exception e) {
       log.error("Unknown error:", e);
-
-      val message = new ReportMessage(watch, ImmutableList.<Exception> of(e));
-      mailer.sendMail(message.getSubject(), message.getBody());
+      report.addException(e);
 
       throw e;
+    } finally {
+      report.addTimer(watch.stop());
+      sendReport(report);
     }
-
-    val message = new ReportMessage(watch, ImmutableList.<Exception> of());
-    mailer.sendMail(message.getSubject(), message.getBody());
   }
 
   private Map<ImportSource, SourceImporter> createImporters(CGPClient cgpClient) {
@@ -123,66 +129,15 @@ public class Importer {
     return uniqueIndex(importers, (SourceImporter importer) -> importer.getSource());
   }
 
-  /**
-   * Report email send to recipients.
-   */
-  @RequiredArgsConstructor
-  static class ReportMessage {
+  private void sendReport(BufferedReport report) {
+    val message = new ReportEmail("DCC Importer", report);
+    mailer.sendMail(message);
+  }
 
-    private final Stopwatch watch;
-    private final List<Exception> exceptions;
-
-    public String getSubject() {
-      return "DCC Importer - " + getStatus();
-    }
-
-    public String getBody() {
-      val body = new StringBuilder();
-      body.append("<html>");
-      body.append("<body>");
-      body.append("<h1 style='color: " + getColor() + "; border: 3px solid " + getColor()
-          + "; border-left: none; border-right: none; padding: 5px 0;'>");
-      body.append(getStatus());
-      body.append("</h1>");
-      body.append("Finished in ").append("<b>").append(watch).append("</b>");
-      body.append("<br>");
-
-      if (!isSuccess()) {
-        body.append("<h2>Exceptions</h2>");
-        body.append("<ol>");
-        for (val exception : exceptions) {
-          body.append("<h3>Message</h3>");
-          body.append("<pre>");
-          body.append(exception.getMessage());
-          body.append("</pre>");
-          body.append("<h3>Stack Trace</h3>");
-          body.append("<pre>");
-          body.append(Throwables.getStackTraceAsString(exception));
-          body.append("</pre>");
-          body.append(
-              "<div style='border-top: 1px dotted " + getColor() + "; margin-top 4px; margin-bottom: 5px;'></div>");
-        }
-        body.append("</ol>");
-      }
-
-      body.append("</body>");
-      body.append("</html>");
-
-      return body.toString();
-    }
-
-    private String getColor() {
-      return isSuccess() ? "#1a9900" : "red";
-    }
-
-    private String getStatus() {
-      return isSuccess() ? "SUCCESS" : "ERROR";
-    }
-
-    private boolean isSuccess() {
-      return exceptions.isEmpty();
-    }
-
+  private static void logBanner(String message) {
+    log.info(repeat("-", 80));
+    log.info(message);
+    log.info(repeat("-", 80));
   }
 
 }
