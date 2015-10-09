@@ -56,7 +56,13 @@ curl http://www.reactome.org/download/current/pathway2summation.txt > pathway_2_
 
 ##### 2.2. Cancer Gene Census
 
-Download Cancer Gene Census file from [COSMIC](https://cancer.sanger.ac.uk/census). Save it as cancer_gene_census.tsv. You need to register and login to download the file.
+Download Cancer Gene Census file from [COSMIC](https://cancer.sanger.ac.uk/census). Save it as `cancer_gene_census.tsv`. You need to register and login to download the file.
+
+The file might be available on the `csv` format. It can be converted to the `tsv` one with command:
+
+```bash
+tr ',' '\t' < cancer_gene_census.csv > cancer_gene_census.tsv
+```
 
 ##### 2.3. gene2xml and gene.bson
 These 2 binary files rarely (if ever) get updated. Cosult others to see if any update is required and hope that the answer is no. 
@@ -70,7 +76,7 @@ Unfortunately, the updated files are usually not in the right format or consiste
 
 - Reactome names are present in `pathway_hierarchy.txt` but missing from `pathway_2_summation.txt`. You'd need to resolve them using `uniprot_2_reactome.txt`. Start by copying the lines with '???' from the end of previous `pathway_2_summation.txt` to the new verison. For each one of those, search for the REACT_[id] in the file to see if the data is provided in the current version. If so, delete the lines.
 
-Currently, the following reactoem names are inconsistent between the reactome data files and have been resolved with other methods:
+Currently, the following reactome names are inconsistent between the reactome data files and have been resolved with other methods:
 
 - The following reactome names are present in `pathway_hierarchy.txt` but missing from `pathway_2_summation.txt` and have been resolved using `uniprot_2_reactome.txt`:
   - PI3K Cascade
@@ -130,10 +136,10 @@ mv ${dcc_heliotrope_next_dist_file_name} ..
 ### 4. Update and test ETL.
 
 #### 4.1. Update version references in source code
-Create a new feature branch and update the version in db-importer pom file in ```dcc-etl-db-importer/pom.xml``` and ```dcc-etl-db-importer/src/main/java/org/icgc/dcc/etl/db/importer/util/Importers.java```.
+Create a new feature branch and update the version in db-importer pom file in ```dcc-import/pom.xml``` and ```dcc-import-core/src/main/java/org/icgc/dcc/imports/core/util/Importers.java```.
 
 #### 4.2. Modify the reference to local artifact for testing
-Change the reference to central artifact to local in [Importers file](https://github.com/icgc-dcc/dcc-etl/blob/develop/dcc-etl-db-importer/src/main/java/org/icgc/dcc/etl/db/importer/util/Importers.java). Replace the value for `IMPORT_ARTIFACT_REMOTE_URL` with `file:/path/to/new/jar`, the path to your newly generated jar file. Careful not to commit this later on!
+Change the reference to central artifact to local in [Importers file](https://github.com/icgc-dcc/dcc-import/blob/develop/dcc-import-core/src/main/java/org/icgc/dcc/imports/core/util/Importers.java). Replace the value for `IMPORT_ARTIFACT_REMOTE_URL` with `file:/path/to/new/jar`, the path to your newly generated jar file. Careful not to commit this later on!
 
 #### 4.3. Run db-importer tests
 db-importer modules heavily depends on the heliotrope resource, so running the unit tests is the first step to catch issues with updates bundle. Run the tests and try to resolve the issues. You might get an error similar to following:
