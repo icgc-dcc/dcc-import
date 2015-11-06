@@ -15,26 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.dcc.imports.drug;
+package org.icgc.dcc.imports.drug.reader;
 
-import org.icgc.dcc.imports.core.SourceImporter;
-import org.icgc.dcc.imports.core.model.ImportSource;
+import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import lombok.SneakyThrows;
+import lombok.val;
 
-/**
- * Hello world!
- *
- */
-public class DrugImporter implements SourceImporter { 
-    
-    @Override
-    public ImportSource getSource() {
-      return ImportSource.DRUGS;
-    }
-    
-    @Override
-    public void execute() {
-      // Do nothing
-    }
+public class DrugReader extends Reader{
+  
+  private final static String drugUrl = "http://files.docking.org/export/oicr/drugs.ldjson";
+  
+  public DrugReader() {
+    super(drugUrl);
+  }
+  
+  public MappingIterator<ObjectNode> getDrugs() {
+    val drugs = getJson();
+    return drugs;
+  }
+  
 }

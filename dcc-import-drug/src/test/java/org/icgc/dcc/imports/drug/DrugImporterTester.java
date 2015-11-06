@@ -15,41 +15,18 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.dcc.imports.drug;
+package org.icgc.dcc.imports.drug;
 
-import junit.framework.Test;
+import org.junit.Test;
+
 import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
-/**
- * Unit test for simple App.
- */
-public class DrugImporterTester 
-    extends TestCase
-{
-    /**
-     * Create the test case
-     *
-     * @param testName name of the test case
-     */
-    public DrugImporterTester( String testName )
-    {
-        super( testName );
-    }
+public class DrugImporterTester extends TestCase {
 
-    /**
-     * @return the suite of tests being tested
-     */
-    public static Test suite()
-    {
-        return new TestSuite( DrugImporterTester.class );
-    }
-
-    /**
-     * Rigourous Test :-)
-     */
-    public void testApp()
-    {
-        assertTrue( true );
-    }
+  @Test
+  public void testExecute() {
+    DrugImporter importer = new DrugImporter();
+    importer.execute();
+  }
+  
 }
