@@ -15,38 +15,41 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.core.model;
+package org.dcc.imports.drug;
 
-import static lombok.AccessLevel.PRIVATE;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
-import java.util.Set;
+/**
+ * Unit test for simple App.
+ */
+public class DrugImporterTester 
+    extends TestCase
+{
+    /**
+     * Create the test case
+     *
+     * @param testName name of the test case
+     */
+    public DrugImporterTester( String testName )
+    {
+        super( testName );
+    }
 
-import org.icgc.dcc.common.core.model.Identifiable;
+    /**
+     * @return the suite of tests being tested
+     */
+    public static Test suite()
+    {
+        return new TestSuite( DrugImporterTester.class );
+    }
 
-import com.google.common.collect.ImmutableSet;
-
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.Accessors;
-
-@Getter
-@RequiredArgsConstructor(access = PRIVATE)
-public enum ImportSource implements Identifiable {
-
-  PROJECTS("Projects"),
-  CGC("CGC"),
-  GO("GO"),
-  PATHWAYS("Pathways"),
-  GENES("Genes"),
-  DIAGRAMS("Diagrams"),
-  DRUGS("Drugs");
-
-  @NonNull
-  private final String id;
-
-  @Getter(lazy = true)
-  @Accessors(fluent = true)
-  private static final Set<ImportSource> all = ImmutableSet.copyOf(values());
-
+    /**
+     * Rigourous Test :-)
+     */
+    public void testApp()
+    {
+        assertTrue( true );
+    }
 }

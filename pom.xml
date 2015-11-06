@@ -28,6 +28,7 @@
     <module>dcc-import-pathway</module>
 
     <module>dcc-import-core</module>
+    <module>dcc-import-drug</module>
   </modules>
 
   <repositories>
