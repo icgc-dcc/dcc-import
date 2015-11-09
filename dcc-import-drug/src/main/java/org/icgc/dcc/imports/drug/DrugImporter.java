@@ -17,16 +17,22 @@
  */
 package org.icgc.dcc.imports.drug;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.icgc.dcc.imports.core.SourceImporter;
 import org.icgc.dcc.imports.core.model.ImportSource;
 import org.icgc.dcc.imports.drug.reader.DrugReader;
 import org.icgc.dcc.imports.drug.reader.GeneReader;
+import org.icgc.dcc.imports.drug.reader.TrialsReader;
+import org.icgc.dcc.imports.drug.writer.DrugWriter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.mongodb.MongoClientURI;
 
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +41,14 @@ import lombok.extern.slf4j.Slf4j;
 public class DrugImporter implements SourceImporter { 
     
     private final ObjectMapper MAPPER = new ObjectMapper();
+    private List<ObjectNode> drugs;
+    
+    @NonNull
+    private final MongoClientURI mongoUri;
+    
+    public DrugImporter(@NonNull MongoClientURI mongoUri) {
+      this.mongoUri = mongoUri;
+    }
     
     @Override
     public ImportSource getSource() {
@@ -42,23 +56,95 @@ public class DrugImporter implements SourceImporter {
     }
     
     @Override
+    @SneakyThrows
     public void execute() {
-      val drugs = new DrugReader().getDrugs();
+      log.info("Getting Drug Data");
+      drugs = new DrugReader().getDrugs().readAll();
+      
+      readAndJoin();
+      
+      writeDrugs();
+    }
+    
+    /**
+     * Calls all the join and denormalization helpers. 
+     */
+    private void readAndJoin() {
+      log.info("Denormalizing ATC Codes");
+      denormalizeAtcCodes();
+      log.info("Joining Genes to Drugs");
+      joinGenes();
+      log.info("Joining Trials to Drugs");
+      joinTrials();
+      log.info("FINISHED");
+    }
+    
+    @SneakyThrows
+    private void writeDrugs() {
+      val drugWriter = new DrugWriter(mongoUri);
+      drugWriter.writeFiles(drugs);
+      log.info("FINISHED WRITING TO MONGO");
+      drugWriter.close();
+    }
+    
+    
+    /**
+     * Joins Genes to Drugs by gene name. We include ensembl ids as part of gene node.  
+     */
+    private void joinGenes() {
       val geneMap = new GeneReader().getGeneMap();
       
-      drugs.forEachRemaining(drug -> {
-        val drugGenes = drug.get("genes");
-        val geneArray = MAPPER.createArrayNode();
+      drugs.forEach(drug -> {
+        JsonNode drugGenes = drug.get("genes");
+        ArrayNode geneArray = MAPPER.createArrayNode();
         
         if (drugGenes.isArray()) {
-          for (val geneName : drugGenes) {
+          for (JsonNode geneName : drugGenes) {
             geneArray.add(geneMap.get(geneName.asText()));
+          }
+        }      
+        
+        drug.set("genes", geneArray);        
+      });
+    }
+    
+    /**
+     * Joins trials to Drugs by trial code. Trials will be already joined with conditions.
+     */
+    private void joinTrials() {
+      val trialsMap = new TrialsReader().getTrialsMap();
+      log.info("Got Trials Map");
+      drugs.forEach(drug -> {
+        JsonNode drugTrials = drug.get("trials");
+        ArrayNode trialsArray = MAPPER.createArrayNode();
+        
+        if (drugTrials.isArray()) {
+          for (JsonNode trialCode : drugTrials) {
+            trialsArray.add(trialsMap.get(trialCode.asText()));
           }
         }
         
-        drug.set("genes", geneArray);        
-        log.info(drug.toString());
+        drug.set("trials", trialsArray);
       });
-      
+    }
+    
+    /**
+     * Moves level5 ATC codes into the main ATC code JSON node. 
+     */
+    private void denormalizeAtcCodes() {
+      drugs.forEach(drug -> {
+        ArrayNode atcCodes = (ArrayNode) drug.get("atc_codes");
+        ArrayNode level5 = (ArrayNode) drug.get("atc_level5_codes");
+        atcCodes.forEach(atc -> {
+          for (JsonNode code : level5) {
+            if (code.asText().indexOf(atc.get("code").asText()) >= 0) {
+              ((ObjectNode)atc).put("atc_level5_codes", code.asText());
+              break;
+            }
+          }
+        });
+        
+        drug.remove("atc_level5_codes");
+      });
     }
 }

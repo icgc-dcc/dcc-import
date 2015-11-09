@@ -13,7 +13,8 @@ public class GeneReaderTest extends TestCase {
   @Test
   public void testDrugReader1() throws IOException {
     val genes = geneReader.getGenes();
-    genes.forEachRemaining(drug -> System.out.println(drug));
+    assertNotNull(genes);
+    //genes.forEachRemaining(drug -> System.out.println(drug));
   }
   
 }

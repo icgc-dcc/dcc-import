@@ -13,7 +13,8 @@ public class DrugReaderTest extends TestCase {
   @Test
   public void testDrugReader1() throws IOException {
     val drugs = drugReader.getDrugs();
-    drugs.forEachRemaining(drug -> System.out.println(drug));
+    assertNotNull(drugs);
+    //drugs.forEachRemaining(drug -> System.out.println(drug));
   }
   
 }

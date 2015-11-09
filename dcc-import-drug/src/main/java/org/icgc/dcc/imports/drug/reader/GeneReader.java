@@ -20,11 +20,19 @@ package org.icgc.dcc.imports.drug.reader;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.icgc.dcc.common.core.model.ReleaseCollection;
+import org.jongo.Jongo;
+
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.mongodb.MongoClient;
 
+import lombok.SneakyThrows;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class GeneReader extends Reader{
   
   private final static String geneUrl = "http://files.docking.org/export/oicr/genes.ldjson";
@@ -38,13 +46,26 @@ public class GeneReader extends Reader{
     return genes;
   }
   
+  @SneakyThrows
   public Map<String, ObjectNode> getGeneMap() {
+    
+    log.info("Loading ICGC Gene Info");
+    val db = new MongoClient().getDB("dcc-genome");
+    Jongo jongo = new Jongo(db);
+    val geneCollection = jongo.getCollection(ReleaseCollection.GENE_COLLECTION.getId());
+    
     val geneMap = new HashMap<String, ObjectNode>();
     getJson().forEachRemaining(gene -> {
+      JsonNode icgcGene = geneCollection.findOne("{external_db_ids.uniprotkb_swissprot:#}", gene.get("uniprot").asText()).as(JsonNode.class);
+      if (icgcGene!=null) {
+        gene.put("ensembl_gene_id", icgcGene.get("_gene_id").asText());
+      } else {
+        log.info("Could not find matching Gene for uniprot value: {}", gene.get("uniprot").asText());
+        gene.put("ensembl_gene_id", "");
+      }
       geneMap.put(gene.get("gene_name").asText(), gene);
     });
     
     return geneMap;
-  }
-  
+  } 
 }

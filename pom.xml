@@ -180,7 +180,7 @@
 
   <properties>
     <!-- Versions - DCC -->
-    <dcc-common.version>3.8.14.1</dcc-common.version>
+    <dcc-common.version>3.8.17.2</dcc-common.version>
 
     <!-- Versions - JSON -->
     <json-path.version>1.2</json-path.version>

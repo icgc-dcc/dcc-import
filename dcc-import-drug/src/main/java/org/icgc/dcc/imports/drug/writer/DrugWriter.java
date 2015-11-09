@@ -15,21 +15,49 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.drug;
+package org.icgc.dcc.imports.drug.writer;
 
-import static org.icgc.dcc.imports.core.util.Importers.getLocalMongoClientUri;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
-import org.junit.Test;
+import java.util.List;
 
-import junit.framework.TestCase;
+import org.icgc.dcc.common.core.model.ReleaseCollection;
+import org.icgc.dcc.imports.core.util.AbstractJongoWriter;
+import org.jongo.MongoCollection;
 
-public class DrugImporterTester extends TestCase {
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.mongodb.MongoClientURI;
 
-  @Test
-  public void testExecute() {
-    DrugImporter importer = new DrugImporter(getLocalMongoClientUri("dcc-genome"));
-    assertNotNull(importer);
-    //importer.execute();
+@Slf4j
+public class DrugWriter extends AbstractJongoWriter<List<ObjectNode>> {
+
+  private MongoCollection drugCollection;
+
+  public DrugWriter(@NonNull MongoClientURI mongoUri) {
+    super(mongoUri);
   }
-  
+
+  @Override
+  public void writeFiles(@NonNull List<ObjectNode> values) {
+    drugCollection = getCollection(ReleaseCollection.DRUG_COLLECTION);
+    
+    log.info("Dropping current Drug collection..");
+    dropCollection();
+
+    log.info("Saving new Drug collection..");
+    saveCollection(values);
+  }
+
+  private void dropCollection() {
+    drugCollection.drop();
+  }
+
+  private void saveCollection(List<ObjectNode> drugs) {
+    drugs.forEach(drug -> {
+      drug.put("_id", drug.get("zinc_id").asText());
+      drugCollection.save(drug);
+    });
+  }
+
 }
