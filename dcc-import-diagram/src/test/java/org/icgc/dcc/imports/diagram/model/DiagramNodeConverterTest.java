@@ -19,20 +19,18 @@ package org.icgc.dcc.imports.diagram.model;
 
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.icgc.dcc.common.core.util.Jackson.DEFAULT;
+import static org.icgc.dcc.common.json.Jackson.DEFAULT;
 
 import java.util.List;
 
-import lombok.SneakyThrows;
-import lombok.val;
-
 import org.elasticsearch.common.collect.Maps;
-import org.icgc.dcc.imports.diagram.model.Diagram;
-import org.icgc.dcc.imports.diagram.model.DiagramNodeConverter;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
+
+import lombok.SneakyThrows;
+import lombok.val;
 
 public class DiagramNodeConverterTest {
 

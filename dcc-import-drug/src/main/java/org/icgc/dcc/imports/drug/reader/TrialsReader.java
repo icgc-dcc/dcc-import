@@ -67,7 +67,7 @@ public class TrialsReader extends Reader {
     val newMappingsArray = MAPPER.createArrayNode();
     
     drugMappings.fields().forEachRemaining(entry -> {
-      val newMapping = MAPPER.createObjectNode();
+      ObjectNode newMapping = MAPPER.createObjectNode();
       newMapping.put("description", entry.getKey());
       newMapping.put("ids", entry.getValue());
       newMappingsArray.add(newMapping);

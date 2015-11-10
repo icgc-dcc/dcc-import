@@ -23,7 +23,6 @@ import java.io.IOException;
 
 import javax.xml.transform.TransformerException;
 
-import org.icgc.dcc.imports.diagram.reader.DiagramListReader;
 import org.junit.Test;
 
 import lombok.val;
@@ -37,10 +36,8 @@ public class DiagramListReaderTest {
 
     assertThat(pathways.getDiagrammed()).isNotEmpty();
 
-    assertThat(pathways.getDiagrammed().size()).isIn(565);
-    assertThat(pathways.getNotDiagrammed().size()).isIn(1232, 1254);
-
-    assertThat(pathways.getNotDiagrammed().contains("917729-199991")).isTrue();
+    assertThat(pathways.getDiagrammed().size()).isIn(685);
+    assertThat(pathways.getNotDiagrammed().size()).isIn(1219);
   }
 
   @Test
