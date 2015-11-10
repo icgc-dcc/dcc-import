@@ -52,7 +52,7 @@ public class TrialsReader extends Reader {
     drugMappings.fields().forEachRemaining(entry -> {
       String key = entry.getKey();
       if (key.contains(".")) {
-        String newKey = key.replaceAll("\\.", "\uff0E");
+        String newKey = key.replaceAll("\\.", "_");
         newMappings.put(newKey, entry.getValue());
       } else {
         newMappings.put(key, entry.getValue());
