@@ -18,7 +18,7 @@
 package org.icgc.dcc.imports.diagram.reader;
 
 import static java.lang.String.format;
-import static org.icgc.dcc.common.core.util.Jackson.DEFAULT;
+import static org.icgc.dcc.common.json.Jackson.DEFAULT;
 import static org.icgc.dcc.imports.diagram.reader.DiagramReader.REACTOME_BASE_URL;
 
 import java.io.IOException;
@@ -26,11 +26,11 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
-import lombok.val;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+
+import lombok.val;
 
 public class DiagramProteinMapReader {
 

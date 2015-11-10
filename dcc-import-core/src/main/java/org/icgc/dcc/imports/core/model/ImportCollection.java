@@ -39,6 +39,7 @@ public enum ImportCollection implements Identifiable {
   GO("GO", ImportSource.GO),
   PATHWAYS("Pathways", ImportSource.PATHWAYS),
   GENES("Genes", ImportSource.GENES),
+  DRUGS("Drugs", ImportSource.DRUGS),
   DIAGRAMS("Diagrams", ImportSource.DIAGRAMS);
 
   @NonNull

@@ -47,20 +47,17 @@ public class TrialsReader extends Reader {
    */
   public void cleanDrugMappings(ObjectNode trial) {
     val drugMappings = (ObjectNode) trial.get("drug_mappings");
-    val newMappings = MAPPER.createObjectNode();
+    val newMappingsArray = MAPPER.createArrayNode();
     
     drugMappings.fields().forEachRemaining(entry -> {
-      String key = entry.getKey();
-      if (key.contains(".")) {
-        String newKey = key.replaceAll("\\.", "_");
-        newMappings.put(newKey, entry.getValue());
-      } else {
-        newMappings.put(key, entry.getValue());
-      }
+      val newMapping = MAPPER.createObjectNode();
+      newMapping.put("description", entry.getKey());
+      newMapping.put("ids", entry.getValue());
+      newMappingsArray.add(newMapping);
     });
     
     trial.remove("drug_mappings");
-    trial.put("drug_mappings", newMappings);
+    trial.put("drug_mappings", newMappingsArray);
   }
   
   /**
