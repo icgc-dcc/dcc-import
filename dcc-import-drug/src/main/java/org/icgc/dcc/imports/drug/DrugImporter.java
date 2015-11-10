@@ -60,6 +60,7 @@ public class DrugImporter implements SourceImporter {
     public void execute() {
       log.info("Getting Drug Data");
       drugs = new DrugReader().getDrugs().readAll();
+      log.info("Number of drugs to denormalize: {}", drugs.size());
       
       readAndJoin();
       
@@ -76,7 +77,6 @@ public class DrugImporter implements SourceImporter {
       joinGenes();
       log.info("Joining Trials to Drugs");
       joinTrials();
-      log.info("FINISHED");
     }
     
     @SneakyThrows
@@ -113,7 +113,7 @@ public class DrugImporter implements SourceImporter {
      */
     private void joinTrials() {
       val trialsMap = new TrialsReader().getTrialsMap();
-      log.info("Got Trials Map");
+      
       drugs.forEach(drug -> {
         JsonNode drugTrials = drug.get("trials");
         ArrayNode trialsArray = MAPPER.createArrayNode();

@@ -18,6 +18,7 @@
 package org.icgc.dcc.imports.drug.writer;
 
 import lombok.NonNull;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -54,10 +55,19 @@ public class DrugWriter extends AbstractJongoWriter<List<ObjectNode>> {
   }
 
   private void saveCollection(List<ObjectNode> drugs) {
-    drugs.forEach(drug -> {
+    val total = drugs.size();
+    int current = 1;
+    log.info("Number to save: {}", total);
+    for (val drug : drugs) {
+      log.info("Writing {}/{} with id: {}", current, total, drug.get("zinc_id").asText());
       drug.put("_id", drug.get("zinc_id").asText());
-      drugCollection.save(drug);
-    });
+      try {
+        drugCollection.save(drug);
+      } catch (Exception e) {
+        log.warn(e.getMessage());
+      }
+      current++;
+    }
   }
 
 }

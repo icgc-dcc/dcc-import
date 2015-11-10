@@ -41,7 +41,6 @@ public class Reader {
   
   @SneakyThrows
   protected MappingIterator<ObjectNode> getJson() {
-    val response = MAPPER.readValues(jp, ObjectNode.class);
-    return response;
+    return MAPPER.readValues(jp, ObjectNode.class);
   }
 }

@@ -20,6 +20,9 @@ package org.icgc.dcc.imports.drug.reader;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.icgc.dcc.common.core.model.FieldNames.LoaderFieldNames.GENE_ID;
+
+import static org.icgc.dcc.common.core.model.FieldNames.GENE_UNIPROT_IDS;
 import org.icgc.dcc.common.core.model.ReleaseCollection;
 import org.jongo.Jongo;
 
@@ -36,6 +39,9 @@ import lombok.extern.slf4j.Slf4j;
 public class GeneReader extends Reader{
   
   private final static String geneUrl = "http://files.docking.org/export/oicr/genes.ldjson";
+  private final static String ENSEMBLE_ID = "ensembl_gene_id";
+  private final static String UNIPROT = "uniprot";
+  private final static String GENE_NAME = "gene_name";
   
   public GeneReader() {
     super(geneUrl);
@@ -48,7 +54,7 @@ public class GeneReader extends Reader{
   
   @SneakyThrows
   public Map<String, ObjectNode> getGeneMap() {
-    
+      
     log.info("Loading ICGC Gene Info");
     val db = new MongoClient().getDB("dcc-genome");
     Jongo jongo = new Jongo(db);
@@ -56,14 +62,14 @@ public class GeneReader extends Reader{
     
     val geneMap = new HashMap<String, ObjectNode>();
     getJson().forEachRemaining(gene -> {
-      JsonNode icgcGene = geneCollection.findOne("{external_db_ids.uniprotkb_swissprot:#}", gene.get("uniprot").asText()).as(JsonNode.class);
+      JsonNode icgcGene = geneCollection.findOne("{#:#}", GENE_UNIPROT_IDS, gene.get(UNIPROT).asText()).as(JsonNode.class);
       if (icgcGene!=null) {
-        gene.put("ensembl_gene_id", icgcGene.get("_gene_id").asText());
+        gene.put(ENSEMBLE_ID, icgcGene.get(GENE_ID).asText());
       } else {
-        log.info("Could not find matching Gene for uniprot value: {}", gene.get("uniprot").asText());
-        gene.put("ensembl_gene_id", "");
+        log.info("Could not find matching Gene for uniprot value: {}", gene.get(UNIPROT).asText());
+        gene.put(ENSEMBLE_ID, "");
       }
-      geneMap.put(gene.get("gene_name").asText(), gene);
+      geneMap.put(gene.get(GENE_NAME).asText(), gene);
     });
     
     return geneMap;

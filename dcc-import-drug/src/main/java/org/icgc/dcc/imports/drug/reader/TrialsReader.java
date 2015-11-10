@@ -32,12 +32,35 @@ public class TrialsReader extends Reader {
   public Map<String, ObjectNode> getTrialsMap() {
     val trialsMap = new HashMap<String, ObjectNode>();
     val conditions = new ConditionsReader().getConditionsAsMap();
-    getJson().forEachRemaining(trial -> {
+    getJson().forEachRemaining(trial -> {    
+      cleanDrugMappings(trial);
       joinConditions(trial, conditions);
       trialsMap.put(trial.get("code").asText(), trial);
     });
     
     return trialsMap;
+  }
+  
+  /**
+   * Ensures the drug mappings for the given trial are safe for mongodb
+   * @param trial ObjectNode representing trial
+   */
+  public void cleanDrugMappings(ObjectNode trial) {
+    val drugMappings = (ObjectNode) trial.get("drug_mappings");
+    val newMappings = MAPPER.createObjectNode();
+    
+    drugMappings.fields().forEachRemaining(entry -> {
+      String key = entry.getKey();
+      if (key.contains(".")) {
+        String newKey = key.replaceAll("\\.", "\uff0E");
+        newMappings.put(newKey, entry.getValue());
+      } else {
+        newMappings.put(key, entry.getValue());
+      }
+    });
+    
+    trial.remove("drug_mappings");
+    trial.put("drug_mappings", newMappings);
   }
   
   /**
