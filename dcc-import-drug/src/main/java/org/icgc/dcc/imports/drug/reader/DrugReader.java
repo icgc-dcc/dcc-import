@@ -15,36 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.diagram.reader;
+package org.icgc.dcc.imports.drug.reader;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.IOException;
-
-import javax.xml.transform.TransformerException;
-
-import org.junit.Test;
+import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.val;
 
-public class DiagramListReaderTest {
-
-  @Test
-  public void testReadList() throws IOException, TransformerException {
-    val reader = new DiagramListReader();
-    val pathways = reader.readPathwayList();
-
-    assertThat(pathways.getDiagrammed()).isNotEmpty();
-
-    assertThat(pathways.getDiagrammed().size()).isIn(685);
-    assertThat(pathways.getNotDiagrammed().size()).isIn(1219);
+public class DrugReader extends Reader {
+  
+  private final static String DRUG_URL = "http://files.docking.org/export/oicr/drugs.ldjson";
+  
+  public DrugReader() {
+    super(DRUG_URL);
   }
-
-  @Test
-  public void testIdConvert() throws IOException {
-    val reader = new DiagramListReader();
-    val result = reader.getReactId("1300645");
-    assertThat(result).isEqualTo("R-HSA-1300645");
+  
+  public MappingIterator<ObjectNode> getDrugs() {
+    val drugs = getJson();
+    return drugs;
   }
-
+  
 }

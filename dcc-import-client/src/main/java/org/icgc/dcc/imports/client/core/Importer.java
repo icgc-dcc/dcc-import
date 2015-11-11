@@ -35,6 +35,7 @@ import org.icgc.dcc.imports.cgc.CgcImporter;
 import org.icgc.dcc.imports.core.SourceImporter;
 import org.icgc.dcc.imports.core.model.ImportSource;
 import org.icgc.dcc.imports.diagram.DiagramImporter;
+import org.icgc.dcc.imports.drug.DrugImporter;
 import org.icgc.dcc.imports.gene.GeneImporter;
 import org.icgc.dcc.imports.go.GoImporter;
 import org.icgc.dcc.imports.pathway.PathwayImporter;
@@ -56,6 +57,7 @@ public class Importer {
   private static List<ImportSource> SOURCE_ORDER = ImmutableList.of(
       ImportSource.PROJECTS,
       ImportSource.GENES,
+      ImportSource.DRUGS,
       ImportSource.CGC,
       ImportSource.PATHWAYS,
       ImportSource.GO,
@@ -121,6 +123,7 @@ public class Importer {
     val importers = ImmutableList.<SourceImporter> of(
         new ProjectImporter(mongoUri, cgpClient),
         new GeneImporter(mongoUri, getRemoteGenesBsonUri()),
+        new DrugImporter(mongoUri),
         new CgcImporter(mongoUri, getRemoteCgsUri()),
         new PathwayImporter(mongoUri),
         new GoImporter(mongoUri),

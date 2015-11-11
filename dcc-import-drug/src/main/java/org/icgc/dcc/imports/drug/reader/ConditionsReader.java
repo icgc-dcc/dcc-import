@@ -15,36 +15,43 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.diagram.reader;
+package org.icgc.dcc.imports.drug.reader;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import java.io.IOException;
+import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import javax.xml.transform.TransformerException;
-
-import org.junit.Test;
-
+import lombok.SneakyThrows;
 import lombok.val;
 
-public class DiagramListReaderTest {
-
-  @Test
-  public void testReadList() throws IOException, TransformerException {
-    val reader = new DiagramListReader();
-    val pathways = reader.readPathwayList();
-
-    assertThat(pathways.getDiagrammed()).isNotEmpty();
-
-    assertThat(pathways.getDiagrammed().size()).isIn(685);
-    assertThat(pathways.getNotDiagrammed().size()).isIn(1219);
+public class ConditionsReader extends Reader {
+  
+  private final static String CONDITIONS_URL = "http://files.docking.org/export/oicr/conditions.ldjson";
+  
+  public ConditionsReader() {
+    super(CONDITIONS_URL);
   }
-
-  @Test
-  public void testIdConvert() throws IOException {
-    val reader = new DiagramListReader();
-    val result = reader.getReactId("1300645");
-    assertThat(result).isEqualTo("R-HSA-1300645");
+  
+  public MappingIterator<ObjectNode> getConditions() {
+    val conditions = getJson();
+    return conditions;
+  }
+  
+  @SneakyThrows
+  public List<ObjectNode> getConditionsAsList() {
+    return getConditions().readAll();
+  }
+  
+  public Map<String, ObjectNode> getConditionsAsMap() {
+    val conditionsMap = new HashMap<String, ObjectNode>();
+    getConditions().forEachRemaining(condition -> {
+      conditionsMap.put(condition.get("short_name").asText(), condition);
+    });
+    
+    return conditionsMap;
   }
 
 }

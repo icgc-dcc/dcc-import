@@ -15,36 +15,59 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.diagram.reader;
+package org.icgc.dcc.imports.drug.writer;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.IOException;
-
-import javax.xml.transform.TransformerException;
-
-import org.junit.Test;
-
+import lombok.NonNull;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
-public class DiagramListReaderTest {
+import java.util.List;
 
-  @Test
-  public void testReadList() throws IOException, TransformerException {
-    val reader = new DiagramListReader();
-    val pathways = reader.readPathwayList();
+import org.icgc.dcc.common.core.model.ReleaseCollection;
+import org.icgc.dcc.imports.core.util.AbstractJongoWriter;
+import org.jongo.MongoCollection;
 
-    assertThat(pathways.getDiagrammed()).isNotEmpty();
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.mongodb.MongoClientURI;
 
-    assertThat(pathways.getDiagrammed().size()).isIn(685);
-    assertThat(pathways.getNotDiagrammed().size()).isIn(1219);
+@Slf4j
+public class DrugWriter extends AbstractJongoWriter<List<ObjectNode>> {
+
+  private MongoCollection drugCollection;
+
+  public DrugWriter(@NonNull MongoClientURI mongoUri) {
+    super(mongoUri);
   }
 
-  @Test
-  public void testIdConvert() throws IOException {
-    val reader = new DiagramListReader();
-    val result = reader.getReactId("1300645");
-    assertThat(result).isEqualTo("R-HSA-1300645");
+  @Override
+  public void writeFiles(@NonNull List<ObjectNode> values) {
+    drugCollection = getCollection(ReleaseCollection.DRUG_COLLECTION);
+    
+    log.info("Dropping current Drug collection...");
+    dropCollection();
+
+    log.info("Saving new Drug collection...");
+    saveCollection(values);
+  }
+
+  private void dropCollection() {
+    drugCollection.drop();
+  }
+
+  private void saveCollection(List<ObjectNode> drugs) {
+    val total = drugs.size();
+    int current = 1;
+    log.info("Number to save: {}", total);
+    for (val drug : drugs) {
+      log.info("Writing {}/{} with id: {}", current, total, drug.get("zinc_id").asText());
+      drug.put("_id", drug.get("zinc_id").asText());
+      try {
+        drugCollection.save(drug);
+      } catch (Exception e) {
+        log.warn(e.getMessage());
+      }
+      current++;
+    }
   }
 
 }

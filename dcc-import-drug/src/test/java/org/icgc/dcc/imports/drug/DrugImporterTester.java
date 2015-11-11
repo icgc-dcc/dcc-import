@@ -15,36 +15,23 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.diagram.reader;
+package org.icgc.dcc.imports.drug;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.icgc.dcc.imports.core.util.Importers.getLocalMongoClientUri;
 
-import java.io.IOException;
-
-import javax.xml.transform.TransformerException;
-
+import org.junit.Ignore;
 import org.junit.Test;
 
-import lombok.val;
+import junit.framework.TestCase;
 
-public class DiagramListReaderTest {
-
-  @Test
-  public void testReadList() throws IOException, TransformerException {
-    val reader = new DiagramListReader();
-    val pathways = reader.readPathwayList();
-
-    assertThat(pathways.getDiagrammed()).isNotEmpty();
-
-    assertThat(pathways.getDiagrammed().size()).isIn(685);
-    assertThat(pathways.getNotDiagrammed().size()).isIn(1219);
-  }
+public class DrugImporterTester extends TestCase {
 
   @Test
-  public void testIdConvert() throws IOException {
-    val reader = new DiagramListReader();
-    val result = reader.getReactId("1300645");
-    assertThat(result).isEqualTo("R-HSA-1300645");
+  @Ignore
+  public void testExecute() {
+    DrugImporter importer = new DrugImporter(getLocalMongoClientUri("dcc-genome"));
+    assertNotNull(importer);
+    importer.execute();
   }
-
+  
 }
