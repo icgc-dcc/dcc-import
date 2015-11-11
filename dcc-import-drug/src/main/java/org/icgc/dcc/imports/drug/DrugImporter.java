@@ -41,7 +41,6 @@ import lombok.extern.slf4j.Slf4j;
 public class DrugImporter implements SourceImporter { 
     
     private final static ObjectMapper MAPPER = new ObjectMapper();
-    private List<ObjectNode> drugs;
     
     @NonNull
     private final MongoClientURI mongoUri;
@@ -59,28 +58,24 @@ public class DrugImporter implements SourceImporter {
     @SneakyThrows
     public void execute() {
       log.info("Getting Drug Data");
-      drugs = new DrugReader().getDrugs().readAll();
+      val drugs = new DrugReader().getDrugs().readAll();
       log.info("Number of drugs to denormalize: {}", drugs.size());
       
-      readAndJoin();
-      
-      writeDrugs();
+      writeDrugs(readAndJoin(drugs));
     }
     
     /**
      * Calls all the join and denormalization helpers. 
      */
-    private void readAndJoin() {
-      log.info("Denormalizing ATC Codes");
-      denormalizeAtcCodes();
-      log.info("Joining Genes to Drugs");
-      joinGenes();
-      log.info("Joining Trials to Drugs");
-      joinTrials();
+    private List<ObjectNode> readAndJoin(List<ObjectNode> drugs) {
+      return 
+          joinTrials(
+              joinGenes(
+                  denormalizeAtcCodes(drugs)));
     }
     
     @SneakyThrows
-    private void writeDrugs() {
+    private void writeDrugs(List<ObjectNode> drugs) {
       val drugWriter = new DrugWriter(mongoUri);
       drugWriter.writeFiles(drugs);
       log.info("FINISHED WRITING TO MONGO");
@@ -91,7 +86,8 @@ public class DrugImporter implements SourceImporter {
     /**
      * Joins Genes to Drugs by gene name. We include ensembl ids as part of gene node.  
      */
-    private void joinGenes() {
+    private List<ObjectNode> joinGenes(List<ObjectNode> drugs) {
+      log.info("Joining Genes to Drugs");
       val geneMap = new GeneReader().getGeneMap();
       
       drugs.forEach(drug -> {
@@ -106,12 +102,15 @@ public class DrugImporter implements SourceImporter {
         
         drug.set("genes", geneArray);        
       });
+      
+      return drugs;
     }
     
     /**
      * Joins trials to Drugs by trial code. Trials will be already joined with conditions.
      */
-    private void joinTrials() {
+    private List<ObjectNode> joinTrials(List<ObjectNode> drugs) {
+      log.info("Joining Trials to Drugs");
       val trialsMap = new TrialsReader().getTrialsMap();
       
       drugs.forEach(drug -> {
@@ -126,12 +125,16 @@ public class DrugImporter implements SourceImporter {
         
         drug.set("trials", trialsArray);
       });
+      
+      return drugs;
     }
     
     /**
      * Moves level5 ATC codes into the main ATC code JSON node. 
      */
-    private void denormalizeAtcCodes() {
+    private List<ObjectNode> denormalizeAtcCodes(List<ObjectNode> drugs) {
+      log.info("Denormalizing ATC Codes");
+      
       drugs.forEach(drug -> {
         ArrayNode atcCodes = (ArrayNode) drug.get("atc_codes");
         ArrayNode level5 = (ArrayNode) drug.get("atc_level5_codes");
@@ -146,5 +149,7 @@ public class DrugImporter implements SourceImporter {
         
         drug.remove("atc_level5_codes");
       });
+      
+      return drugs;
     }
 }
