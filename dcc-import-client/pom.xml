@@ -59,6 +59,10 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>dcc-import-project</artifactId>
     </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>dcc-import-drug</artifactId>
+    </dependency>
 
     <!-- Spring -->
     <dependency>
