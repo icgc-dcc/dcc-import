@@ -29,10 +29,10 @@ import lombok.val;
 
 public class ConditionsReader extends Reader {
   
-  private final static String conditionsUrl = "http://files.docking.org/export/oicr/conditions.ldjson";
+  private final static String CONDITIONS_URL = "http://files.docking.org/export/oicr/conditions.ldjson";
   
   public ConditionsReader() {
-    super(conditionsUrl);
+    super(CONDITIONS_URL);
   }
   
   public MappingIterator<ObjectNode> getConditions() {

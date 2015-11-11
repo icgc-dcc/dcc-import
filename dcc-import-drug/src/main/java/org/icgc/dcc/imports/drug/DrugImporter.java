@@ -40,7 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DrugImporter implements SourceImporter { 
     
-    private final ObjectMapper MAPPER = new ObjectMapper();
+    private final static ObjectMapper MAPPER = new ObjectMapper();
     private List<ObjectNode> drugs;
     
     @NonNull

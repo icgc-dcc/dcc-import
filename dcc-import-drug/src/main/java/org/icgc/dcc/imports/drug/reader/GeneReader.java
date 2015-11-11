@@ -36,15 +36,15 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class GeneReader extends Reader{
+public class GeneReader extends Reader {
   
-  private final static String geneUrl = "http://files.docking.org/export/oicr/genes.ldjson";
+  private final static String GENE_URL = "http://files.docking.org/export/oicr/genes.ldjson";
   private final static String ENSEMBLE_ID = "ensembl_gene_id";
   private final static String UNIPROT = "uniprot";
   private final static String GENE_NAME = "gene_name";
   
   public GeneReader() {
-    super(geneUrl);
+    super(GENE_URL);
   }
   
   public MappingIterator<ObjectNode> getGenes() {

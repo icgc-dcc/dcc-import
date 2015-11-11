@@ -22,12 +22,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.val;
 
-public class DrugReader extends Reader{
+public class DrugReader extends Reader {
   
-  private final static String drugUrl = "http://files.docking.org/export/oicr/drugs.ldjson";
+  private final static String DRUG_URL = "http://files.docking.org/export/oicr/drugs.ldjson";
   
   public DrugReader() {
-    super(drugUrl);
+    super(DRUG_URL);
   }
   
   public MappingIterator<ObjectNode> getDrugs() {

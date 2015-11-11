@@ -29,12 +29,15 @@ import lombok.val;
 
 public class TrialsReader extends Reader {
   
-  private final static String trialsUrl = "http://files.docking.org/export/oicr/trials.ldjson";
-  private final ObjectMapper MAPPER = new ObjectMapper();
+  /**
+   * Constants
+   */
+  private final static String TRIALS_URL = "http://files.docking.org/export/oicr/trials.ldjson";
+  private final static ObjectMapper MAPPER = new ObjectMapper();
   private MappingIterator<ObjectNode> trials;
   
   public TrialsReader() {
-    super(trialsUrl);
+    super(TRIALS_URL);
   }
   
   public MappingIterator<ObjectNode> getTrials() {

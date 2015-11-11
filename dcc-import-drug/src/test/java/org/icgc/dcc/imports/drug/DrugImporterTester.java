@@ -19,6 +19,7 @@ package org.icgc.dcc.imports.drug;
 
 import static org.icgc.dcc.imports.core.util.Importers.getLocalMongoClientUri;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import junit.framework.TestCase;
@@ -26,10 +27,11 @@ import junit.framework.TestCase;
 public class DrugImporterTester extends TestCase {
 
   @Test
+  @Ignore
   public void testExecute() {
     DrugImporter importer = new DrugImporter(getLocalMongoClientUri("dcc-genome"));
     assertNotNull(importer);
-    //importer.execute();
+    importer.execute();
   }
   
 }

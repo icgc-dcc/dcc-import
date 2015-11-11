@@ -43,10 +43,10 @@ public class DrugWriter extends AbstractJongoWriter<List<ObjectNode>> {
   public void writeFiles(@NonNull List<ObjectNode> values) {
     drugCollection = getCollection(ReleaseCollection.DRUG_COLLECTION);
     
-    log.info("Dropping current Drug collection..");
+    log.info("Dropping current Drug collection...");
     dropCollection();
 
-    log.info("Saving new Drug collection..");
+    log.info("Saving new Drug collection...");
     saveCollection(values);
   }
 
