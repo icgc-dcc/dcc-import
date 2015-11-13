@@ -96,9 +96,11 @@ public class DrugImporter implements SourceImporter {
         
         if (drugGenes.isArray()) {
           for (JsonNode geneName : drugGenes) {
-            geneArray.add(geneMap.get(geneName.asText()));
+            if (geneMap.containsKey(geneName.asText())) {
+              geneArray.add(geneMap.get(geneName.asText()));
+            }
           }
-        }      
+        }
         
         drug.set("genes", geneArray);        
       });
