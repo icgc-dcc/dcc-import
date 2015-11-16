@@ -125,6 +125,7 @@ public class DrugImporter implements SourceImporter {
           }
         }
         
+        drug.put("cancer_trial_count", trialsArray.size());
         drug.set("trials", trialsArray);
       });
       
