@@ -88,7 +88,7 @@ public class DrugImporter implements SourceImporter {
      */
     private List<ObjectNode> joinGenes(List<ObjectNode> drugs) {
       log.info("Joining Genes to Drugs");
-      val geneMap = new GeneReader().getGeneMap();
+      val geneMap = new GeneReader(mongoUri).getGeneMap();
       
       drugs.forEach(drug -> {
         JsonNode drugGenes = drug.get("genes");

@@ -30,7 +30,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
 
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -43,8 +45,12 @@ public class GeneReader extends Reader {
   private final static String UNIPROT = "uniprot";
   private final static String GENE_NAME = "gene_name";
   
-  public GeneReader() {
+  @NonNull
+  private final MongoClientURI mongoUri;
+  
+  public GeneReader(@NonNull MongoClientURI mongoUri) {
     super(GENE_URL);
+    this.mongoUri = mongoUri;
   }
   
   public MappingIterator<ObjectNode> getGenes() {
@@ -56,7 +62,7 @@ public class GeneReader extends Reader {
   public Map<String, ObjectNode> getGeneMap() {
       
     log.info("Loading ICGC Gene Info");
-    val db = new MongoClient().getDB("dcc-genome");
+    val db = new MongoClient(mongoUri).getDB("dcc-genome");
     Jongo jongo = new Jongo(db);
     val geneCollection = jongo.getCollection(ReleaseCollection.GENE_COLLECTION.getId());
     
