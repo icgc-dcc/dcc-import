@@ -37,122 +37,119 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 @Slf4j
-public class DrugImporter implements SourceImporter { 
-    
-    private final static ObjectMapper MAPPER = new ObjectMapper();
-    
-    @NonNull
-    private final MongoClientURI mongoUri;
-    
-    public DrugImporter(@NonNull MongoClientURI mongoUri) {
-      this.mongoUri = mongoUri;
-    }
-    
-    @Override
-    public ImportSource getSource() {
-      return ImportSource.DRUGS;
-    }
-    
-    @Override
-    @SneakyThrows
-    public void execute() {
-      log.info("Getting Drug Data");
-      val drugs = new DrugReader().getDrugs().readAll();
-      log.info("Number of drugs to denormalize: {}", drugs.size());
-      
-      writeDrugs(readAndJoin(drugs));
-    }
-    
-    /**
-     * Calls all the join and denormalization helpers. 
-     */
-    private List<ObjectNode> readAndJoin(List<ObjectNode> drugs) {
-      return 
-          joinTrials(
-              joinGenes(
-                  denormalizeAtcCodes(drugs)));
-    }
-    
-    @SneakyThrows
-    private void writeDrugs(List<ObjectNode> drugs) {
-      val drugWriter = new DrugWriter(mongoUri);
-      drugWriter.writeFiles(drugs);
-      log.info("FINISHED WRITING TO MONGO");
-      drugWriter.close();
-    }
-    
-    
-    /**
-     * Joins Genes to Drugs by gene name. We include ensembl ids as part of gene node.  
-     */
-    private List<ObjectNode> joinGenes(List<ObjectNode> drugs) {
-      log.info("Joining Genes to Drugs");
-      val geneMap = new GeneReader(mongoUri).getGeneMap();
-      
-      drugs.forEach(drug -> {
-        JsonNode drugGenes = drug.get("genes");
-        ArrayNode geneArray = MAPPER.createArrayNode();
-        
-        if (drugGenes.isArray()) {
-          for (JsonNode geneName : drugGenes) {
-            if (geneMap.containsKey(geneName.asText())) {
-              geneArray.add(geneMap.get(geneName.asText()));
-            }
+public class DrugImporter implements SourceImporter {
+
+  private final static ObjectMapper MAPPER = new ObjectMapper();
+  private final static List<String> GENE_FIELDS_FOR_REMOVE = newArrayList("chembl", "description", "gene_name", "name");
+
+  @NonNull
+  private final MongoClientURI mongoUri;
+
+  public DrugImporter(@NonNull MongoClientURI mongoUri) {
+    this.mongoUri = mongoUri;
+  }
+
+  @Override
+  public ImportSource getSource() {
+    return ImportSource.DRUGS;
+  }
+
+  @Override
+  @SneakyThrows
+  public void execute() {
+    log.info("Getting Drug Data");
+    val drugs = new DrugReader().getDrugs().readAll();
+    log.info("Number of drugs to denormalize: {}", drugs.size());
+
+    writeDrugs(readAndJoin(drugs));
+  }
+
+  /**
+   * Calls all the helpers.
+   */
+  private List<ObjectNode> readAndJoin(List<ObjectNode> drugs) {
+    return joinTrials(
+        joinGenes(
+            expandImageUrls(drugs)));
+  }
+
+  @SneakyThrows
+  private void writeDrugs(List<ObjectNode> drugs) {
+    val drugWriter = new DrugWriter(mongoUri);
+    drugWriter.writeFiles(drugs);
+    log.info("FINISHED WRITING TO MONGO");
+    drugWriter.close();
+  }
+
+  /**
+   * Creates nodes that contain URLs for the small and large versions of the molecule image
+   */
+  private List<ObjectNode> expandImageUrls(List<ObjectNode> drugs) {
+    log.info("Creating image urls");
+
+    drugs.forEach(drug -> {
+      String imageUrl = drug.get("image_url").asText();
+      String largeImageUrl = imageUrl.replace(".png", "-large.png");
+
+      drug.put("small_image_url", imageUrl);
+      drug.put("large_image_url", largeImageUrl);
+      drug.remove("image_url");
+    });
+
+    return drugs;
+  }
+
+  /**
+   * Joins Genes to Drugs by gene name. We include ensembl ids as part of gene node.
+   */
+  private List<ObjectNode> joinGenes(List<ObjectNode> drugs) {
+    log.info("Joining Genes to Drugs");
+    val geneMap = new GeneReader(mongoUri).getGeneMap();
+
+    drugs.forEach(drug -> {
+      JsonNode drugGenes = drug.get("genes");
+      ArrayNode geneArray = MAPPER.createArrayNode();
+
+      if (drugGenes.isArray()) {
+        for (JsonNode geneName : drugGenes) {
+          if (geneMap.containsKey(geneName.asText())) {
+            ObjectNode cleanedMap = geneMap.get(geneName.asText()).remove(GENE_FIELDS_FOR_REMOVE);
+            geneArray.add(cleanedMap);
           }
         }
-        
-        drug.set("genes", geneArray);        
-      });
-      
-      return drugs;
-    }
-    
-    /**
-     * Joins trials to Drugs by trial code. Trials will be already joined with conditions.
-     */
-    private List<ObjectNode> joinTrials(List<ObjectNode> drugs) {
-      log.info("Joining Trials to Drugs");
-      val trialsMap = new TrialsReader().getTrialsMap();
-      
-      drugs.forEach(drug -> {
-        JsonNode drugTrials = drug.get("trials");
-        ArrayNode trialsArray = MAPPER.createArrayNode();
-        
-        if (drugTrials.isArray()) {
-          for (JsonNode trialCode : drugTrials) {
-            trialsArray.add(trialsMap.get(trialCode.asText()));
-          }
+      }
+
+      drug.set("genes", geneArray);
+    });
+
+    return drugs;
+  }
+
+  /**
+   * Joins trials to Drugs by trial code. Trials will be already joined with conditions.
+   */
+  private List<ObjectNode> joinTrials(List<ObjectNode> drugs) {
+    log.info("Joining Trials to Drugs");
+    val trialsMap = new TrialsReader().getTrialsMap();
+
+    drugs.forEach(drug -> {
+      JsonNode drugTrials = drug.get("trials");
+      ArrayNode trialsArray = MAPPER.createArrayNode();
+
+      if (drugTrials.isArray()) {
+        for (JsonNode trialCode : drugTrials) {
+          trialsArray.add(trialsMap.get(trialCode.asText()));
         }
-        
-        drug.put("cancer_trial_count", trialsArray.size());
-        drug.set("trials", trialsArray);
-      });
-      
-      return drugs;
-    }
-    
-    /**
-     * Moves level5 ATC codes into the main ATC code JSON node. 
-     */
-    private List<ObjectNode> denormalizeAtcCodes(List<ObjectNode> drugs) {
-      log.info("Denormalizing ATC Codes");
-      
-      drugs.forEach(drug -> {
-        ArrayNode atcCodes = (ArrayNode) drug.get("atc_codes");
-        ArrayNode level5 = (ArrayNode) drug.get("atc_level5_codes");
-        atcCodes.forEach(atc -> {
-          for (JsonNode code : level5) {
-            if (code.asText().indexOf(atc.get("code").asText()) >= 0) {
-              ((ObjectNode)atc).put("atc_level5_codes", code.asText());
-              break;
-            }
-          }
-        });
-        
-        drug.remove("atc_level5_codes");
-      });
-      
-      return drugs;
-    }
+      }
+
+      drug.put("cancer_trial_count", trialsArray.size());
+      drug.set("trials", trialsArray);
+    });
+
+    return drugs;
+  }
+
 }
