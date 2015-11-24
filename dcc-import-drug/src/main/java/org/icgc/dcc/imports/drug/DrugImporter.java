@@ -144,7 +144,11 @@ public class DrugImporter implements SourceImporter {
 
       if (drugTrials.isArray()) {
         for (JsonNode trialCode : drugTrials) {
-          trialsArray.add(trialsMap.get(trialCode.asText()));
+          if (trialsMap.containsKey(trialCode.asText())) {
+            trialsArray.add(trialsMap.get(trialCode.asText()));
+          } else {
+            log.info("Trail missing on join: {}", trialCode.asText());
+          }
         }
       }
 

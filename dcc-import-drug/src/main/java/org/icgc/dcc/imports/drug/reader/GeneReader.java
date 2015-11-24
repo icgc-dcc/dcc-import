@@ -72,7 +72,7 @@ public class GeneReader extends Reader {
       if (icgcGene!=null) {
         gene.put(ENSEMBLE_ID, icgcGene.get(GENE_ID).asText());
       } else {
-        log.info("Could not find matching Gene for uniprot value: {}", gene.get(UNIPROT).asText());
+        log.info("Could not find matching ICGC Gene for uniprot value: {}", gene.get(UNIPROT).asText());
         gene.put(ENSEMBLE_ID, "");
       }
       geneMap.put(gene.get(GENE_NAME).asText(), gene);
