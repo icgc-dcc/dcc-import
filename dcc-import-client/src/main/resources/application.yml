@@ -17,8 +17,8 @@ spring:
 # Common
 ###################################################################################################
 
-# Repository
-repository:
+# Imports
+imports:
   sources: # All
 
 ---
@@ -54,4 +54,4 @@ icgc:
   
 # Mail
 mail:
-  enabled: false  
+  enabled: false
