@@ -40,7 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class GeneReader extends Reader {
   
-  private final static String GENE_URL = "http://files.docking.org/export/oicr/genes.ldjson";
+  private final static String GENE_URL = "https://raw.githubusercontent.com/docking-org/OICR-ZINC/initial151120/exports/genes.ldjson";
   private final static String ENSEMBLE_ID = "ensembl_gene_id";
   private final static String UNIPROT = "uniprot";
   private final static String GENE_NAME = "gene_name";

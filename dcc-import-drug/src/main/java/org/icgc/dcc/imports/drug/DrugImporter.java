@@ -73,7 +73,8 @@ public class DrugImporter implements SourceImporter {
   private List<ObjectNode> readAndJoin(List<ObjectNode> drugs) {
     return joinTrials(
         joinGenes(
-            expandImageUrls(drugs)));
+            expandImageUrls(
+                denormalizeAtcCodes(drugs))));
   }
 
   @SneakyThrows
@@ -118,6 +119,8 @@ public class DrugImporter implements SourceImporter {
           if (geneMap.containsKey(geneName.asText())) {
             ObjectNode cleanedMap = geneMap.get(geneName.asText()).remove(GENE_FIELDS_FOR_REMOVE);
             geneArray.add(cleanedMap);
+          } else {
+            log.info("Gene missing on join: {}", geneName.asText());
           }
         }
       }
@@ -147,6 +150,32 @@ public class DrugImporter implements SourceImporter {
 
       drug.put("cancer_trial_count", trialsArray.size());
       drug.set("trials", trialsArray);
+    });
+
+    return drugs;
+  }
+  
+  /**
+   * Moves level5 ATC codes into the main ATC code JSON node.
+   */
+  private List<ObjectNode> denormalizeAtcCodes(List<ObjectNode> drugs) {
+    log.info("Denormalizing ATC Codes");
+
+    drugs.forEach(drug -> {
+      ArrayNode atcCodes = (ArrayNode) drug.get("atc_codes");
+      ArrayNode level5 = (ArrayNode) drug.get("atc_level5_codes");
+      if (atcCodes != null) {
+        atcCodes.forEach(atc -> {
+          for (JsonNode code : level5) {
+            if (code.asText().indexOf(atc.get("code").asText()) >= 0) {
+              ((ObjectNode) atc).put("atc_level5_codes", code.asText());
+              break;
+            }
+          }
+        });
+      }
+
+      drug.remove("atc_level5_codes");
     });
 
     return drugs;
