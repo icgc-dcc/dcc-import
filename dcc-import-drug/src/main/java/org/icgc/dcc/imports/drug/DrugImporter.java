@@ -177,9 +177,22 @@ public class DrugImporter implements SourceImporter {
             }
           }
         });
+        drug.remove("atc_level5_codes");
+      } else {
+        ArrayNode atcClasses = (ArrayNode) drug.get("atc_classifications");
+        if (atcClasses != null) {
+          ArrayNode newAtcCodes = MAPPER.createArrayNode();
+          atcClasses.forEach(atcClass -> {
+            ObjectNode newAtcEntry = MAPPER.createObjectNode();
+            newAtcEntry.put("code", atcClass.get("level4").asText());
+            newAtcEntry.put("atc_level5_codes", atcClass.get("level5").asText());
+            newAtcEntry.put("description", atcClass.get("level4_description").asText());
+            newAtcCodes.add(newAtcEntry);
+          });
+          drug.set("atc_codes", newAtcCodes);
+          drug.remove("atc_classifications");
+        }
       }
-
-      drug.remove("atc_level5_codes");
     });
 
     return drugs;
