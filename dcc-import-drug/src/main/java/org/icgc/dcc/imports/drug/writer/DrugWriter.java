@@ -62,7 +62,8 @@ public class DrugWriter extends AbstractJongoWriter<List<ObjectNode>> {
     for (val drug : drugs) {
       drug.put("_id", drug.get("zinc_id").asText());
       val genes = (ArrayNode) drug.get("genes");
-      if (genes.size() > 0) {
+      val drugClass = drug.get("drug_class").asText();
+      if (genes.size() > 0 && (drugClass.equalsIgnoreCase("fda") || drugClass.equalsIgnoreCase("world"))) {
         try {
           log.info("Writing {}/{} with id: {}", current, total, drug.get("zinc_id").asText());
           drugCollection.save(drug);

@@ -24,7 +24,7 @@ import lombok.val;
 
 public class DrugReader extends Reader {
   
-  private final static String DRUG_URL = "https://raw.githubusercontent.com/docking-org/OICR-ZINC/master/exports/drugs.ldjson";
+  private final static String DRUG_URL = "http://files.docking.org/export/oicr/drugs.ldjson";
   
   public DrugReader() {
     super(DRUG_URL);
