@@ -74,7 +74,8 @@ public class DrugImporter implements SourceImporter {
     return joinTrials(
         joinGenes(
             expandImageUrls(
-                denormalizeAtcCodes(drugs))));
+                denormalizeAtcCodes(
+                    cleanSynonyms(drugs)))));
   }
 
   @SneakyThrows
@@ -156,6 +157,29 @@ public class DrugImporter implements SourceImporter {
       drug.set("trials", trialsArray);
     });
 
+    return drugs;
+  }
+  
+  /**
+   * Removes synonyms that match drug name
+   */
+  private List<ObjectNode> cleanSynonyms(List<ObjectNode> drugs) {
+    log.info("Cleaning Synonyms");
+
+    drugs.forEach(drug -> {
+      ArrayNode synonyms = (ArrayNode) drug.get("synonyms");
+      ArrayNode cleaned = MAPPER.createArrayNode();
+      if (synonyms != null) {
+        synonyms.forEach(entry -> {
+          if (!entry.asText().equalsIgnoreCase(drug.get("name").asText())) {
+            cleaned.add(entry);
+          }
+        });
+        drug.remove("synonyms");
+        drug.put("synonyms", cleaned);
+      }
+    });
+    
     return drugs;
   }
   
