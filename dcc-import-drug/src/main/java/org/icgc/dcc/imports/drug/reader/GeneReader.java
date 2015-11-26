@@ -44,6 +44,7 @@ public class GeneReader extends Reader {
   private final static String ENSEMBLE_ID = "ensembl_gene_id";
   private final static String UNIPROT = "uniprot";
   private final static String GENE_NAME = "gene_name";
+  private final static String NAME = "name";
   
   @NonNull
   private final MongoClientURI mongoUri;
@@ -68,14 +69,16 @@ public class GeneReader extends Reader {
     
     val geneMap = new HashMap<String, ObjectNode>();
     getJson().forEachRemaining(gene -> {
-      JsonNode icgcGene = geneCollection.findOne("{#:#}", GENE_UNIPROT_IDS, gene.get(UNIPROT).asText()).as(JsonNode.class);
-      if (icgcGene!=null) {
-        gene.put(ENSEMBLE_ID, icgcGene.get(GENE_ID).asText());
-      } else {
-        log.warn("Could not find matching ICGC Gene for uniprot value: {}", gene.get(UNIPROT).asText());
-        gene.put(ENSEMBLE_ID, "");
+      if (gene.get(NAME).asText().contains("HUMAN")) {
+        JsonNode icgcGene = geneCollection.findOne("{#:#}", GENE_UNIPROT_IDS, gene.get(UNIPROT).asText()).as(JsonNode.class);
+        if (icgcGene!=null) {
+          gene.put(ENSEMBLE_ID, icgcGene.get(GENE_ID).asText());
+        } else {
+          log.warn("Could not find matching ICGC Gene for uniprot value: {}", gene.get(UNIPROT).asText());
+          gene.put(ENSEMBLE_ID, "");
+        }
+        geneMap.put(gene.get(GENE_NAME).asText(), gene);
       }
-      geneMap.put(gene.get(GENE_NAME).asText(), gene);
     });
     
     return geneMap;
