@@ -120,7 +120,7 @@ public class DrugImporter implements SourceImporter {
             ObjectNode cleanedMap = geneMap.get(geneName.asText()).remove(GENE_FIELDS_FOR_REMOVE);
             geneArray.add(cleanedMap);
           } else {
-            log.info("Gene missing on join: {}", geneName.asText());
+            log.warn("Gene missing on join: {}", geneName.asText());
           }
         }
       }
@@ -147,7 +147,7 @@ public class DrugImporter implements SourceImporter {
           if (trialsMap.containsKey(trialCode.asText())) {
             trialsArray.add(trialsMap.get(trialCode.asText()));
           } else {
-            log.info("Trail missing on join: {}", trialCode.asText());
+            log.warn("Trail missing on join: {}", trialCode.asText());
           }
         }
       }

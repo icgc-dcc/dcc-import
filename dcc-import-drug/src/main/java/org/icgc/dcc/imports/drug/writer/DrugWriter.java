@@ -27,6 +27,7 @@ import org.icgc.dcc.common.core.model.ReleaseCollection;
 import org.icgc.dcc.imports.core.util.AbstractJongoWriter;
 import org.jongo.MongoCollection;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.MongoClientURI;
 
@@ -59,14 +60,17 @@ public class DrugWriter extends AbstractJongoWriter<List<ObjectNode>> {
     int current = 1;
     log.info("Number to save: {}", total);
     for (val drug : drugs) {
-      log.info("Writing {}/{} with id: {}", current, total, drug.get("zinc_id").asText());
       drug.put("_id", drug.get("zinc_id").asText());
-      try {
-        drugCollection.save(drug);
-      } catch (Exception e) {
-        log.warn(e.getMessage());
+      val genes = (ArrayNode) drug.get("genes");
+      if (genes.size() > 0) {
+        try {
+          log.info("Writing {}/{} with id: {}", current, total, drug.get("zinc_id").asText());
+          drugCollection.save(drug);
+        } catch (Exception e) {
+          log.warn(e.getMessage());
+        }
+        current++;
       }
-      current++;
     }
   }
 
