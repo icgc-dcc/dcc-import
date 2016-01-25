@@ -62,6 +62,8 @@ public class ClientProperties {
   public static class MailProperties {
 
     boolean enabled;
+    String smtpServer;
+    String recipients;
 
   }
 
