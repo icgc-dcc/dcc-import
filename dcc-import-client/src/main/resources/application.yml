@@ -21,6 +21,11 @@ spring:
 imports:
   sources: # All
 
+# Mail
+mail:
+  smtpServer: "***REMOVED***"
+  recipients: "***REMOVED***"
+
 ---
 
 ###################################################################################################

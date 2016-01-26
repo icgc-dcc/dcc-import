@@ -32,8 +32,13 @@ public class ClientConfig {
 
   @Bean
   public Mailer mailer(ClientProperties properties) {
-    val enabled = properties.getMail().isEnabled();
-    return Mailer.builder().enabled(enabled).build();
+    val mailConfig = properties.getMail();
+
+    return Mailer.builder()
+        .enabled(mailConfig.isEnabled())
+        .host(mailConfig.getSmtpServer())
+        .recipient(mailConfig.getRecipients())
+        .build();
   }
 
   @Bean
