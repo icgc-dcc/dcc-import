@@ -36,8 +36,8 @@ public class DiagramListReaderTest {
 
     assertThat(pathways.getDiagrammed()).isNotEmpty();
 
-    assertThat(pathways.getDiagrammed().size()).isIn(685);
-    assertThat(pathways.getNotDiagrammed().size()).isIn(1219);
+    assertThat(pathways.getDiagrammed().size()).isIn(722);
+    assertThat(pathways.getNotDiagrammed().size()).isIn(1233);
   }
 
   @Test
