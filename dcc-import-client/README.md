@@ -7,9 +7,9 @@ Imports collections of data from external sources into a MongoDB databases which
 Build
 ---
 
-From the command line:
+In the repository's root execute from the command line:
 
-	mvn package
+        mvn -am -pl dcc-import-client package
 
 Run
 ---
