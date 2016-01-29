@@ -29,11 +29,11 @@ import com.mongodb.MongoClientURI;
 
 public class ProjectImporterIntegrationTest {
 
-  private static final String SERVICE_URL = "https://***REMOVED***/ud_oauth/1/search";
-  private static final String CONSUMER_KEY = "***REMOVED***";
-  private static final String CONSUMER_SECRET = "***REMOVED***";
-  private static final String ACCESS_TOKEN = "***REMOVED***";
-  private static final String ACCESS_SECRET = "***REMOVED***";
+  private static final String SERVICE_URL = "https://localhost/ud_oauth/1/search";
+  private static final String CONSUMER_KEY = "";
+  private static final String CONSUMER_SECRET = "";
+  private static final String ACCESS_TOKEN = "";
+  private static final String ACCESS_SECRET = "";
 
   ProjectImporter projectImporter = new ProjectImporter(getMongoUri(), createCgpClient());
 

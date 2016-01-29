@@ -26,13 +26,13 @@ geneMongoUri: "mongodb://localhost/dcc-genome"
 
 # ICGC Client configuration
 icgc:
-  cgpServiceUrl: "https://***REMOVED***/ud_oauth/1/search"
+  cgpServiceUrl: "https://localhost/ud_oauth/1/search"
   cudServiceUrl: ""
   shortServiceUrl: ""
-  consumerKey: "***REMOVED***"
-  consumerSecret: "***REMOVED***"
-  accessToken: "***REMOVED***"
-  accessSecret: "***REMOVED***"
+  consumerKey: ""
+  consumerSecret: ""
+  accessToken: ""
+  accessSecret: ""
   cudAppId: ""
   strictSSLCertificates: false
   requestLoggingEnabled: false
