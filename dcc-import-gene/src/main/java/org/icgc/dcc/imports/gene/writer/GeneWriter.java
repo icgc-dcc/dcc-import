@@ -92,12 +92,19 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
             } else if (entry.get("type").asText().equals("transcript")) {
               if (curTranscript != null) {
                 curTranscript.put("exons", exons);
-                transcripts.add(postProcessTranscript(curTranscript, geneNode.get("strand").asText()));
+                try {
+                  transcripts.add(postProcessTranscript(curTranscript, geneNode.get("strand").asText()));
+                } catch (Exception e) {
+                  log.error(curTranscript.toString());
+                  throw e;
+                }
                 exons = MAPPER.createArrayNode();
               }
               curTranscript = constructTranscriptNode(entry);
             } else if (entry.get("type").asText().equals("exon")) {
               exons.add(constructExonNode(entry));
+            } else if (entry.get("type").asText().equals("CDS")) {
+              ((ObjectNode) exons.get(exons.size() - 1)).put("cds", entry);
             } else if (entry.get("type").asText().equals("start_codon")) {
               curTranscript.put("start_exon", exons.size() - 1);
             } else if (entry.get("type").asText().equals("stop_codon")) {
@@ -223,24 +230,24 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
 
   private static ObjectNode postProcessTranscript(ObjectNode transcript, String strand) {
     val exons = (ArrayNode) transcript.get("exons");
-    transcript.put("codingRegionStart", 0);
-    transcript.put("codingRegionEnd", 0);
-    transcript.put("cdnaCodingStart", 0);
-    transcript.put("cdnaCodingEnd", 0);
+    transcript.put("coding_region_start", 0);
+    transcript.put("coding_region_end", 0);
+    transcript.put("cdna_coding_start", 0);
+    transcript.put("cdna_coding_end", 0);
 
     int preExonCdnaEnd = 0;
     for (JsonNode exon : exons) {
       ObjectNode exonNode = (ObjectNode) exon;
 
       val exonLength = exon.get("end").asInt() - exon.get("start").asInt();
-      exonNode.put("cdnaStart", preExonCdnaEnd + 1);
-      exonNode.put("cdnaEnd", exonNode.get("cdnaStart").asInt() + exonLength - 1);
-      preExonCdnaEnd = exonNode.get("cdnaEnd").asInt();
+      exonNode.put("cdna_start", preExonCdnaEnd + 1);
+      exonNode.put("cdna_end", exonNode.get("cdna_start").asInt() + exonLength - 1);
+      preExonCdnaEnd = exonNode.get("cdna_end").asInt();
 
-      exonNode.put("genomicCodingStart", 0);
-      exonNode.put("genomicCodingEnd", 0);
-      exonNode.put("cdnaCodingStart", 0);
-      exonNode.put("cdnaCodingEnd", 0);
+      exonNode.put("genomic_coding_start", 0);
+      exonNode.put("genomic_coding_end", 0);
+      exonNode.put("cdna_coding_start", 0);
+      exonNode.put("cdna_coding_end", 0);
     }
 
     val startExon = transcript.path("start_exon");
@@ -252,29 +259,64 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
 
     for (int i = startExon.asInt(); i <= endExon.asInt(); i++) {
       val exon = (ObjectNode) exons.get(i);
-      exon.put("genomicCodingStart", exon.get("start").asInt());
-      exon.put("cdnaCodingStart", exon.get("cdnaCodingStart").asInt());
-      exon.put("genomicCodingEnd", exon.get("end").asInt());
-      exon.put("cdnaCodingEnd", exon.get("cdnaEnd").asInt());
+      exon.put("genomic_coding_start", exon.get("start").asInt());
+      exon.put("cdna_coding_start", exon.get("cdna_coding_start").asInt());
+      exon.put("genomic_coding_end", exon.get("end").asInt());
+      exon.put("cdna_coding_end", exon.get("cdna_end").asInt());
+
+      if (i == startExon.asInt()) {
+        if (strand.equals("-1")) {
+          val end = exon.get("cds").get("locationStart").asInt();
+          transcript.put("coding_region_end", end);
+          exon.put("genomic_coding_end", end);
+          exon.put("cdna_coding_end", end - exon.get("start").asInt() - 1);
+        } else {
+          val start = exon.get("cds").get("locationStart").asInt();
+          transcript.put("coding_region_start", start);
+          exon.put("genomic_coding_start", start);
+          exon.put("cdna_coding_start", start - exon.get("start").asInt() + 1);
+        }
+        transcript.put("cdna_coding_start", exon.get("cdna_coding_start").asInt());
+      }
+
+      if (i == endExon.asInt()) {
+        val cds = exon.path("cds");
+
+        if (strand.equals("-1")) {
+          if (cds.isMissingNode()) {
+            val start = exons.get(i - 1).path("cds").get("locationEnd").asInt();
+            transcript.put("coding_regionStart", start);
+          } else {
+            val start = cds.get("locationEnd").asInt() + 1;
+            transcript.put("coding_region_start", start);
+            exon.put("genomic_coding_start", start);
+          }
+        } else {
+          if (cds.isMissingNode()) {
+            val end = exons.get(i - 1).path("cds").get("locationEnd").asInt();
+            transcript.put("coding_region_end", end);
+          } else {
+            val end = cds.get("locationEnd").asInt();
+            transcript.put("coding_region_end", end);
+            exon.put("genomic_coding_end", end);
+            exon.put("cdna_coding_end",
+                end - exon.get("genomic_coding_start").asInt() + exon.get("cdna_start").asInt() + 1);
+          }
+        }
+
+        if (cds.isMissingNode()) {
+          transcript.put("cdna_coding_end", exons.get(i - 1).get("cdna_coding_end").asInt());
+        } else {
+          transcript.put("cdna_coding_end", exon.get("cdna_coding_end").asInt());
+        }
+      }
+
     }
+
+    transcript.put("start_exon", startExon.asInt());
+    transcript.put("end_exon", endExon.asInt());
 
     return transcript;
   }
-
-  /*
-   * private void processGenes(MappingIterator<JsonNode> genes, GeneFilter filter, GeneCallback callback) throws
-   * IOException { try { int insertCount = 0; int excludeCount = 0; val watch = createStarted();
-   * 
-   * while (genes.hasNextValue()) { val gene = genes.next();
-   * 
-   * val include = filter.filter(gene); if (!include) { excludeCount++; continue; }
-   * 
-   * // Delegate callback.handle(gene);
-   * 
-   * if (++insertCount % STATUS_GENE_COUNT == 0) { log.info("Saved {} gene documents ({} documents/s)",
-   * formatCount(insertCount), formatCount(STATUS_GENE_COUNT / (watch.elapsed(SECONDS)))); watch.reset().start(); } }
-   * log.info("Finished loading {} gene(s) total, excluded {} genes total", formatCount(insertCount),
-   * formatCount(excludeCount)); } finally { genes.close(); } }
-   */
 
 }
