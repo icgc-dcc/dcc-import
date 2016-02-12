@@ -20,9 +20,10 @@ package org.icgc.dcc.imports.gene;
 import static com.google.common.base.Stopwatch.createStarted;
 import static org.icgc.dcc.imports.gene.util.AllGeneFilter.all;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.URI;
+import java.util.zip.GZIPInputStream;
 
 import org.icgc.dcc.imports.core.SourceImporter;
 import org.icgc.dcc.imports.core.model.ImportSource;
@@ -31,7 +32,6 @@ import org.icgc.dcc.imports.gene.writer.GeneWriter;
 
 import com.mongodb.MongoClientURI;
 
-import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -43,12 +43,12 @@ import lombok.extern.slf4j.Slf4j;
 public class GeneImporter implements SourceImporter {
 
   @NonNull
-  private final URI genesBsonUri;
+  private final URI gtfUri;
   @NonNull
   private final MongoClientURI mongoUri;
 
-  public GeneImporter(@NonNull MongoClientURI mongoUri, @NonNull URI genesBsonUri) {
-    this.genesBsonUri = genesBsonUri;
+  public GeneImporter(@NonNull MongoClientURI mongoUri, @NonNull URI gtfUri) {
+    this.gtfUri = gtfUri;
     this.mongoUri = mongoUri;
   }
 
@@ -66,23 +66,24 @@ public class GeneImporter implements SourceImporter {
   public void execute(GeneFilter geneFilter) {
     val watch = createStarted();
 
-    log.info("Reading genes BSON stream from {}...", genesBsonUri);
-    val genesBson = readGenesBson();
+    log.info("Reading genes gzip stream from {}...", gtfUri);
+    val geneReader = getReader();
 
     log.info("Writing genes to {}...", mongoUri);
-    writeGenes(genesBson, geneFilter);
+    val writer = new GeneWriter(mongoUri, geneReader);
+    writer.consumeGenes();
+    writer.close();
 
-    log.info("Finished writing genes iin {}", watch);
+    log.info("Finished writing genes in {}", watch);
   }
 
-  private InputStream readGenesBson() throws IOException {
-    return genesBsonUri.toURL().openStream();
-  }
+  @SneakyThrows
+  private BufferedReader getReader() {
+    val gzip = new GZIPInputStream(gtfUri.toURL().openStream());
+    val inputStreamReader = new InputStreamReader(gzip);
+    val bufferedReader = new BufferedReader(inputStreamReader);
 
-  private void writeGenes(InputStream genesBson, GeneFilter geneFilter) throws IOException {
-    @Cleanup
-    val writer = new GeneWriter(mongoUri);
-    writer.write(genesBson, geneFilter);
+    return bufferedReader;
   }
 
 }
