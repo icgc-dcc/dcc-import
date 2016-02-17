@@ -19,6 +19,7 @@ package org.icgc.dcc.imports.gene.writer;
 
 import java.io.BufferedReader;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.icgc.dcc.common.core.model.ReleaseCollection;
@@ -50,15 +51,19 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
    * Dependencies
    */
   private final BufferedReader bufferedReader;
-
+  private final Map<String, String> summaryMap;
+  private final Map<String, ArrayNode> synMap;
   private int counter = 0;
   private MongoCollection geneCollection;
 
-  public GeneWriter(@NonNull MongoClientURI mongoUri, @NonNull BufferedReader bufferedReader) {
+  public GeneWriter(@NonNull MongoClientURI mongoUri, @NonNull BufferedReader bufferedReader,
+      Map<String, String> summaryMap, Map<String, ArrayNode> synMap) {
     super(mongoUri);
     this.bufferedReader = bufferedReader;
     this.geneCollection = getCollection(ReleaseCollection.GENE_COLLECTION);
     this.geneCollection.drop();
+    this.summaryMap = summaryMap;
+    this.synMap = synMap;
   }
 
   @SneakyThrows
@@ -85,6 +90,10 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
               if (geneNode != null) {
                 transcripts.add(curTranscript);
                 geneNode.put("transcripts", transcripts);
+                geneNode.put("description", summaryMap.get(geneNode.get("_gene_id").asText()));
+                val syns = synMap.get(geneNode.get("_gene_id")) != null ? synMap.get(geneNode.get("_gene_id")) : MAPPER
+                    .createArrayNode();
+                geneNode.put("synonyms", syns);
                 writeFiles(geneNode);
                 transcripts = MAPPER.createArrayNode();
               }

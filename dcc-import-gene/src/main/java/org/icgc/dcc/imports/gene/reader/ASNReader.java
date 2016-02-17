@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.
+ * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,41 +15,41 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.gene.util;
+package org.icgc.dcc.imports.gene.reader;
 
-import java.util.Set;
+import java.net.URL;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.zip.GZIPInputStream;
 
-import org.icgc.dcc.imports.gene.core.GeneFilter;
+import org.icgc.dcc.imports.gene.thread.ASNInputReader;
+import org.icgc.dcc.imports.gene.thread.OutputReader;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.val;
 
-import com.fasterxml.jackson.databind.JsonNode;
+public class ASNReader {
 
-@RequiredArgsConstructor
-public class InGeneFilter implements GeneFilter {
+  private static final String URI =
+      "ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/ASN_BINARY/Mammalia/Homo_sapiens.ags.gz";
 
-  /**
-   * Configuration.
-   */
-  @NonNull
-  private final Set<String> geneIds;
+  private static final String CMD = "/Users/dandric/Downloads/gene2xml.Darwin-13.4.0-x86_64 -b T";
 
-  @Override
-  public boolean filter(JsonNode gene) {
-    val text = gene.toString();
-    for (val geneId : geneIds) {
-      if (text.contains(geneId)) {
-        return true;
-      }
-    }
+  @SneakyThrows
+  public Map<String, String> callGene2Xml() {
 
-    return false;
-  }
+    Map<String, String> summaryMap = new ConcurrentHashMap<String, String>();
 
-  public static InGeneFilter in(Set<String> geneIds) {
-    return new InGeneFilter(geneIds);
+    val gzip = new GZIPInputStream(new URL(URI).openStream());
+
+    Process p = Runtime.getRuntime().exec(CMD);
+    Thread inThread = new Thread(new ASNInputReader(gzip, p.getOutputStream()));
+    Thread outThread = new Thread(new OutputReader(p.getInputStream(), summaryMap));
+    inThread.start();
+    outThread.start();
+    p.waitFor();
+
+    return summaryMap;
   }
 
 }

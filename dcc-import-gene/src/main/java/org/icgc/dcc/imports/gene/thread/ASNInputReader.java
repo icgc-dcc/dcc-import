@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.
+ * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,15 +15,36 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.gene.core;
+package org.icgc.dcc.imports.gene.thread;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-/**
- * Abstraction to allow for templated transformation and persistence.
- */
-public interface GeneCallback {
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
-  void handle(JsonNode gene);
+@Slf4j
+public class ASNInputReader implements Runnable {
+
+  private InputStream in;
+  private OutputStream out;
+
+  public ASNInputReader(InputStream in, OutputStream out) {
+    this.in = in;
+    this.out = out;
+  }
+
+  @Override
+  @SneakyThrows
+  public void run() {
+    int n;
+    byte[] buffer = new byte[4096];
+    while ((n = in.read(buffer)) != -1) {
+      out.write(buffer, 0, n);
+    }
+    in.close();
+    out.close();
+    log.info("Finished reading ASN.1 input stream.");
+  }
 
 }

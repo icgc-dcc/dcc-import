@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.
+ * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,25 +15,40 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.gene.util;
+package org.icgc.dcc.imports.gene.thread;
 
-import lombok.RequiredArgsConstructor;
+import java.io.InputStream;
+import java.util.Map;
 
-import org.icgc.dcc.imports.gene.core.GeneFilter;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import org.icgc.dcc.imports.gene.reader.XMLHandler;
 
-@RequiredArgsConstructor
-public class AllGeneFilter implements GeneFilter {
+import lombok.SneakyThrows;
+import lombok.val;
 
-  @Override
-  public boolean filter(JsonNode gene) {
-    // Include all
-    return true;
+public class OutputReader implements Runnable {
+
+  private InputStream in;
+  private Map<String, String> summaryMap;
+
+  public OutputReader(InputStream in, Map<String, String> summaryMap) {
+    this.in = in;
+    this.summaryMap = summaryMap;
   }
 
-  public static AllGeneFilter all() {
-    return new AllGeneFilter();
+  @Override
+  @SneakyThrows
+  public void run() {
+    val factory = SAXParserFactory.newInstance();
+    factory.setValidating(false);
+    factory.setFeature("http://xml.org/sax/features/validation", false);
+    factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+    val handler = new XMLHandler(summaryMap);
+
+    SAXParser saxParser = factory.newSAXParser();
+    saxParser.parse(in, handler);
   }
 
 }

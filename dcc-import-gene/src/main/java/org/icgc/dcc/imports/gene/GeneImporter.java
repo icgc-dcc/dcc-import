@@ -18,7 +18,6 @@
 package org.icgc.dcc.imports.gene;
 
 import static com.google.common.base.Stopwatch.createStarted;
-import static org.icgc.dcc.imports.gene.util.AllGeneFilter.all;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -27,7 +26,9 @@ import java.util.zip.GZIPInputStream;
 
 import org.icgc.dcc.imports.core.SourceImporter;
 import org.icgc.dcc.imports.core.model.ImportSource;
-import org.icgc.dcc.imports.gene.core.GeneFilter;
+import org.icgc.dcc.imports.gene.reader.ASNReader;
+import org.icgc.dcc.imports.gene.reader.IdReader;
+import org.icgc.dcc.imports.gene.reader.SynonymReader;
 import org.icgc.dcc.imports.gene.writer.GeneWriter;
 
 import com.mongodb.MongoClientURI;
@@ -57,20 +58,29 @@ public class GeneImporter implements SourceImporter {
     return ImportSource.GENES;
   }
 
+  @SneakyThrows
   @Override
   public void execute() {
-    execute(all());
-  }
-
-  @SneakyThrows
-  public void execute(GeneFilter geneFilter) {
     val watch = createStarted();
+
+    log.info("Doing Ensembl Data Joining...");
+    val idReader = new IdReader();
+    val idMap = idReader.getIdMap();
+
+    val synReader = new SynonymReader(idMap);
+    val synMap = synReader.getSynonymMap();
+    log.info("Done");
+
+    log.info("Starting ASN.1 Import from NCBI.");
+    val asnReader = new ASNReader();
+    val summaryMap = asnReader.callGene2Xml();
+    log.info("Staged {} Summaries from NCBI.", summaryMap.size());
 
     log.info("Reading genes gzip stream from {}...", gtfUri);
     val geneReader = getReader();
 
     log.info("Writing genes to {}...", mongoUri);
-    val writer = new GeneWriter(mongoUri, geneReader);
+    val writer = new GeneWriter(mongoUri, geneReader, summaryMap, synMap);
     writer.consumeGenes();
     writer.close();
 

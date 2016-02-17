@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.
+ * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,21 +15,44 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.gene.core;
+package org.icgc.dcc.imports.gene.reader;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
-/**
- * Callback to determine if a gene should be filtered.
- */
-public interface GeneFilter {
+import lombok.SneakyThrows;
+import lombok.val;
+
+public class IdReader {
 
   /**
-   * Callback method that returns {@code true} to include and {@code false} to exclude.
-   * 
-   * @param gene - the gene to examine
-   * @return include status
+   * Constants
    */
-  boolean filter(JsonNode gene);
+  private static final String URI =
+      "ftp://ftp.ensembl.org/pub/grch37/release-83/mysql/homo_sapiens_core_83_37/gene.txt.gz";
+  private static final Pattern TSV = Pattern.compile("\t");
+
+  @SneakyThrows
+  public Map<String, String> getIdMap() {
+    val gzip = new GZIPInputStream(new URL(URI).openStream());
+    val inputStreamReader = new InputStreamReader(gzip);
+    val bufferedReader = new BufferedReader(inputStreamReader);
+
+    val idMap = new HashMap<String, String>();
+    for (String s = bufferedReader.readLine(); null != s; s = bufferedReader.readLine()) {
+      s = s.trim();
+      if (s.length() > 0) {
+        String[] line = TSV.split(s);
+        idMap.put(line[7], line[13]);
+      }
+    }
+
+    return idMap;
+  }
 
 }
