@@ -325,7 +325,7 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
           val end = exon.get("cds").get("locationEnd").asInt();
           transcript.put("coding_region_end", end);
           exon.put("genomic_coding_end", end);
-          exon.put("cdna_coding_start", start - exon.get("start").asInt() + 1);
+          exon.put("cdna_coding_start", exon.get("end").asInt() - end + exon.get("cdna_start").asInt());
         } else {
           transcript.put("coding_region_start", start);
           exon.put("genomic_coding_start", start);
@@ -338,12 +338,14 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
 
         if (strand.equals("-1")) {
           if (cds.isMissingNode()) {
-            val start = exons.get(i - 1).path("cds").get("locationEnd").asInt();
+            val start = exons.get(i - 1).path("cds").get("locationStart").asInt();
             transcript.put("coding_region_start", start);
           } else {
-            val start = cds.get("locationEnd").asInt() + 1;
+            val start = cds.get("locationStart").asInt() + 1;
             transcript.put("coding_region_start", start);
             exon.put("genomic_coding_start", start);
+            exon.put("cdna_coding_end", exon.get("cdna_coding_start").asInt() + exon.get("genomic_coding_end").asInt()
+                - exon.get("genomic_coding_start").asInt() + 1);
           }
         } else {
           if (cds.isMissingNode()) {
