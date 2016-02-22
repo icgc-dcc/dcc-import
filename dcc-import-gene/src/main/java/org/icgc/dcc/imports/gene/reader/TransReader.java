@@ -25,60 +25,72 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-
 import lombok.SneakyThrows;
 import lombok.val;
 
 /**
- * 
+ * Class responsible for reading Transcript and Translation files and mapping Stable Transcript Id to Translation Id
  */
-public class SynonymReader {
+public class TransReader {
 
-  /**
-   * Constants
-   */
-  private static final String URI =
-      "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/external_synonym.txt.gz";
+  private static final String TRANSCRIPT_URI =
+      "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/transcript.txt.gz";
+  private static final String TRANSLATION_URI =
+      "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/translation.txt.gz";
   private static final Pattern TSV = Pattern.compile("\t");
-  private static final ObjectMapper MAPPER = new ObjectMapper();
 
-  /**
-   * Dependencies
-   */
-  private final Map<String, String> idMap;
+  public static Map<String, String> joinTrans() {
+    val transcriptMap = getTranscriptMap();
+    val translationMap = getTranslationMap();
 
-  public SynonymReader(Map<String, String> idMap) {
-    this.idMap = idMap;
+    val retMap = new HashMap<String, String>();
+    for (val entry : translationMap.entrySet()) {
+      retMap.put(entry.getValue(), transcriptMap.get(entry.getKey()));
+    }
+
+    return retMap;
   }
 
   @SneakyThrows
-  public Map<String, ArrayNode> getSynonymMap() {
-    val gzip = new GZIPInputStream(new URL(URI).openStream());
+  private static Map<String, String> getTranscriptMap() {
+
+    val gzip = new GZIPInputStream(new URL(TRANSCRIPT_URI).openStream());
     val inputStreamReader = new InputStreamReader(gzip);
     val bufferedReader = new BufferedReader(inputStreamReader);
 
-    val map = new HashMap<String, ArrayNode>();
-
+    val retMap = new HashMap<String, String>();
     for (String s = bufferedReader.readLine(); null != s; s = bufferedReader.readLine()) {
       s = s.trim();
       if (s.length() > 0) {
         String[] line = TSV.split(s);
-        val eId = idMap.get(line[0]);
-        if (eId != null) {
-          if (map.containsKey(eId)) {
-            map.get(eId).add(line[1]);
-          } else {
-            val newList = MAPPER.createArrayNode();
-            newList.add(line[1]);
-            map.put(eId, newList);
-          }
-        }
+        retMap.put(line[0], line[14]);
       }
     }
 
-    return map;
+    return retMap;
+  }
+
+  /**
+   * Creates a mapping between translations and transcripts
+   * @return A map of transcript id to translation id.
+   */
+  @SneakyThrows
+  private static Map<String, String> getTranslationMap() {
+
+    val gzip = new GZIPInputStream(new URL(TRANSLATION_URI).openStream());
+    val inputStreamReader = new InputStreamReader(gzip);
+    val bufferedReader = new BufferedReader(inputStreamReader);
+
+    val retMap = new HashMap<String, String>();
+    for (String s = bufferedReader.readLine(); null != s; s = bufferedReader.readLine()) {
+      s = s.trim();
+      if (s.length() > 0) {
+        String[] line = TSV.split(s);
+        retMap.put(line[1], line[0]);
+      }
+    }
+
+    return retMap;
   }
 
 }

@@ -27,8 +27,10 @@ import java.util.zip.GZIPInputStream;
 import org.icgc.dcc.imports.core.SourceImporter;
 import org.icgc.dcc.imports.core.model.ImportSource;
 import org.icgc.dcc.imports.gene.reader.ASNReader;
+import org.icgc.dcc.imports.gene.reader.DomainReader;
 import org.icgc.dcc.imports.gene.reader.IdReader;
 import org.icgc.dcc.imports.gene.reader.SynonymReader;
+import org.icgc.dcc.imports.gene.reader.TransReader;
 import org.icgc.dcc.imports.gene.writer.GeneWriter;
 
 import com.mongodb.MongoClientURI;
@@ -69,6 +71,11 @@ public class GeneImporter implements SourceImporter {
 
     val synReader = new SynonymReader(idMap);
     val synMap = synReader.getSynonymMap();
+
+    val transMap = TransReader.joinTrans();
+    val pfeatures = DomainReader.createProteinFeatures(transMap);
+    log.info("Parsed {} transcripts for protein features.", pfeatures.size());
+
     log.info("Done");
 
     log.info("Starting ASN.1 Import from NCBI.");
@@ -80,7 +87,7 @@ public class GeneImporter implements SourceImporter {
     val geneReader = getReader();
 
     log.info("Writing genes to {}...", mongoUri);
-    val writer = new GeneWriter(mongoUri, geneReader, summaryMap, synMap);
+    val writer = new GeneWriter(mongoUri, geneReader, summaryMap, synMap, pfeatures);
     writer.consumeGenes();
     writer.close();
 

@@ -19,11 +19,13 @@ package org.icgc.dcc.imports.gene.writer;
 
 import java.io.BufferedReader;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.icgc.dcc.common.core.model.ReleaseCollection;
 import org.icgc.dcc.imports.core.util.AbstractJongoWriter;
+import org.icgc.dcc.imports.gene.model.ProteinFeature;
 import org.jongo.MongoCollection;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -53,17 +55,19 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
   private final BufferedReader bufferedReader;
   private final Map<String, String> summaryMap;
   private final Map<String, ArrayNode> synMap;
+  private final Map<String, List<ProteinFeature>> pFeatures;
   private int counter = 0;
   private MongoCollection geneCollection;
 
   public GeneWriter(@NonNull MongoClientURI mongoUri, @NonNull BufferedReader bufferedReader,
-      Map<String, String> summaryMap, Map<String, ArrayNode> synMap) {
+      Map<String, String> summaryMap, Map<String, ArrayNode> synMap, Map<String, List<ProteinFeature>> pFeatures) {
     super(mongoUri);
     this.bufferedReader = bufferedReader;
     this.geneCollection = getCollection(ReleaseCollection.GENE_COLLECTION);
     this.geneCollection.drop();
     this.summaryMap = summaryMap;
     this.synMap = synMap;
+    this.pFeatures = pFeatures;
   }
 
   @SneakyThrows
@@ -91,8 +95,9 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
                 transcripts.add(curTranscript);
                 geneNode.put("transcripts", transcripts);
                 geneNode.put("description", summaryMap.get(geneNode.get("_gene_id").asText()));
-                val syns = synMap.get(geneNode.get("_gene_id")) != null ? synMap.get(geneNode.get("_gene_id")) : MAPPER
-                    .createArrayNode();
+                val syns = synMap.get(geneNode.get("_gene_id").asText()) != null ? synMap
+                    .get(geneNode.get("_gene_id").asText()) : MAPPER
+                        .createArrayNode();
                 geneNode.put("synonyms", syns);
                 writeFiles(geneNode);
                 transcripts = MAPPER.createArrayNode();
@@ -102,7 +107,8 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
               if (curTranscript != null) {
                 curTranscript.put("exons", exons);
                 try {
-                  transcripts.add(postProcessTranscript(curTranscript, geneNode.get("strand").asText()));
+                  val trans = postProcessTranscript(curTranscript, geneNode.get("strand").asText());
+                  transcripts.add(trans);
                 } catch (Exception e) {
                   log.error(curTranscript.toString());
                   throw e;
@@ -237,7 +243,35 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
     return exon;
   }
 
-  private static ObjectNode postProcessTranscript(ObjectNode transcript, String strand) {
+  private ObjectNode attachDomains(ObjectNode transcript) {
+    val pfs = pFeatures.get(transcript.get("id").asText());
+    val domains = MAPPER.createArrayNode();
+
+    if (pfs != null) {
+      for (val p : pfs) {
+        val domain = MAPPER.createObjectNode();
+        domain.put("interpro_id", p.getInterproId());
+        domain.put("hit_name", p.getHitName());
+        domain.put("gff_source", p.getGffSource());
+        domain.put("description", p.getDescription());
+        domain.put("start", p.getStart());
+        domain.put("end", p.getEnd());
+        domains.add(domain);
+      }
+    }
+
+    transcript.put("domains", domains);
+    return transcript;
+  }
+
+  /**
+   * This method performs the calculations on transcript and exons to correctly mark coding regions. Heavily based on:
+   * https://github.com/icgc-dcc/dcc-heliotrope/blob/working/src/main/scripts/Heliotrope/Update/Ensembl.pm#L885
+   * @param transcript ObjectNode representation of transcript with exons if any are present
+   * @param strand marks if + or - strand
+   * @return Processed Transcript ObjectNode
+   */
+  private ObjectNode postProcessTranscript(ObjectNode transcript, String strand) {
     val exons = (ArrayNode) transcript.get("exons");
     transcript.put("coding_region_start", 0);
     transcript.put("coding_region_end", 0);
@@ -250,7 +284,7 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
 
       val exonLength = exon.get("end").asInt() - exon.get("start").asInt();
       exonNode.put("cdna_start", preExonCdnaEnd + 1);
-      exonNode.put("cdna_end", exonNode.get("cdna_start").asInt() + exonLength - 1);
+      exonNode.put("cdna_end", exonNode.get("cdna_start").asInt() + exonLength);
       preExonCdnaEnd = exonNode.get("cdna_end").asInt();
 
       exonNode.put("genomic_coding_start", 0);
@@ -262,39 +296,50 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
     val startExon = transcript.path("start_exon");
     val endExon = transcript.path("end_exon");
 
+    // If there are no start or end exons, we know this transcript is non-coding.
     if (startExon.isMissingNode() || endExon.isMissingNode()) {
       return transcript;
     }
 
+    int cdnaLength = 0;
+    int cdsLength = 0;
     for (int i = startExon.asInt(); i <= endExon.asInt(); i++) {
       val exon = (ObjectNode) exons.get(i);
+
+      // Initiate the values by assuming the whole exon is coding first
       exon.put("genomic_coding_start", exon.get("start").asInt());
-      exon.put("cdna_coding_start", exon.get("cdna_coding_start").asInt());
+      exon.put("cdna_coding_start", exon.get("cdna_start").asInt());
       exon.put("genomic_coding_end", exon.get("end").asInt());
       exon.put("cdna_coding_end", exon.get("cdna_end").asInt());
+      cdnaLength += exon.get("cdna_end").asInt() - exon.get("cdna_start").asInt() + 1;
 
+      val cds = exon.path("cds");
+      if (!cds.isMissingNode()) {
+        cdsLength += cds.get("locationEnd").asInt() - cds.get("locationStart").asInt() + 1;
+      }
+
+      // Start Exon.
       if (i == startExon.asInt()) {
+        val start = exon.get("cds").get("locationStart").asInt();
         if (strand.equals("-1")) {
-          val end = exon.get("cds").get("locationStart").asInt();
+          val end = exon.get("cds").get("locationEnd").asInt();
           transcript.put("coding_region_end", end);
           exon.put("genomic_coding_end", end);
-          exon.put("cdna_coding_end", end - exon.get("start").asInt() - 1);
+          exon.put("cdna_coding_start", start - exon.get("start").asInt() + 1);
         } else {
-          val start = exon.get("cds").get("locationStart").asInt();
           transcript.put("coding_region_start", start);
           exon.put("genomic_coding_start", start);
           exon.put("cdna_coding_start", start - exon.get("start").asInt() + 1);
         }
         transcript.put("cdna_coding_start", exon.get("cdna_coding_start").asInt());
-      }
 
-      if (i == endExon.asInt()) {
-        val cds = exon.path("cds");
+        // End Exon.
+      } else if (i == endExon.asInt()) {
 
         if (strand.equals("-1")) {
           if (cds.isMissingNode()) {
             val start = exons.get(i - 1).path("cds").get("locationEnd").asInt();
-            transcript.put("coding_regionStart", start);
+            transcript.put("coding_region_start", start);
           } else {
             val start = cds.get("locationEnd").asInt() + 1;
             transcript.put("coding_region_start", start);
@@ -308,24 +353,37 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
             val end = cds.get("locationEnd").asInt();
             transcript.put("coding_region_end", end);
             exon.put("genomic_coding_end", end);
-            exon.put("cdna_coding_end",
-                end - exon.get("genomic_coding_start").asInt() + exon.get("cdna_start").asInt() + 1);
+            exon.put("cdna_coding_start", exon.get("cdna_start").asInt());
+            exon.put("cdna_coding_end", exon.get("cdna_end").asInt() - (exon.get("end").asInt() - end));
           }
         }
 
+        transcript.put("seq_exon_start", exons.get(startExon.asInt()).get("cdna_coding_start").asInt());
+
+        // If stop codon is first 3 base pairs of end exon, there will be no coding sequence region for that exon.
         if (cds.isMissingNode()) {
           transcript.put("cdna_coding_end", exons.get(i - 1).get("cdna_coding_end").asInt());
+          transcript.put("seq_exon_end",
+              exons.get(i - 1).get("genomic_coding_end").asInt()
+                  - exons.get(i - 1).get("genomic_coding_start").asInt() + 1);
         } else {
-          transcript.put("cdna_coding_end", exon.get("cdna_coding_end").asInt());
+          transcript.put("cdna_coding_end", exon.get("cdna_coding_end").asInt() + 1);
+          transcript.put("seq_exon_end",
+              exon.get("genomic_coding_end").asInt() - exon.get("genomic_coding_start").asInt() + 1);
         }
-      }
 
+      }
     }
 
     transcript.put("start_exon", startExon.asInt());
     transcript.put("end_exon", endExon.asInt());
 
-    return transcript;
+    val aminoAcidLength = cdsLength % 3 == 0 ? cdsLength / 3 : cdsLength / 3 + 1;
+    transcript.put("length", cdnaLength);
+    transcript.put("length_cds", cdsLength);
+    transcript.put("length_amino_acid", aminoAcidLength);
+
+    return attachDomains(transcript);
   }
 
 }

@@ -15,70 +15,35 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.gene.reader;
+package org.icgc.dcc.imports.gene.model;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-
-import lombok.SneakyThrows;
-import lombok.val;
+import lombok.Data;
+import lombok.NonNull;
 
 /**
- * 
+ * POJO Class for Protein Features
  */
-public class SynonymReader {
+@Data
+public class ProteinFeature {
 
-  /**
-   * Constants
-   */
-  private static final String URI =
-      "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/external_synonym.txt.gz";
-  private static final Pattern TSV = Pattern.compile("\t");
-  private static final ObjectMapper MAPPER = new ObjectMapper();
+  private String interproId;
+  private String hitName;
+  private String gffSource;
+  private String description;
+  private String analysisId;
+  private int start;
+  private int end;
 
-  /**
-   * Dependencies
-   */
-  private final Map<String, String> idMap;
+  public ProteinFeature(@NonNull String interproId, @NonNull String hitName, @NonNull String description) {
 
-  public SynonymReader(Map<String, String> idMap) {
-    this.idMap = idMap;
+    this.interproId = interproId;
+    this.hitName = hitName;
+    this.description = description;
+
   }
 
-  @SneakyThrows
-  public Map<String, ArrayNode> getSynonymMap() {
-    val gzip = new GZIPInputStream(new URL(URI).openStream());
-    val inputStreamReader = new InputStreamReader(gzip);
-    val bufferedReader = new BufferedReader(inputStreamReader);
-
-    val map = new HashMap<String, ArrayNode>();
-
-    for (String s = bufferedReader.readLine(); null != s; s = bufferedReader.readLine()) {
-      s = s.trim();
-      if (s.length() > 0) {
-        String[] line = TSV.split(s);
-        val eId = idMap.get(line[0]);
-        if (eId != null) {
-          if (map.containsKey(eId)) {
-            map.get(eId).add(line[1]);
-          } else {
-            val newList = MAPPER.createArrayNode();
-            newList.add(line[1]);
-            map.put(eId, newList);
-          }
-        }
-      }
-    }
-
-    return map;
+  public ProteinFeature getCopy() {
+    return new ProteinFeature(this.interproId, this.hitName, this.description);
   }
 
 }
