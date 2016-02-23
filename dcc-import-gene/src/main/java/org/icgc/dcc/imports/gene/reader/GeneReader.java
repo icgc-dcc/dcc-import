@@ -30,32 +30,31 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Reads display names for genes and constructs map of symbol to gene name
+ * Reader for getting gene related maps
  */
 @Slf4j
-public final class NameReader {
+public final class GeneReader {
 
   /**
    * Constants
    */
-  private static final String XREF_URI =
-      "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/xref.txt.gz";
+  private static final String GENE_URI =
+      "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/gene.txt.gz";
   private static final Pattern TSV = Pattern.compile("\t");
 
   /**
    * Caching
    */
-  public static Map<String, String> entrezMap = new HashMap<String, String>();
-  public static Map<String, String> hgncMap = new HashMap<String, String>();
-  public static Map<String, String> mimMap = new HashMap<String, String>();
-  public static Map<String, String> uniprotMap = new HashMap<String, String>();
+  private static Map<String, String> geneIdMap = null;
 
-  /**
-   * Get the map of xref display id -> gene name
-   */
   @SneakyThrows
-  public static Map<String, String> readXrefDisplay() {
-    val gzip = new GZIPInputStream(new URL(XREF_URI).openStream());
+  public static Map<String, String> geneIdMap() {
+    if (geneIdMap != null) {
+      log.info("Using cached gene ID map.");
+      return geneIdMap;
+    }
+
+    val gzip = new GZIPInputStream(new URL(GENE_URI).openStream());
     val inputStreamReader = new InputStreamReader(gzip);
     val bufferedReader = new BufferedReader(inputStreamReader);
 
@@ -64,35 +63,34 @@ public final class NameReader {
       s = s.trim();
       if (s.length() > 0) {
         String[] line = TSV.split(s);
+        val id = line[0];
+        val geneId = line[13];
+        retMap.put(id, geneId);
+      }
+    }
+    geneIdMap = retMap;
+    return retMap;
+  }
 
-        // Only use the rows we care about.
-        if ("12600".equals(line[1])) {
-          // Gene Wiki
-          val symbol = line[3];
-          val name = line[5];
-          retMap.put(symbol, name);
-        } else if ("1300".equals(line[1])) {
-          // Entrez
-          val xrefId = line[0];
-          val dbID = line[2];
-          entrezMap.put(xrefId, dbID);
-        } else if ("1100".equals(line[1])) {
-          // HGNC
-          val xrefId = line[0];
-          val dbID = line[2];
-          hgncMap.put(xrefId, dbID);
-        } else if ("1510".equals(line[1])) {
-          // MIM_GENE
-          val xrefId = line[0];
-          val dbID = line[2];
-          mimMap.put(xrefId, dbID);
-        } else if ("2200".equals(line[1])) {
-          // Uniprot/SWISSPROT
-          val xrefId = line[0];
-          val dbID = line[2];
-          uniprotMap.put(xrefId, dbID);
-        }
+  @SneakyThrows
+  public static Map<String, String> canonicalMap() {
+    val gzip = new GZIPInputStream(new URL(GENE_URI).openStream());
+    val inputStreamReader = new InputStreamReader(gzip);
+    val bufferedReader = new BufferedReader(inputStreamReader);
 
+    val transcriptMap = TransReader.getTranscriptMap();
+
+    geneIdMap = new HashMap<String, String>();
+    val retMap = new HashMap<String, String>();
+    for (String s = bufferedReader.readLine(); null != s; s = bufferedReader.readLine()) {
+      s = s.trim();
+      if (s.length() > 0) {
+        String[] line = TSV.split(s);
+        val id = line[0];
+        val geneId = line[13];
+        val canonicalTranscript = transcriptMap.get(line[12]);
+        retMap.put(geneId, canonicalTranscript);
+        geneIdMap.put(id, geneId);
       }
     }
 

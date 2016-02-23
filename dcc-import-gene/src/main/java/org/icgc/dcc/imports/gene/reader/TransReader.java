@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
  * Class responsible for reading Transcript and Translation files and mapping Stable Transcript Id to Translation Id
  */
 @Slf4j
-public class TransReader {
+public final class TransReader {
 
   /**
    * Constants

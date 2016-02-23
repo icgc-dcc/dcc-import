@@ -58,12 +58,14 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
   private final Map<String, ArrayNode> synMap;
   private final Map<String, String> canonicalMap;
   private final Map<String, List<ProteinFeature>> pFeatures;
+  private final Map<String, ObjectNode> externalIds;
   private int counter = 0;
   private MongoCollection geneCollection;
 
   public GeneWriter(@NonNull MongoClientURI mongoUri, @NonNull BufferedReader bufferedReader,
       Map<String, String> summaryMap, Map<String, String> nameMap, Map<String, ArrayNode> synMap,
-      Map<String, String> canonicalMap, Map<String, List<ProteinFeature>> pFeatures) {
+      Map<String, String> canonicalMap, Map<String, List<ProteinFeature>> pFeatures,
+      Map<String, ObjectNode> externalIds) {
     super(mongoUri);
     this.bufferedReader = bufferedReader;
     this.geneCollection = getCollection(ReleaseCollection.GENE_COLLECTION);
@@ -73,6 +75,7 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
     this.canonicalMap = canonicalMap;
     this.synMap = synMap;
     this.pFeatures = pFeatures;
+    this.externalIds = externalIds;
   }
 
   @SneakyThrows
@@ -105,7 +108,7 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
                     geneNode.get("canonical_transcript_id").asText());
                 transcripts.add(trans);
                 geneNode.put("transcripts", transcripts);
-
+                geneNode.put("external_db_ids", externalIds.get(geneNode.get("_gene_id").asText()));
                 writeFiles(geneNode);
                 curTranscript = null;
                 transcripts = MAPPER.createArrayNode();
@@ -268,6 +271,7 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
     transcript.put("biotype", data.get("transcript_biotype").asText());
     transcript.put("start", data.get("locationStart").asInt());
     transcript.put("end", data.get("locationEnd").asInt());
+    transcript.putNull("translation_id");
     transcript.put("domains", MAPPER.createArrayNode());
     return transcript;
   }
@@ -371,6 +375,12 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
 
       val cds = exon.path("cds");
       if (!cds.isMissingNode()) {
+
+        // Translation id is the protein id of the coding sequence.
+        if (transcript.get("translation_id").isNull()) {
+          transcript.put("translation_id", cds.get("protein_id").asText());
+        }
+
         cdsLength += cds.get("locationEnd").asInt() - cds.get("locationStart").asInt() + 1;
       }
 

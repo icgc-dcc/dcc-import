@@ -25,40 +25,74 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import lombok.SneakyThrows;
 import lombok.val;
 
 /**
- * Reader for getting a map of Gene to Canonical Transcript
+ * Responsible for creating a map of gene to external db ids
  */
-public final class CanonicalReader {
+public class ExternalReader {
 
   /**
    * Constants
    */
-  private static final String GENE_URI =
-      "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/gene.txt.gz";
+  private static final String OBJECT_XREF_URI =
+      "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/object_xref.txt.gz";
   private static final Pattern TSV = Pattern.compile("\t");
+  private static final ObjectMapper MAPPER = new ObjectMapper();
 
   @SneakyThrows
-  public static Map<String, String> canonicalMap() {
-    val gzip = new GZIPInputStream(new URL(GENE_URI).openStream());
+  public static Map<String, ObjectNode> externalIds() {
+    val gzip = new GZIPInputStream(new URL(OBJECT_XREF_URI).openStream());
     val inputStreamReader = new InputStreamReader(gzip);
     val bufferedReader = new BufferedReader(inputStreamReader);
 
-    val transcriptMap = TransReader.getTranscriptMap();
-    val retMap = new HashMap<String, String>();
+    val geneIdMap = GeneReader.geneIdMap();
+
+    val retMap = new HashMap<String, ObjectNode>();
     for (String s = bufferedReader.readLine(); null != s; s = bufferedReader.readLine()) {
       s = s.trim();
       if (s.length() > 0) {
         String[] line = TSV.split(s);
-        val geneId = line[13];
-        val canonicalTranscript = transcriptMap.get(line[12]);
-        retMap.put(geneId, canonicalTranscript);
+        if ("Gene".equals(line[2])) {
+          val geneId = geneIdMap.get(line[1]);
+
+          ObjectNode externalDbs;
+          if (retMap.containsKey(geneId)) {
+            externalDbs = retMap.get(geneId);
+          } else {
+            externalDbs = MAPPER.createObjectNode();
+            externalDbs.put("entrez_gene", MAPPER.createArrayNode());
+            externalDbs.put("hgnc", MAPPER.createArrayNode());
+            externalDbs.put("omim_gene", MAPPER.createArrayNode());
+            externalDbs.put("uniprotkb_swissprot", MAPPER.createArrayNode());
+            retMap.put(geneId, externalDbs);
+          }
+
+          val xrefId = line[3];
+          if (NameReader.entrezMap.containsKey(xrefId)) {
+            val arrayNode = (ArrayNode) externalDbs.get("entrez_gene");
+            arrayNode.add(NameReader.entrezMap.get(xrefId));
+
+          } else if (NameReader.hgncMap.containsKey(xrefId)) {
+            val arrayNode = (ArrayNode) externalDbs.get("hgnc");
+            arrayNode.add(NameReader.hgncMap.get(xrefId));
+
+          } else if (NameReader.mimMap.containsKey(xrefId)) {
+            val arrayNode = (ArrayNode) externalDbs.get("omim_gene");
+            arrayNode.add(NameReader.mimMap.get(xrefId));
+          }
+
+        }
       }
     }
 
     return retMap;
+
   }
 
 }
