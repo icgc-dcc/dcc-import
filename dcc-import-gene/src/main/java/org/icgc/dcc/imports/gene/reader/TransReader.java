@@ -27,17 +27,27 @@ import java.util.zip.GZIPInputStream;
 
 import lombok.SneakyThrows;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Class responsible for reading Transcript and Translation files and mapping Stable Transcript Id to Translation Id
  */
+@Slf4j
 public class TransReader {
 
+  /**
+   * Constants
+   */
   private static final String TRANSCRIPT_URI =
       "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/transcript.txt.gz";
   private static final String TRANSLATION_URI =
       "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/translation.txt.gz";
   private static final Pattern TSV = Pattern.compile("\t");
+
+  /**
+   * Caching
+   */
+  private static Map<String, String> transcriptMap = null;
 
   public static Map<String, String> joinTrans() {
     val transcriptMap = getTranscriptMap();
@@ -52,7 +62,11 @@ public class TransReader {
   }
 
   @SneakyThrows
-  private static Map<String, String> getTranscriptMap() {
+  public static Map<String, String> getTranscriptMap() {
+    if (transcriptMap != null) {
+      log.info("Using cached trancript map.");
+      return transcriptMap;
+    }
 
     val gzip = new GZIPInputStream(new URL(TRANSCRIPT_URI).openStream());
     val inputStreamReader = new InputStreamReader(gzip);
@@ -67,6 +81,7 @@ public class TransReader {
       }
     }
 
+    transcriptMap = retMap;
     return retMap;
   }
 

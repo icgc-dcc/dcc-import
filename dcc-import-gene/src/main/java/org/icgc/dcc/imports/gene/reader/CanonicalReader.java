@@ -28,31 +28,37 @@ import java.util.zip.GZIPInputStream;
 import lombok.SneakyThrows;
 import lombok.val;
 
-public final class IdReader {
+/**
+ * Reader for getting a map of Gene to Canonical Transcript
+ */
+public final class CanonicalReader {
 
   /**
    * Constants
    */
-  private static final String URI =
-      "ftp://ftp.ensembl.org/pub/grch37/release-83/mysql/homo_sapiens_core_83_37/gene.txt.gz";
+  private static final String GENE_URI =
+      "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/gene.txt.gz";
   private static final Pattern TSV = Pattern.compile("\t");
 
   @SneakyThrows
-  public static Map<String, String> getIdMap() {
-    val gzip = new GZIPInputStream(new URL(URI).openStream());
+  public static Map<String, String> canonicalMap() {
+    val gzip = new GZIPInputStream(new URL(GENE_URI).openStream());
     val inputStreamReader = new InputStreamReader(gzip);
     val bufferedReader = new BufferedReader(inputStreamReader);
 
-    val idMap = new HashMap<String, String>();
+    val transcriptMap = TransReader.getTranscriptMap();
+    val retMap = new HashMap<String, String>();
     for (String s = bufferedReader.readLine(); null != s; s = bufferedReader.readLine()) {
       s = s.trim();
       if (s.length() > 0) {
         String[] line = TSV.split(s);
-        idMap.put(line[7], line[13]);
+        val geneId = line[13];
+        val canonicalTranscript = transcriptMap.get(line[12]);
+        retMap.put(geneId, canonicalTranscript);
       }
     }
 
-    return idMap;
+    return retMap;
   }
 
 }

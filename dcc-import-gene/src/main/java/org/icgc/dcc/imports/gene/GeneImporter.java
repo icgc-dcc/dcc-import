@@ -27,8 +27,10 @@ import java.util.zip.GZIPInputStream;
 import org.icgc.dcc.imports.core.SourceImporter;
 import org.icgc.dcc.imports.core.model.ImportSource;
 import org.icgc.dcc.imports.gene.reader.ASNReader;
+import org.icgc.dcc.imports.gene.reader.CanonicalReader;
 import org.icgc.dcc.imports.gene.reader.DomainReader;
 import org.icgc.dcc.imports.gene.reader.IdReader;
+import org.icgc.dcc.imports.gene.reader.NameReader;
 import org.icgc.dcc.imports.gene.reader.SynonymReader;
 import org.icgc.dcc.imports.gene.reader.TransReader;
 import org.icgc.dcc.imports.gene.writer.GeneWriter;
@@ -66,11 +68,14 @@ public class GeneImporter implements SourceImporter {
     val watch = createStarted();
 
     log.info("Doing Ensembl Data Joining...");
-    val idReader = new IdReader();
-    val idMap = idReader.getIdMap();
+    val idMap = IdReader.getIdMap();
+
+    val nameMap = NameReader.readXrefDisplay();
 
     val synReader = new SynonymReader(idMap);
     val synMap = synReader.getSynonymMap();
+
+    val canonicalMap = CanonicalReader.canonicalMap();
 
     val transMap = TransReader.joinTrans();
     val pfeatures = DomainReader.createProteinFeatures(transMap);
@@ -87,7 +92,7 @@ public class GeneImporter implements SourceImporter {
     val geneReader = getReader();
 
     log.info("Writing genes to {}...", mongoUri);
-    val writer = new GeneWriter(mongoUri, geneReader, summaryMap, synMap, pfeatures);
+    val writer = new GeneWriter(mongoUri, geneReader, summaryMap, nameMap, synMap, canonicalMap, pfeatures);
     writer.consumeGenes();
     writer.close();
 
