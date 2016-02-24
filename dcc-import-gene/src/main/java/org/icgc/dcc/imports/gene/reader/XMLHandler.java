@@ -64,7 +64,7 @@ public class XMLHandler extends DefaultHandler {
       ids.add(value);
       isEnsembl = false;
       currentId = value;
-      if (ids.size() % 2000 == 0) {
+      if (ids.size() % 10000 == 0) {
         log.info("Reading {} from xml.", ids.size());
       }
     } else if (currentElement().equals("Dbtag_db")) {

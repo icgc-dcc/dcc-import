@@ -17,13 +17,8 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
 
 import lombok.SneakyThrows;
 import lombok.val;
@@ -35,24 +30,18 @@ public final class IdReader {
    */
   private static final String URI =
       "ftp://ftp.ensembl.org/pub/grch37/release-83/mysql/homo_sapiens_core_83_37/gene.txt.gz";
-  private static final Pattern TSV = Pattern.compile("\t");
 
   @SneakyThrows
   public static Map<String, String> getIdMap() {
-    val gzip = new GZIPInputStream(new URL(URI).openStream());
-    val inputStreamReader = new InputStreamReader(gzip);
-    val bufferedReader = new BufferedReader(inputStreamReader);
 
-    val idMap = new HashMap<String, String>();
-    for (String s = bufferedReader.readLine(); null != s; s = bufferedReader.readLine()) {
-      s = s.trim();
-      if (s.length() > 0) {
-        String[] line = TSV.split(s);
-        idMap.put(line[7], line[13]);
-      }
-    }
+    val retMap = new HashMap<String, String>();
+    BaseReader.read(URI, (String[] line) -> {
+      String displayXrefId = line[7];
+      String stableId = line[13];
+      retMap.put(displayXrefId, stableId);
+    });
 
-    return idMap;
+    return retMap;
   }
 
 }
