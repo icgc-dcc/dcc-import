@@ -48,7 +48,31 @@ public final class TransReader {
    * Caching
    */
   private static Map<String, String> transcriptMap = null;
+  private static Map<String, String> translationMap = null;
+  private static Map<String, String> transcriptToGene = null;
 
+  /**
+   * Method for constructing a map of translations to genes.
+   * @return Map of translation_id -> gene_id
+   */
+  public static Map<String, String> translationToGene() {
+    val translationMap = getTranslationMap();
+
+    val retMap = new HashMap<String, String>();
+    for (val entry : translationMap.entrySet()) {
+      val translationId = entry.getValue();
+      val geneId = transcriptToGene.get(entry.getKey());
+
+      retMap.put(translationId, geneId);
+    }
+
+    return retMap;
+  }
+
+  /**
+   * Joins transcripts with translations.
+   * @return Map of translation_id to transcript stable id (ENST*)
+   */
   public static Map<String, String> joinTrans() {
     val transcriptMap = getTranscriptMap();
     val translationMap = getTranslationMap();
@@ -61,6 +85,10 @@ public final class TransReader {
     return retMap;
   }
 
+  /**
+   * Creates mapping between transcript id and stable transcript id. Caches a map of transcript_id to gene_id.
+   * @return a Map of transcript_id -> stable_id (ENST*)
+   */
   @SneakyThrows
   public static Map<String, String> getTranscriptMap() {
     if (transcriptMap != null) {
@@ -72,12 +100,14 @@ public final class TransReader {
     val inputStreamReader = new InputStreamReader(gzip);
     val bufferedReader = new BufferedReader(inputStreamReader);
 
+    transcriptToGene = new HashMap<String, String>();
     val retMap = new HashMap<String, String>();
     for (String s = bufferedReader.readLine(); null != s; s = bufferedReader.readLine()) {
       s = s.trim();
       if (s.length() > 0) {
         String[] line = TSV.split(s);
         retMap.put(line[0], line[14]);
+        transcriptToGene.put(line[0], line[1]);
       }
     }
 
@@ -91,6 +121,10 @@ public final class TransReader {
    */
   @SneakyThrows
   private static Map<String, String> getTranslationMap() {
+    if (translationMap != null) {
+      log.info("Using cached trancript map.");
+      return translationMap;
+    }
 
     val gzip = new GZIPInputStream(new URL(TRANSLATION_URI).openStream());
     val inputStreamReader = new InputStreamReader(gzip);
@@ -105,6 +139,7 @@ public final class TransReader {
       }
     }
 
+    translationMap = retMap;
     return retMap;
   }
 

@@ -52,6 +52,7 @@ public class ExternalReader {
     val bufferedReader = new BufferedReader(inputStreamReader);
 
     val geneIdMap = GeneReader.geneIdMap();
+    val transToGeneMap = TransReader.translationToGene();
 
     val retMap = new HashMap<String, ObjectNode>();
     for (String s = bufferedReader.readLine(); null != s; s = bufferedReader.readLine()) {
@@ -87,7 +88,40 @@ public class ExternalReader {
             arrayNode.add(NameReader.mimMap.get(xrefId));
           }
 
+        } else if ("Translation".equals(line[2])) {
+          val geneId = geneIdMap.get(transToGeneMap.get(line[1]));
+
+          ObjectNode externalDbs;
+          if (retMap.containsKey(geneId)) {
+            externalDbs = retMap.get(geneId);
+          } else {
+            externalDbs = MAPPER.createObjectNode();
+            externalDbs.put("entrez_gene", MAPPER.createArrayNode());
+            externalDbs.put("hgnc", MAPPER.createArrayNode());
+            externalDbs.put("omim_gene", MAPPER.createArrayNode());
+            externalDbs.put("uniprotkb_swissprot", MAPPER.createArrayNode());
+            retMap.put(geneId, externalDbs);
+          }
+
+          val xrefId = line[3];
+          if (NameReader.uniprotMap.containsKey(xrefId)) {
+            val arrayNode = (ArrayNode) externalDbs.get("uniprotkb_swissprot");
+            val uniprot = NameReader.uniprotMap.get(xrefId);
+
+            val iter = arrayNode.elements();
+            boolean contained = false;
+            while (iter.hasNext()) {
+              contained = iter.next().asText().equals(uniprot);
+            }
+
+            if (!contained) {
+              arrayNode.add(uniprot);
+            }
+
+          }
+
         }
+
       }
     }
 

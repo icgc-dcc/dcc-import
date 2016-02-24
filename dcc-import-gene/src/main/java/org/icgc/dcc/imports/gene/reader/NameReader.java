@@ -51,10 +51,11 @@ public final class NameReader {
   public static Map<String, String> uniprotMap = new HashMap<String, String>();
 
   /**
-   * Get the map of xref display id -> gene name
+   * Get the map of xref display id -> gene name Caches external db ids in hashmaps for entrez, hgnc, mim, & uniprot.
    */
   @SneakyThrows
   public static Map<String, String> readXrefDisplay() {
+    log.info("Reading xref table for gene names and caching external db ids");
     val gzip = new GZIPInputStream(new URL(XREF_URI).openStream());
     val inputStreamReader = new InputStreamReader(gzip);
     val bufferedReader = new BufferedReader(inputStreamReader);

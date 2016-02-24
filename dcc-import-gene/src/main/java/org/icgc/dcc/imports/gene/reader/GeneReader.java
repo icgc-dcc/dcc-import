@@ -47,6 +47,10 @@ public final class GeneReader {
    */
   private static Map<String, String> geneIdMap = null;
 
+  /**
+   * Creates mapping of internal gene id to stable gene id
+   * @return Map of gene_id -> stable_id
+   */
   @SneakyThrows
   public static Map<String, String> geneIdMap() {
     if (geneIdMap != null) {
