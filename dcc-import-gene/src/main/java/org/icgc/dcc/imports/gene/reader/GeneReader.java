@@ -73,9 +73,9 @@ public final class GeneReader {
     geneIdMap = new HashMap<String, String>();
     val retMap = new HashMap<String, String>();
     BaseReader.read(GENE_URI, (String[] line) -> {
-      val id = line[0];
-      val geneId = line[13];
-      val canonicalTranscript = transcriptMap.get(line[12]);
+      String id = line[0];
+      String geneId = line[13];
+      String canonicalTranscript = transcriptMap.get(line[12]);
       retMap.put(geneId, canonicalTranscript);
       geneIdMap.put(id, geneId);
     });

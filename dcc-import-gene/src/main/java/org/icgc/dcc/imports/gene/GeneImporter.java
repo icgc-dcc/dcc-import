@@ -63,28 +63,26 @@ public class GeneImporter implements SourceImporter {
     return ImportSource.GENES;
   }
 
+  /**
+   * Main pipeline execution for creating gene model. Calls all readers to pre-compute hashmaps of relevant information
+   * before streaming GTF file for construction of gene model skeleton.
+   */
   @SneakyThrows
   @Override
   public void execute() {
     val watch = createStarted();
 
+    // TODO: Refactor so this isn't so messy and so it follows some logical progression
     log.info("Doing Ensembl Data Joining...");
     val idMap = IdReader.getIdMap();
-
     val nameMap = NameReader.readXrefDisplay();
-
     val synReader = new SynonymReader(idMap);
     val synMap = synReader.getSynonymMap();
-
     val canonicalMap = GeneReader.canonicalMap();
-
     val transMap = TransReader.joinTrans();
     val pfeatures = DomainReader.createProteinFeatures(transMap);
-
     val externalIds = ExternalReader.externalIds();
-    log.info("Parsed {} transcripts for protein features.", pfeatures.size());
-
-    log.info("Done");
+    log.info("... Done Ensemble Data Joining!");
 
     log.info("Starting ASN.1 Import from NCBI.");
     val asnReader = new ASNReader();

@@ -17,18 +17,12 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
-import lombok.SneakyThrows;
 import lombok.val;
 
 /**
@@ -41,7 +35,6 @@ public class SynonymReader {
    */
   private static final String URI =
       "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/external_synonym.txt.gz";
-  private static final Pattern TSV = Pattern.compile("\t");
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
   /**
@@ -53,32 +46,23 @@ public class SynonymReader {
     this.idMap = idMap;
   }
 
-  @SneakyThrows
   public Map<String, ArrayNode> getSynonymMap() {
-    val gzip = new GZIPInputStream(new URL(URI).openStream());
-    val inputStreamReader = new InputStreamReader(gzip);
-    val bufferedReader = new BufferedReader(inputStreamReader);
 
-    val map = new HashMap<String, ArrayNode>();
-
-    for (String s = bufferedReader.readLine(); null != s; s = bufferedReader.readLine()) {
-      s = s.trim();
-      if (s.length() > 0) {
-        String[] line = TSV.split(s);
-        val eId = idMap.get(line[0]);
-        if (eId != null) {
-          if (map.containsKey(eId)) {
-            map.get(eId).add(line[1]);
-          } else {
-            val newList = MAPPER.createArrayNode();
-            newList.add(line[1]);
-            map.put(eId, newList);
-          }
+    val retMap = new HashMap<String, ArrayNode>();
+    BaseReader.read(URI, (String[] line) -> {
+      String eId = idMap.get(line[0]);
+      if (eId != null) {
+        if (retMap.containsKey(eId)) {
+          retMap.get(eId).add(line[1]);
+        } else {
+          ArrayNode newList = MAPPER.createArrayNode();
+          newList.add(line[1]);
+          retMap.put(eId, newList);
         }
       }
-    }
+    });
 
-    return map;
+    return retMap;
   }
 
 }

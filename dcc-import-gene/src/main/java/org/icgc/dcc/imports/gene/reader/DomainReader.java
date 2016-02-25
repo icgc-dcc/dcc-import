@@ -17,20 +17,14 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
 
 import org.icgc.dcc.imports.gene.model.ProteinFeature;
 
 import lombok.NonNull;
-import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
  * Constructs the protein domains
  */
 @Slf4j
-public class DomainReader {
+public final class DomainReader {
 
   private static final String XREF_URI =
       "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/xref.txt.gz";
@@ -51,70 +45,51 @@ public class DomainReader {
   private static final String ANALYSIS_URI =
       "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/analysis.txt.gz";
 
-  private static final Pattern TSV = Pattern.compile("\t");
-
-  @SneakyThrows
   public static Map<String, List<ProteinFeature>> createProteinFeatures(@NonNull Map<String, String> transMap) {
-
-    val gzip = new GZIPInputStream(new URL(PROTEIN_FEATURE_URI).openStream());
-    val inputStreamReader = new InputStreamReader(gzip);
-    val bufferedReader = new BufferedReader(inputStreamReader);
 
     val interproMap = interproMap();
     val analysisMap = analysisMap();
 
     val retMap = new HashMap<String, List<ProteinFeature>>();
-    for (String s = bufferedReader.readLine(); null != s; s = bufferedReader.readLine()) {
-      s = s.trim();
-      if (s.length() > 0) {
-        String[] line = TSV.split(s);
 
-        // Check to see if intepro map has this hit name
-        if (analysisMap.containsKey(line[7])) {
-          if (interproMap.containsKey(line[6])) {
-            val pf = interproMap.get(line[6]).getCopy();
-            pf.setStart(Integer.parseInt(line[2]));
-            pf.setEnd(Integer.parseInt(line[3]));
-            pf.setAnalysisId(line[8]);
-            pf.setGffSource(analysisMap.get(line[7]));
-            val ens = transMap.get(line[1]);
+    BaseReader.read(PROTEIN_FEATURE_URI, (String[] line) -> {
+      if (analysisMap.containsKey(line[7])) {
+        if (interproMap.containsKey(line[6])) {
+          ProteinFeature pf = interproMap.get(line[6]).getCopy();
+          pf.setStart(Integer.parseInt(line[2]));
+          pf.setEnd(Integer.parseInt(line[3]));
+          pf.setAnalysisId(line[8]);
+          pf.setGffSource(analysisMap.get(line[7]));
+          String ens = transMap.get(line[1]);
 
-            if (retMap.containsKey(ens)) {
-              retMap.get(ens).add(pf);
-            } else {
-              val al = new ArrayList<ProteinFeature>();
-              al.add(pf);
-              retMap.put(ens, al);
-            }
+          if (retMap.containsKey(ens)) {
+            retMap.get(ens).add(pf);
+          } else {
+            List<ProteinFeature> al = new ArrayList<ProteinFeature>();
+            al.add(pf);
+            retMap.put(ens, al);
           }
-
         }
 
       }
-    }
+    });
 
     return retMap;
-
   }
 
-  @SneakyThrows
+  /**
+   * Returns a map of protein features
+   * @return HashMap of id -> protein feature
+   */
   public static Map<String, ProteinFeature> interproMap() {
 
-    val gzip = new GZIPInputStream(new URL(INTERPRO_URI).openStream());
-    val inputStreamReader = new InputStreamReader(gzip);
-    val bufferedReader = new BufferedReader(inputStreamReader);
-
     val descriptionMap = getInterproFromXref();
-
     val retMap = new HashMap<String, ProteinFeature>();
-    for (String s = bufferedReader.readLine(); null != s; s = bufferedReader.readLine()) {
-      s = s.trim();
-      if (s.length() > 0) {
-        String[] line = TSV.split(s);
-        val pf = new ProteinFeature(line[0], line[1], descriptionMap.get(line[0]));
-        retMap.put(line[1], pf);
-      }
-    }
+
+    BaseReader.read(INTERPRO_URI, (String[] line) -> {
+      ProteinFeature pf = new ProteinFeature(line[0], line[1], descriptionMap.get(line[0]));
+      retMap.put(line[1], pf);
+    });
 
     return retMap;
   }
@@ -123,69 +98,48 @@ public class DomainReader {
    * Gets the Interpro id and description from the xref table.
    * @return Hashmap of descriptions keyed to Interpro ids.
    */
-  @SneakyThrows
   public static Map<String, String> getInterproFromXref() {
-
-    val gzip = new GZIPInputStream(new URL(XREF_URI).openStream());
-    val inputStreamReader = new InputStreamReader(gzip);
-    val bufferedReader = new BufferedReader(inputStreamReader);
 
     val interproDbId = getInterproDB();
 
     val retMap = new HashMap<String, String>();
-    for (String s = bufferedReader.readLine(); null != s; s = bufferedReader.readLine()) {
-      s = s.trim();
-      if (s.length() > 0) {
-        String[] line = TSV.split(s);
-        if (interproDbId.equals(line[1])) {
-          retMap.put(line[2], line[5]);
-        }
+    BaseReader.read(XREF_URI, (String[] line) -> {
+      if (interproDbId.equals(line[1])) {
+        String description = line[5];
+        String id = line[2];
+        retMap.put(id, description);
       }
-    }
+    });
 
     return retMap;
   }
 
-  @SneakyThrows
   private static String getInterproDB() {
 
-    val gzip = new GZIPInputStream(new URL(EXTERNAL_DB_URI).openStream());
-    val inputStreamReader = new InputStreamReader(gzip);
-    val bufferedReader = new BufferedReader(inputStreamReader);
-
-    for (String s = bufferedReader.readLine(); null != s; s = bufferedReader.readLine()) {
-      s = s.trim();
-      if (s.length() > 0) {
-        String[] line = TSV.split(s);
-        if (line[1].equals("Interpro")) {
-          log.info("Interpro db id: {}", line[0]);
-          return line[0];
-        }
+    val interproId = new StringBuilder();
+    BaseReader.read(EXTERNAL_DB_URI, (String[] line) -> {
+      if (line.length > 1 && line[1].equals("Interpro")) {
+        interproId.append(line[0]);
       }
-    }
+    });
 
-    return "";
+    log.info("Interpro db id: {}", interproId.toString());
+    return interproId.toString();
   }
 
-  @SneakyThrows
   private static Map<String, String> analysisMap() {
 
-    val gzip = new GZIPInputStream(new URL(ANALYSIS_URI).openStream());
-    val inputStreamReader = new InputStreamReader(gzip);
-    val bufferedReader = new BufferedReader(inputStreamReader);
-
     val retMap = new HashMap<String, String>();
-    for (String s = bufferedReader.readLine(); null != s; s = bufferedReader.readLine()) {
-      s = s.trim();
-      if (s.length() > 0) {
-        String[] line = TSV.split(s);
-        val id = line[0];
-        val gffSource = line[6];
-        if ("pfam".equals(gffSource)) {
-          retMap.put(id, gffSource);
-        }
+
+    BaseReader.read(ANALYSIS_URI, (String[] line) -> {
+      String id = line[0];
+      String gffSource = line[6];
+
+      // We can support additional programs/algorithms for protein domains here
+      if ("pfam".equals(gffSource)) {
+        retMap.put(id, gffSource);
       }
-    }
+    });
 
     return retMap;
   }

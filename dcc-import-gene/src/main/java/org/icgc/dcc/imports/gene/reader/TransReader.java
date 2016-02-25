@@ -17,15 +17,9 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
 
-import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,7 +36,6 @@ public final class TransReader {
       "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/transcript.txt.gz";
   private static final String TRANSLATION_URI =
       "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/translation.txt.gz";
-  private static final Pattern TSV = Pattern.compile("\t");
 
   /**
    * Caching
@@ -89,58 +82,43 @@ public final class TransReader {
    * Creates mapping between transcript id and stable transcript id. Caches a map of transcript_id to gene_id.
    * @return a Map of transcript_id -> stable_id (ENST*)
    */
-  @SneakyThrows
   public static Map<String, String> getTranscriptMap() {
     if (transcriptMap != null) {
       log.info("Using cached trancript map.");
       return transcriptMap;
     }
 
-    val gzip = new GZIPInputStream(new URL(TRANSCRIPT_URI).openStream());
-    val inputStreamReader = new InputStreamReader(gzip);
-    val bufferedReader = new BufferedReader(inputStreamReader);
-
+    transcriptMap = new HashMap<String, String>();
     transcriptToGene = new HashMap<String, String>();
-    val retMap = new HashMap<String, String>();
-    for (String s = bufferedReader.readLine(); null != s; s = bufferedReader.readLine()) {
-      s = s.trim();
-      if (s.length() > 0) {
-        String[] line = TSV.split(s);
-        retMap.put(line[0], line[14]);
-        transcriptToGene.put(line[0], line[1]);
-      }
-    }
+    BaseReader.read(TRANSCRIPT_URI, (String[] line) -> {
+      String id = line[0];
+      String stableId = line[14];
+      String geneId = line[1];
+      transcriptMap.put(id, stableId);
+      transcriptToGene.put(id, geneId);
+    });
 
-    transcriptMap = retMap;
-    return retMap;
+    return transcriptMap;
   }
 
   /**
    * Creates a mapping between translations and transcripts
    * @return A map of transcript id to translation id.
    */
-  @SneakyThrows
   private static Map<String, String> getTranslationMap() {
     if (translationMap != null) {
       log.info("Using cached trancript map.");
       return translationMap;
     }
 
-    val gzip = new GZIPInputStream(new URL(TRANSLATION_URI).openStream());
-    val inputStreamReader = new InputStreamReader(gzip);
-    val bufferedReader = new BufferedReader(inputStreamReader);
+    translationMap = new HashMap<String, String>();
+    BaseReader.read(TRANSLATION_URI, (String[] line) -> {
+      String transcriptId = line[1];
+      String translationId = line[0];
+      translationMap.put(transcriptId, translationId);
+    });
 
-    val retMap = new HashMap<String, String>();
-    for (String s = bufferedReader.readLine(); null != s; s = bufferedReader.readLine()) {
-      s = s.trim();
-      if (s.length() > 0) {
-        String[] line = TSV.split(s);
-        retMap.put(line[1], line[0]);
-      }
-    }
-
-    translationMap = retMap;
-    return retMap;
+    return translationMap;
   }
 
 }

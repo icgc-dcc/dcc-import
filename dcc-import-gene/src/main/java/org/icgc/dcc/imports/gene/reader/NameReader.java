@@ -17,15 +17,9 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
 
-import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,7 +34,6 @@ public final class NameReader {
    */
   private static final String XREF_URI =
       "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/xref.txt.gz";
-  private static final Pattern TSV = Pattern.compile("\t");
 
   /**
    * Caching
@@ -53,49 +46,39 @@ public final class NameReader {
   /**
    * Get the map of xref display id -> gene name Caches external db ids in hashmaps for entrez, hgnc, mim, & uniprot.
    */
-  @SneakyThrows
   public static Map<String, String> readXrefDisplay() {
     log.info("Reading xref table for gene names and caching external db ids");
-    val gzip = new GZIPInputStream(new URL(XREF_URI).openStream());
-    val inputStreamReader = new InputStreamReader(gzip);
-    val bufferedReader = new BufferedReader(inputStreamReader);
 
     val retMap = new HashMap<String, String>();
-    for (String s = bufferedReader.readLine(); null != s; s = bufferedReader.readLine()) {
-      s = s.trim();
-      if (s.length() > 0) {
-        String[] line = TSV.split(s);
-
-        // Only use the rows we care about.
-        if ("12600".equals(line[1])) {
-          // Gene Wiki
-          val symbol = line[3];
-          val name = line[5];
-          retMap.put(symbol, name);
-        } else if ("1300".equals(line[1])) {
-          // Entrez
-          val xrefId = line[0];
-          val dbID = line[2];
-          entrezMap.put(xrefId, dbID);
-        } else if ("1100".equals(line[1])) {
-          // HGNC
-          val xrefId = line[0];
-          val dbID = line[2];
-          hgncMap.put(xrefId, dbID);
-        } else if ("1510".equals(line[1])) {
-          // MIM_GENE
-          val xrefId = line[0];
-          val dbID = line[2];
-          mimMap.put(xrefId, dbID);
-        } else if ("2200".equals(line[1])) {
-          // Uniprot/SWISSPROT
-          val xrefId = line[0];
-          val dbID = line[2];
-          uniprotMap.put(xrefId, dbID);
-        }
-
+    BaseReader.read(XREF_URI, (String[] line) -> {
+      // Only use the rows we care about.
+      if ("12600".equals(line[1])) {
+        // Gene Wiki
+        String symbol = line[3];
+        String name = line[5];
+        retMap.put(symbol, name);
+      } else if ("1300".equals(line[1])) {
+        // Entrez
+        String xrefId = line[0];
+        String dbID = line[2];
+        entrezMap.put(xrefId, dbID);
+      } else if ("1100".equals(line[1])) {
+        // HGNC
+        String xrefId = line[0];
+        String dbID = line[2];
+        hgncMap.put(xrefId, dbID);
+      } else if ("1510".equals(line[1])) {
+        // MIM_GENE
+        String xrefId = line[0];
+        String dbID = line[2];
+        mimMap.put(xrefId, dbID);
+      } else if ("2200".equals(line[1])) {
+        // Uniprot/SWISSPROT
+        String xrefId = line[0];
+        String dbID = line[2];
+        uniprotMap.put(xrefId, dbID);
       }
-    }
+    });
 
     return retMap;
   }

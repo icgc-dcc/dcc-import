@@ -20,7 +20,6 @@ package org.icgc.dcc.imports.gene.reader;
 import java.util.HashMap;
 import java.util.Map;
 
-import lombok.SneakyThrows;
 import lombok.val;
 
 public final class IdReader {
@@ -31,7 +30,6 @@ public final class IdReader {
   private static final String URI =
       "ftp://ftp.ensembl.org/pub/grch37/release-83/mysql/homo_sapiens_core_83_37/gene.txt.gz";
 
-  @SneakyThrows
   public static Map<String, String> getIdMap() {
 
     val retMap = new HashMap<String, String>();

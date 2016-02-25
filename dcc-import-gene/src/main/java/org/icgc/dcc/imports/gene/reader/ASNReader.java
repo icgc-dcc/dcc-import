@@ -69,6 +69,8 @@ public class ASNReader {
       download = "ftp://ftp.ncbi.nih.gov/toolbox/ncbi_tools/cmdline/gene2xml.Darwin-13.4.0-x86_64.gz";
     } else if (platform.contains("Linux")) {
       download = "ftp://ftp.ncbi.nih.gov/toolbox/ncbi_tools/cmdline/gene2xml.Linux-2.6.32-573.7.1.el6.x86_64-x86_64.gz";
+    } else if (platform.contains("Sun")) {
+      download = "ftp://ftp.ncbi.nih.gov/toolbox/ncbi_tools/cmdline/gene2xml.SunOS-5.10-sun4v.gz";
     } else {
       throw new RuntimeException("Your platform is not supported for the dcc-import-gene project.");
     }
