@@ -257,7 +257,7 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
     gene.put("_gene_id", data.get("gene_id").asText());
     gene.put("symbol", data.get("gene_name").asText());
     gene.put("biotype", data.get("gene_biotype").asText());
-    gene.put("chomosome", data.get("seqname").asText());
+    gene.put("chromosome", data.get("seqname").asText());
     gene.put("strand", data.get("strand").asText());
     gene.put("start", data.get("locationStart").asInt());
     gene.put("end", data.get("locationEnd").asInt());
@@ -272,6 +272,15 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
     transcript.put("start", data.get("locationStart").asInt());
     transcript.put("end", data.get("locationEnd").asInt());
     transcript.putNull("translation_id");
+    transcript.put("coding_region_start", 0);
+    transcript.put("coding_region_end", 0);
+    transcript.put("cdna_coding_start", 0);
+    transcript.put("cdna_coding_end", 0);
+    transcript.putNull("seq_exon_start");
+    transcript.putNull("seq_exon_end");
+    transcript.putNull("length");
+    transcript.putNull("length_amino_acid");
+    transcript.putNull("length_cds");
     transcript.put("domains", MAPPER.createArrayNode());
     return transcript;
   }
@@ -320,15 +329,6 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
     }
 
     val exons = (ArrayNode) transcript.get("exons");
-    transcript.put("coding_region_start", 0);
-    transcript.put("coding_region_end", 0);
-    transcript.put("cdna_coding_start", 0);
-    transcript.put("cdna_coding_end", 0);
-    transcript.putNull("seq_exon_start");
-    transcript.putNull("seq_exon_end");
-    transcript.putNull("length");
-    transcript.putNull("length_amino_acid");
-    transcript.putNull("length_cds");
 
     transcript.put("number_of_exons", exons.size());
 
