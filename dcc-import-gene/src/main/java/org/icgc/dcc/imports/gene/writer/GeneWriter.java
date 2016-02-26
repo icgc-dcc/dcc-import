@@ -426,7 +426,7 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
         transcript.put("cdna_coding_start", exon.get("cdna_coding_start").asInt());
       }
 
-      // End Exon.
+      // End Exon. Note: This can be the same exon as the start exon.
       if (i == endExon.asInt()) {
 
         if (strand.equals("-1")) {

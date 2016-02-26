@@ -38,7 +38,7 @@ public class ASNInputReader implements Runnable {
   @SneakyThrows
   public void run() {
     int n;
-    byte[] buffer = new byte[4096];
+    byte[] buffer = new byte[16384];
     while ((n = in.read(buffer)) != -1) {
       out.write(buffer, 0, n);
     }

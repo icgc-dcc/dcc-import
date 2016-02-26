@@ -33,6 +33,7 @@ public class XMLHandler extends DefaultHandler {
   private Stack<String> elementStack = new Stack<String>();
   private boolean isEnsembl = false;
   private String currentId;
+  private StringBuilder currentValue;
   public Map<String, String> summaryMap;
 
   public List<String> ids = new ArrayList<String>();
@@ -43,14 +44,18 @@ public class XMLHandler extends DefaultHandler {
 
   @Override
   public void startElement(String uri, String localName, String qName, Attributes attributes) {
-
+    if ("Entrezgene_summary".equals(qName)) {
+      currentValue = new StringBuilder();
+    }
     this.elementStack.push(qName);
 
   }
 
   @Override
   public void endElement(String uri, String localName, String qName) {
-
+    if ("Entrezgene_summary".equals(qName)) {
+      summaryMap.put(currentId, currentValue.toString());
+    }
     this.elementStack.pop();
 
   }
@@ -72,7 +77,7 @@ public class XMLHandler extends DefaultHandler {
         isEnsembl = true;
       }
     } else if (currentElement().equals("Entrezgene_summary")) {
-      summaryMap.put(currentId, value);
+      currentValue.append(value);
     }
   }
 
