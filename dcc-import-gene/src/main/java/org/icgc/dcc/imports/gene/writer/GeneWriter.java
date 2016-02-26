@@ -347,8 +347,34 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
       exonNode.put("cdna_coding_end", 0);
     }
 
-    val startExon = transcript.path("start_exon");
-    val endExon = transcript.path("end_exon");
+    JsonNode startExon = transcript.path("start_exon");
+    JsonNode endExon = transcript.path("end_exon");
+
+    if (exons.size() > 0) {
+      transcript.put("length", exons.get(exons.size() - 1).get("cdna_end").asText());
+    }
+
+    // In case there is no start codon
+    if (startExon.isMissingNode()) {
+      for (int i = 0; i < exons.size(); i++) {
+        if (!exons.get(i).path("cds").isMissingNode()) {
+          transcript.put("start_exon", i);
+          startExon = transcript.path("start_exon");
+          break;
+        }
+      }
+    }
+
+    // In case there is no end codon
+    if (endExon.isMissingNode()) {
+      for (int i = exons.size() - 1; i > 0; i--) {
+        if (!exons.get(i).path("cds").isMissingNode()) {
+          transcript.put("end_exon", i);
+          endExon = transcript.path("end_exon");
+          break;
+        }
+      }
+    }
 
     // If there are no start or end exons, we know this transcript is non-coding.
     if (startExon.isMissingNode() && endExon.isMissingNode()) {
@@ -448,7 +474,6 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
     transcript.put("end_exon", endExon.asInt());
 
     val aminoAcidLength = cdsLength % 3 == 0 ? cdsLength / 3 : cdsLength / 3 + 1;
-    transcript.put("length", exons.get(exons.size() - 1).get("cdna_end").asText());
     transcript.put("length_cds", cdsLength);
     transcript.put("length_amino_acid", aminoAcidLength);
 
