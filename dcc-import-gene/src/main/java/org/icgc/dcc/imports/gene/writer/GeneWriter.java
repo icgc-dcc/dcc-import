@@ -389,7 +389,7 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
       return transcript;
     }
 
-    int cdsLength = 0;
+    double cdsLength = 0.0;
     for (int i = startExon.asInt(); i <= endExon.asInt(); i++) {
       val exon = (ObjectNode) exons.get(i);
 
@@ -424,9 +424,10 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
           exon.put("cdna_coding_start", exon.get("cdna_start").asInt() + (start - exon.get("start").asInt() + 1));
         }
         transcript.put("cdna_coding_start", exon.get("cdna_coding_start").asInt());
+      }
 
-        // End Exon.
-      } else if (i == endExon.asInt()) {
+      // End Exon.
+      if (i == endExon.asInt()) {
 
         if (strand.equals("-1")) {
           if (cds.isMissingNode()) {
@@ -473,7 +474,7 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
     transcript.put("start_exon", startExon.asInt());
     transcript.put("end_exon", endExon.asInt());
 
-    val aminoAcidLength = cdsLength % 3 == 0 ? cdsLength / 3 : cdsLength / 3 + 1;
+    val aminoAcidLength = Math.round(cdsLength / 3);
     transcript.put("length_cds", cdsLength);
     transcript.put("length_amino_acid", aminoAcidLength);
 
