@@ -63,9 +63,9 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
   private MongoCollection geneCollection;
 
   public GeneWriter(@NonNull MongoClientURI mongoUri, @NonNull BufferedReader bufferedReader,
-      Map<String, String> summaryMap, Map<String, String> nameMap, Map<String, ArrayNode> synMap,
-      Map<String, String> canonicalMap, Map<String, List<ProteinFeature>> pFeatures,
-      Map<String, ObjectNode> externalIds) {
+      @NonNull Map<String, String> summaryMap, @NonNull Map<String, String> nameMap,
+      @NonNull Map<String, ArrayNode> synMap, @NonNull Map<String, String> canonicalMap,
+      @NonNull Map<String, List<ProteinFeature>> pFeatures, @NonNull Map<String, ObjectNode> externalIds) {
     super(mongoUri);
     this.bufferedReader = bufferedReader;
     this.geneCollection = getCollection(ReleaseCollection.GENE_COLLECTION);
@@ -78,6 +78,11 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
     this.externalIds = externalIds;
   }
 
+  /**
+   * Method responsible for constructing the skeleton of the gene model. It streams the gtf file, constructing the
+   * elements of the gene model, and joining in information from the maps provided to the constructor of the class.
+   * Write Gene to mongo as soon as it is constructed and moves onto next one.
+   */
   @SneakyThrows
   public void consumeGenes() {
     log.info("CONSUMING GENES");
@@ -162,6 +167,11 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
     this.geneCollection.insert(value);
   }
 
+  /**
+   * Responsible for parsing the lines of the gtf file and producing generic ObjectNodes
+   * @param String represnting the current line in the gtf file
+   * @return ObjectNode representation of the gtf row.
+   */
   private ObjectNode parseLine(@NonNull String s) {
     String[] line = TSV.split(s);
     val seqname = line[0].trim();

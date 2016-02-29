@@ -30,10 +30,14 @@ public final class IdReader {
   private static final String URI =
       "ftp://ftp.ensembl.org/pub/grch37/release-83/mysql/homo_sapiens_core_83_37/gene.txt.gz";
 
+  /**
+   * Reads gene.txt and creates mapping for Display xref to stable gene id
+   * @return Map of xrefId -> stable gene id (ENSG*)
+   */
   public static Map<String, String> getIdMap() {
 
     val retMap = new HashMap<String, String>();
-    BaseReader.read(URI, (String[] line) -> {
+    BaseReader.read(URI, line -> {
       String displayXrefId = line[7];
       String stableId = line[13];
       retMap.put(displayXrefId, stableId);

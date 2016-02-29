@@ -38,6 +38,10 @@ public class ASNReader {
   private static final String URI =
       "ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/ASN_BINARY/Mammalia/Homo_sapiens.ags.gz";
 
+  /**
+   * Runs gene2Xml binary and feeds it ASN.1 dump from NCBI and streams output as XML
+   * @return Map of gene_id -> summary text
+   */
   @SneakyThrows
   public Map<String, String> callGene2Xml() {
 
@@ -57,6 +61,10 @@ public class ASNReader {
     return summaryMap;
   }
 
+  /**
+   * Downloads Gene2Xml tool based on current platform.
+   * @return Path to runnable binary.
+   */
   @SneakyThrows
   public static String getCmd() {
     val platform = System.getProperty("os.name");

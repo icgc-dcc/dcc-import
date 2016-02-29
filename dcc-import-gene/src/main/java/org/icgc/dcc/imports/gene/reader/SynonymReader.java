@@ -26,9 +26,9 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import lombok.val;
 
 /**
- * 
+ * Class responsible for reading and mapping Gene Synonyms
  */
-public class SynonymReader {
+public final class SynonymReader {
 
   /**
    * Constants
@@ -37,19 +37,10 @@ public class SynonymReader {
       "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/external_synonym.txt.gz";
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
-  /**
-   * Dependencies
-   */
-  private final Map<String, String> idMap;
-
-  public SynonymReader(Map<String, String> idMap) {
-    this.idMap = idMap;
-  }
-
-  public Map<String, ArrayNode> getSynonymMap() {
+  public static Map<String, ArrayNode> getSynonymMap(Map<String, String> idMap) {
 
     val retMap = new HashMap<String, ArrayNode>();
-    BaseReader.read(URI, (String[] line) -> {
+    BaseReader.read(URI, line -> {
       String eId = idMap.get(line[0]);
       if (eId != null) {
         if (retMap.containsKey(eId)) {

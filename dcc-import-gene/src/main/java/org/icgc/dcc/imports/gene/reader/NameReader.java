@@ -50,7 +50,7 @@ public final class NameReader {
     log.info("Reading xref table for gene names and caching external db ids");
 
     val retMap = new HashMap<String, String>();
-    BaseReader.read(XREF_URI, (String[] line) -> {
+    BaseReader.read(XREF_URI, line -> {
       // Only use the rows we care about.
       if ("12600".equals(line[1])) {
         // Gene Wiki

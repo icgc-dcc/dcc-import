@@ -72,12 +72,11 @@ public class GeneImporter implements SourceImporter {
   public void execute() {
     val watch = createStarted();
 
-    // TODO: Refactor so this isn't so messy and so it follows some logical progression
+    // TODO: Investigate ordering to see if gene.txt does not need to be read twice.
     log.info("Doing Ensembl Data Joining...");
     val idMap = IdReader.getIdMap();
     val nameMap = NameReader.readXrefDisplay();
-    val synReader = new SynonymReader(idMap);
-    val synMap = synReader.getSynonymMap();
+    val synMap = SynonymReader.getSynonymMap(idMap);
     val canonicalMap = GeneReader.canonicalMap();
     val transMap = TransReader.joinTrans();
     val pfeatures = DomainReader.createProteinFeatures(transMap);

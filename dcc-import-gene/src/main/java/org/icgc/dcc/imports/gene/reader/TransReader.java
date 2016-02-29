@@ -90,7 +90,7 @@ public final class TransReader {
 
     transcriptMap = new HashMap<String, String>();
     transcriptToGene = new HashMap<String, String>();
-    BaseReader.read(TRANSCRIPT_URI, (String[] line) -> {
+    BaseReader.read(TRANSCRIPT_URI, line -> {
       String id = line[0];
       String stableId = line[14];
       String geneId = line[1];
@@ -112,7 +112,7 @@ public final class TransReader {
     }
 
     translationMap = new HashMap<String, String>();
-    BaseReader.read(TRANSLATION_URI, (String[] line) -> {
+    BaseReader.read(TRANSLATION_URI, line -> {
       String transcriptId = line[1];
       String translationId = line[0];
       translationMap.put(transcriptId, translationId);

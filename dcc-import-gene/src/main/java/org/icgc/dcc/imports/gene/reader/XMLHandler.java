@@ -85,6 +85,10 @@ public class XMLHandler extends DefaultHandler {
     return this.elementStack.peek();
   }
 
+  /**
+   * Determines if current element is a gene based on current depth in XML.
+   * @return true if current element corresponds to a gene, false otherwise.
+   */
   private boolean isGene() {
     return this.elementStack.size() == 9;
   }

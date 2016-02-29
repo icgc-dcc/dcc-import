@@ -52,7 +52,7 @@ public final class DomainReader {
 
     val retMap = new HashMap<String, List<ProteinFeature>>();
 
-    BaseReader.read(PROTEIN_FEATURE_URI, (String[] line) -> {
+    BaseReader.read(PROTEIN_FEATURE_URI, line -> {
       if (analysisMap.containsKey(line[7])) {
         if (interproMap.containsKey(line[6])) {
           ProteinFeature pf = interproMap.get(line[6]).getCopy();
@@ -86,7 +86,7 @@ public final class DomainReader {
     val descriptionMap = getInterproFromXref();
     val retMap = new HashMap<String, ProteinFeature>();
 
-    BaseReader.read(INTERPRO_URI, (String[] line) -> {
+    BaseReader.read(INTERPRO_URI, line -> {
       ProteinFeature pf = new ProteinFeature(line[0], line[1], descriptionMap.get(line[0]));
       retMap.put(line[1], pf);
     });
@@ -103,7 +103,7 @@ public final class DomainReader {
     val interproDbId = getInterproDB();
 
     val retMap = new HashMap<String, String>();
-    BaseReader.read(XREF_URI, (String[] line) -> {
+    BaseReader.read(XREF_URI, line -> {
       if (interproDbId.equals(line[1])) {
         String description = line[5];
         String id = line[2];
@@ -117,7 +117,7 @@ public final class DomainReader {
   private static String getInterproDB() {
 
     val interproId = new StringBuilder();
-    BaseReader.read(EXTERNAL_DB_URI, (String[] line) -> {
+    BaseReader.read(EXTERNAL_DB_URI, line -> {
       if (line.length > 1 && line[1].equals("Interpro")) {
         interproId.append(line[0]);
       }
@@ -131,7 +131,7 @@ public final class DomainReader {
 
     val retMap = new HashMap<String, String>();
 
-    BaseReader.read(ANALYSIS_URI, (String[] line) -> {
+    BaseReader.read(ANALYSIS_URI, line -> {
       String id = line[0];
       String gffSource = line[6];
 

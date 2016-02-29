@@ -41,12 +41,11 @@ public final class ExternalReader {
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
   public static Map<String, ObjectNode> externalIds() {
-
     val geneIdMap = GeneReader.geneIdMap();
     val transToGeneMap = TransReader.translationToGene();
 
     val retMap = new HashMap<String, ObjectNode>();
-    BaseReader.read(OBJECT_XREF_URI, (String[] line) -> {
+    BaseReader.read(OBJECT_XREF_URI, line -> {
       if ("Gene".equals(line[2])) {
         String geneId = geneIdMap.get(line[1]);
 
@@ -77,6 +76,8 @@ public final class ExternalReader {
         }
 
       } else if ("Translation".equals(line[2])) {
+        // Uniprot Ids are for proteins, which means we match them to translations and eventually work up to a gene/
+
         String geneId = geneIdMap.get(transToGeneMap.get(line[1]));
 
         ObjectNode externalDbs;
