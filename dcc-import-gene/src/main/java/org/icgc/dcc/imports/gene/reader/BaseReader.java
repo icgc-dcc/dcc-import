@@ -20,16 +20,21 @@ package org.icgc.dcc.imports.gene.reader;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
+import com.google.common.base.Stopwatch;
+
 import lombok.SneakyThrows;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Helper class for reading files and consuming lines.
  */
+@Slf4j
 public final class BaseReader {
 
   /**
@@ -44,6 +49,8 @@ public final class BaseReader {
    */
   @SneakyThrows
   public static void read(String URI, Consumer<String[]> lambda) {
+    log.info("Reading {}", URI);
+    val watch = Stopwatch.createStarted();
     val bufferedReader = getReader(URI);
 
     for (String s = bufferedReader.readLine(); null != s; s = bufferedReader.readLine()) {
@@ -53,6 +60,8 @@ public final class BaseReader {
         lambda.accept(line);
       }
     }
+    val time = watch.stop().elapsed(TimeUnit.SECONDS);
+    log.info("Read finished in {} seconds", time);
   }
 
   @SneakyThrows
@@ -60,7 +69,6 @@ public final class BaseReader {
     val gzip = new GZIPInputStream(new URL(URI).openStream());
     val inputStreamReader = new InputStreamReader(gzip);
     val bufferedReader = new BufferedReader(inputStreamReader);
-
     return bufferedReader;
   }
 

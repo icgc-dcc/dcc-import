@@ -15,46 +15,46 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.gene.writer;
+package org.icgc.dcc.imports.gene.reader;
 
-import org.icgc.dcc.common.core.model.ReleaseCollection;
-import org.icgc.dcc.imports.core.util.AbstractJongoWriter;
-import org.jongo.MongoCollection;
+import static org.icgc.dcc.imports.gene.core.Sources.TRANSLATION_URI;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.mongodb.MongoClientURI;
+import java.util.HashMap;
+import java.util.Map;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.Data;
+import lombok.val;
 
-@Slf4j
-public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
-
-  /**
-   * Constants
-   */
-  private static final int STATUS_GENE_COUNT = 10000;
+@Data
+public class TranslationReader {
 
   /**
    * State
    */
-  private int counter = 0;
-  private MongoCollection geneCollection;
+  private final Map<String, String> translationMap;
+  private final Map<String, String> translationToGene;
+  private final Map<String, String> transcriptToGene;
 
-  /**
-   * @param mongoUri
-   */
-  public GeneWriter(MongoClientURI mongoUri) {
-    super(mongoUri);
-    this.geneCollection = getCollection(ReleaseCollection.GENE_COLLECTION);
-    this.geneCollection.drop();
+  public TranslationReader(Map<String, String> transcriptToGene) {
+    translationMap = new HashMap<String, String>();
+    translationToGene = new HashMap<String, String>();
+    this.transcriptToGene = transcriptToGene;
   }
 
-  @Override
-  public void writeFiles(ObjectNode value) {
-    if (++counter % STATUS_GENE_COUNT == 0) {
-      log.info("Writing {}", counter);
+  public void read() {
+    BaseReader.read(TRANSLATION_URI, line -> {
+      String transcriptId = line[1];
+      String translationId = line[0];
+      translationMap.put(transcriptId, translationId);
+    });
+
+    for (val entry : translationMap.entrySet()) {
+      val translationId = entry.getValue();
+      val geneId = transcriptToGene.get(entry.getKey());
+
+      translationToGene.put(translationId, geneId);
     }
-    this.geneCollection.insert(value);
+
   }
 
 }

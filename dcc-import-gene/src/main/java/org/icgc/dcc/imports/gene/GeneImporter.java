@@ -30,15 +30,14 @@ import org.icgc.dcc.imports.gene.reader.ASNReader;
 import org.icgc.dcc.imports.gene.reader.DomainReader;
 import org.icgc.dcc.imports.gene.reader.ExternalReader;
 import org.icgc.dcc.imports.gene.reader.GeneReader;
-import org.icgc.dcc.imports.gene.reader.IdReader;
 import org.icgc.dcc.imports.gene.reader.NameReader;
 import org.icgc.dcc.imports.gene.reader.SynonymReader;
 import org.icgc.dcc.imports.gene.reader.TransReader;
+import org.icgc.dcc.imports.gene.writer.GeneConstructor;
 import org.icgc.dcc.imports.gene.writer.GeneWriter;
 
 import com.mongodb.MongoClientURI;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
@@ -48,15 +47,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class GeneImporter implements SourceImporter {
 
-  @NonNull
   private final URI gtfUri;
-  @NonNull
   private final MongoClientURI mongoUri;
-
-  public GeneImporter(@NonNull MongoClientURI mongoUri, @NonNull URI gtfUri) {
-    this.gtfUri = gtfUri;
-    this.mongoUri = mongoUri;
-  }
 
   @Override
   public ImportSource getSource() {
@@ -72,15 +64,23 @@ public class GeneImporter implements SourceImporter {
   public void execute() {
     val watch = createStarted();
 
-    // TODO: Investigate ordering to see if gene.txt does not need to be read twice.
     log.info("Doing Ensembl Data Joining...");
-    val idMap = IdReader.getIdMap();
-    val nameMap = NameReader.readXrefDisplay();
-    val synMap = SynonymReader.getSynonymMap(idMap);
-    val canonicalMap = GeneReader.canonicalMap();
+
+    val geneReader = new GeneReader();
+    geneReader.read();
+
+    val nameReader = new NameReader();
+    nameReader.read();
+
+    val synReader = new SynonymReader(geneReader.getXrefGeneMap());
+    val synMap = synReader.read();
+
     val transMap = TransReader.joinTrans();
-    val pfeatures = DomainReader.createProteinFeatures(transMap);
-    val externalIds = ExternalReader.externalIds();
+    val pFeatures = DomainReader.createProteinFeatures(transMap);
+
+    val externalReader = new ExternalReader(nameReader, geneReader);
+    val externalIds = externalReader.read();
+
     log.info("... Done Ensemble Data Joining!");
 
     log.info("Starting ASN.1 Import from NCBI.");
@@ -88,14 +88,15 @@ public class GeneImporter implements SourceImporter {
     val summaryMap = asnReader.callGene2Xml();
     log.info("Staged {} Summaries from NCBI.", summaryMap.size());
 
-    log.info("Reading genes gzip stream from {}...", gtfUri);
-    val geneReader = getReader();
-
     log.info("Writing genes to {}...", mongoUri);
-    val writer =
-        new GeneWriter(mongoUri, geneReader, summaryMap, nameMap, synMap, canonicalMap, pfeatures, externalIds);
-    writer.consumeGenes();
-    writer.close();
+
+    val writer = new GeneWriter(mongoUri);
+
+    val constructor =
+        new GeneConstructor(getReader(), summaryMap, nameReader.getNameMap(), synMap, geneReader.getCanonicalMap(),
+            pFeatures,
+            externalIds, writer);
+    constructor.consumeGenes();
 
     log.info("Finished writing genes in {}", watch);
   }

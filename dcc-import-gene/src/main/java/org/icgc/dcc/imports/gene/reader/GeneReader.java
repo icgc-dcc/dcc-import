@@ -17,70 +17,43 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
+import static org.icgc.dcc.imports.gene.core.Sources.GENE_URI;
+
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Reader for getting gene related maps
  */
-@Slf4j
-public final class GeneReader {
+@Data
+@NoArgsConstructor
+public class GeneReader {
 
   /**
-   * Constants
+   * State
    */
-  private static final String GENE_URI =
-      "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/gene.txt.gz";
+  private final Map<String, String> geneIdMap = new HashMap<>();
+  private final Map<String, String> canonicalMap = new HashMap<>();
+  private final Map<String, String> xrefGeneMap = new HashMap<>();
 
-  /**
-   * Caching
-   */
-  private static Map<String, String> geneIdMap = null;
-
-  /**
-   * Creates mapping of internal gene id to stable gene id
-   * @return Map of gene_id -> stable_id
-   */
   @SneakyThrows
-  public static Map<String, String> geneIdMap() {
-    if (geneIdMap != null) {
-      log.info("Using cached gene ID map.");
-      return geneIdMap;
-    }
-
-    geneIdMap = new HashMap<String, String>();
-    BaseReader.read(GENE_URI, line -> {
-      String id = line[0];
-      String geneStableId = line[13];
-      geneIdMap.put(id, geneStableId);
-    });
-
-    return geneIdMap;
-  }
-
-  /**
-   * Creates a map of stable_id to the canonical transcript id. Also caches gene Id Map in the process.
-   * @return Map of stable_id (ENSG*) -> CanonicalTranscript
-   */
-  @SneakyThrows
-  public static Map<String, String> canonicalMap() {
+  public void read() {
     val transcriptMap = TransReader.getTranscriptMap();
 
-    geneIdMap = new HashMap<String, String>();
-    val retMap = new HashMap<String, String>();
     BaseReader.read(GENE_URI, line -> {
       String id = line[0];
+      String displayXrefId = line[7];
       String geneId = line[13];
       String canonicalTranscript = transcriptMap.get(line[12]);
-      retMap.put(geneId, canonicalTranscript);
+      canonicalMap.put(geneId, canonicalTranscript);
       geneIdMap.put(id, geneId);
+      xrefGeneMap.put(displayXrefId, geneId);
     });
-
-    return retMap;
   }
 
 }

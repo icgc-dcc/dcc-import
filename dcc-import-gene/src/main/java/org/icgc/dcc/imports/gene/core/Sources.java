@@ -15,46 +15,18 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.gene.writer;
+package org.icgc.dcc.imports.gene.core;
 
-import org.icgc.dcc.common.core.model.ReleaseCollection;
-import org.icgc.dcc.imports.core.util.AbstractJongoWriter;
-import org.jongo.MongoCollection;
+public final class Sources {
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.mongodb.MongoClientURI;
+  private static final String BASE_URI = "ftp://ftp.ensembl.org/pub/grch37/release-83/mysql/homo_sapiens_core_83_37/";
+  public static final String GENE_URI = BASE_URI + "gene.txt.gz";
+  public static final String XREF_URI = BASE_URI + "xref.txt.gz";
+  public static final String OBJECT_XREF_URI = BASE_URI + "object_xref.txt.gz";
+  public static final String EXTERNAL_SYN_URI = BASE_URI + "external_synonym.txt.gz";
+  public static final String TRANSCRIPT_URI = BASE_URI + "transcript.txt.gz";
+  public static final String TRANSLATION_URI = BASE_URI + "translation.txt.gz";
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
-public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
-
-  /**
-   * Constants
-   */
-  private static final int STATUS_GENE_COUNT = 10000;
-
-  /**
-   * State
-   */
-  private int counter = 0;
-  private MongoCollection geneCollection;
-
-  /**
-   * @param mongoUri
-   */
-  public GeneWriter(MongoClientURI mongoUri) {
-    super(mongoUri);
-    this.geneCollection = getCollection(ReleaseCollection.GENE_COLLECTION);
-    this.geneCollection.drop();
-  }
-
-  @Override
-  public void writeFiles(ObjectNode value) {
-    if (++counter % STATUS_GENE_COUNT == 0) {
-      log.info("Writing {}", counter);
-    }
-    this.geneCollection.insert(value);
-  }
-
+  public static final String NCBI_URI =
+      "ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/ASN_BINARY/Mammalia/Homo_sapiens.ags.gz";
 }

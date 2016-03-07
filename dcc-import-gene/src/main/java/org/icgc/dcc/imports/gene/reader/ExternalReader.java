@@ -17,31 +17,31 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
+import static org.icgc.dcc.common.json.Jackson.DEFAULT;
+import static org.icgc.dcc.imports.gene.core.Sources.OBJECT_XREF_URI;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 /**
  * Responsible for creating a map of gene to external db ids
  */
+@RequiredArgsConstructor
 public final class ExternalReader {
 
-  /**
-   * Constants
-   */
-  private static final String OBJECT_XREF_URI =
-      "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/object_xref.txt.gz";
-  private static final ObjectMapper MAPPER = new ObjectMapper();
+  public final NameReader nameReader;
+  public final GeneReader geneReader;
 
-  public static Map<String, ObjectNode> externalIds() {
-    val geneIdMap = GeneReader.geneIdMap();
+  public Map<String, ObjectNode> read() {
+    val geneIdMap = geneReader.getGeneIdMap();
     val transToGeneMap = TransReader.translationToGene();
 
     val retMap = new HashMap<String, ObjectNode>();
@@ -53,26 +53,26 @@ public final class ExternalReader {
         if (retMap.containsKey(geneId)) {
           externalDbs = retMap.get(geneId);
         } else {
-          externalDbs = MAPPER.createObjectNode();
-          externalDbs.put("entrez_gene", MAPPER.createArrayNode());
-          externalDbs.put("hgnc", MAPPER.createArrayNode());
-          externalDbs.put("omim_gene", MAPPER.createArrayNode());
-          externalDbs.put("uniprotkb_swissprot", MAPPER.createArrayNode());
+          externalDbs = DEFAULT.createObjectNode();
+          externalDbs.put("entrez_gene", DEFAULT.createArrayNode());
+          externalDbs.put("hgnc", DEFAULT.createArrayNode());
+          externalDbs.put("omim_gene", DEFAULT.createArrayNode());
+          externalDbs.put("uniprotkb_swissprot", DEFAULT.createArrayNode());
           retMap.put(geneId, externalDbs);
         }
 
         String xrefId = line[3];
-        if (NameReader.entrezMap.containsKey(xrefId)) {
+        if (nameReader.getEntrezMap().containsKey(xrefId)) {
           ArrayNode arrayNode = (ArrayNode) externalDbs.get("entrez_gene");
-          arrayNode.add(NameReader.entrezMap.get(xrefId));
+          arrayNode.add(nameReader.getEntrezMap().get(xrefId));
 
-        } else if (NameReader.hgncMap.containsKey(xrefId)) {
+        } else if (nameReader.getHgncMap().containsKey(xrefId)) {
           ArrayNode arrayNode = (ArrayNode) externalDbs.get("hgnc");
-          arrayNode.add(NameReader.hgncMap.get(xrefId));
+          arrayNode.add(nameReader.getHgncMap().get(xrefId));
 
-        } else if (NameReader.mimMap.containsKey(xrefId)) {
+        } else if (nameReader.getMimMap().containsKey(xrefId)) {
           ArrayNode arrayNode = (ArrayNode) externalDbs.get("omim_gene");
-          arrayNode.add(NameReader.mimMap.get(xrefId));
+          arrayNode.add(nameReader.getMimMap().get(xrefId));
         }
 
       } else if ("Translation".equals(line[2])) {
@@ -84,18 +84,18 @@ public final class ExternalReader {
         if (retMap.containsKey(geneId)) {
           externalDbs = retMap.get(geneId);
         } else {
-          externalDbs = MAPPER.createObjectNode();
-          externalDbs.put("entrez_gene", MAPPER.createArrayNode());
-          externalDbs.put("hgnc", MAPPER.createArrayNode());
-          externalDbs.put("omim_gene", MAPPER.createArrayNode());
-          externalDbs.put("uniprotkb_swissprot", MAPPER.createArrayNode());
+          externalDbs = DEFAULT.createObjectNode();
+          externalDbs.put("entrez_gene", DEFAULT.createArrayNode());
+          externalDbs.put("hgnc", DEFAULT.createArrayNode());
+          externalDbs.put("omim_gene", DEFAULT.createArrayNode());
+          externalDbs.put("uniprotkb_swissprot", DEFAULT.createArrayNode());
           retMap.put(geneId, externalDbs);
         }
 
         String xrefId = line[3];
-        if (NameReader.uniprotMap.containsKey(xrefId)) {
+        if (nameReader.getUniprotMap().containsKey(xrefId)) {
           ArrayNode arrayNode = (ArrayNode) externalDbs.get("uniprotkb_swissprot");
-          String uniprot = NameReader.uniprotMap.get(xrefId);
+          String uniprot = nameReader.getUniprotMap().get(xrefId);
 
           Iterator<JsonNode> iter = arrayNode.elements();
           boolean contained = false;
@@ -113,7 +113,6 @@ public final class ExternalReader {
     });
 
     return retMap;
-
   }
 
 }

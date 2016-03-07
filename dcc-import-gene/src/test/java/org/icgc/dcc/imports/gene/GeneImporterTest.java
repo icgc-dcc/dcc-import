@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.imports.gene;
 
-import static org.icgc.dcc.imports.core.util.Importers.getLocalMongoClientUri;
 import static org.icgc.dcc.imports.core.util.Importers.getRemoteGenesGtf;
 
 import java.io.IOException;
@@ -42,8 +41,8 @@ public class GeneImporterTest {
   @Test
   @Ignore
   public void testExecute() throws IOException {
-    this.releaseUri = getLocalMongoClientUri("dcc-genome-test");
-    this.importer = new GeneImporter(releaseUri, getRemoteGenesGtf());
+    this.releaseUri = new MongoClientURI("mongodb://127.0.0.1:27017/dcc-genome-test");
+    this.importer = new GeneImporter(getRemoteGenesGtf(), releaseUri);
     importer.execute();
   }
 

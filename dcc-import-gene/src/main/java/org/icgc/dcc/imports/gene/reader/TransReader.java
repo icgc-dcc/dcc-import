@@ -17,6 +17,9 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
+import static org.icgc.dcc.imports.gene.core.Sources.TRANSCRIPT_URI;
+import static org.icgc.dcc.imports.gene.core.Sources.TRANSLATION_URI;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,14 +31,6 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public final class TransReader {
-
-  /**
-   * Constants
-   */
-  private static final String TRANSCRIPT_URI =
-      "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/transcript.txt.gz";
-  private static final String TRANSLATION_URI =
-      "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/translation.txt.gz";
 
   /**
    * Caching
@@ -117,7 +112,6 @@ public final class TransReader {
       String translationId = line[0];
       translationMap.put(transcriptId, translationId);
     });
-
     return translationMap;
   }
 

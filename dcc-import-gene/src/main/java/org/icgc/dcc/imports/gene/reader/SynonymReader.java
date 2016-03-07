@@ -17,36 +17,35 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
+import static org.icgc.dcc.common.json.Jackson.DEFAULT;
+import static org.icgc.dcc.imports.gene.core.Sources.EXTERNAL_SYN_URI;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 /**
  * Class responsible for reading and mapping Gene Synonyms
  */
-public final class SynonymReader {
+@RequiredArgsConstructor
+public class SynonymReader {
 
-  /**
-   * Constants
-   */
-  private static final String URI =
-      "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/external_synonym.txt.gz";
-  private static final ObjectMapper MAPPER = new ObjectMapper();
+  public final Map<String, String> idMap;
 
-  public static Map<String, ArrayNode> getSynonymMap(Map<String, String> idMap) {
-
+  public Map<String, ArrayNode> read() {
     val retMap = new HashMap<String, ArrayNode>();
-    BaseReader.read(URI, line -> {
+
+    BaseReader.read(EXTERNAL_SYN_URI, line -> {
       String eId = idMap.get(line[0]);
       if (eId != null) {
         if (retMap.containsKey(eId)) {
           retMap.get(eId).add(line[1]);
         } else {
-          ArrayNode newList = MAPPER.createArrayNode();
+          ArrayNode newList = DEFAULT.createArrayNode();
           newList.add(line[1]);
           retMap.put(eId, newList);
         }

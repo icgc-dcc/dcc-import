@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
+import static org.icgc.dcc.imports.gene.core.Sources.GENE_URI;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,19 +27,13 @@ import lombok.val;
 public final class IdReader {
 
   /**
-   * Constants
-   */
-  private static final String URI =
-      "ftp://ftp.ensembl.org/pub/grch37/release-83/mysql/homo_sapiens_core_83_37/gene.txt.gz";
-
-  /**
    * Reads gene.txt and creates mapping for Display xref to stable gene id
    * @return Map of xrefId -> stable gene id (ENSG*)
    */
-  public static Map<String, String> getIdMap() {
+  public static Map<String, String> read() {
 
     val retMap = new HashMap<String, String>();
-    BaseReader.read(URI, line -> {
+    BaseReader.read(GENE_URI, line -> {
       String displayXrefId = line[7];
       String stableId = line[13];
       retMap.put(displayXrefId, stableId);

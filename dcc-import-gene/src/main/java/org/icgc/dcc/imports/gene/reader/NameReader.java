@@ -17,46 +17,38 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
+import static org.icgc.dcc.imports.gene.core.Sources.XREF_URI;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Reads display names for genes and constructs map of symbol to gene name
  */
-@Slf4j
-public final class NameReader {
+@Data
+@NoArgsConstructor
+public class NameReader {
 
-  /**
-   * Constants
-   */
-  private static final String XREF_URI =
-      "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/xref.txt.gz";
-
-  /**
-   * Caching
-   */
-  public static Map<String, String> entrezMap = new HashMap<String, String>();
-  public static Map<String, String> hgncMap = new HashMap<String, String>();
-  public static Map<String, String> mimMap = new HashMap<String, String>();
-  public static Map<String, String> uniprotMap = new HashMap<String, String>();
+  public final Map<String, String> nameMap = new HashMap<>();
+  public final Map<String, String> entrezMap = new HashMap<>();
+  public final Map<String, String> hgncMap = new HashMap<>();
+  public final Map<String, String> mimMap = new HashMap<>();
+  public final Map<String, String> uniprotMap = new HashMap<>();
 
   /**
    * Get the map of xref display id -> gene name Caches external db ids in hashmaps for entrez, hgnc, mim, & uniprot.
    */
-  public static Map<String, String> readXrefDisplay() {
-    log.info("Reading xref table for gene names and caching external db ids");
-
-    val retMap = new HashMap<String, String>();
+  public void read() {
     BaseReader.read(XREF_URI, line -> {
       // Only use the rows we care about.
       if ("12600".equals(line[1])) {
         // Gene Wiki
         String symbol = line[3];
         String name = line[5];
-        retMap.put(symbol, name);
+        nameMap.put(symbol, name);
       } else if ("1300".equals(line[1])) {
         // Entrez
         String xrefId = line[0];
@@ -79,8 +71,6 @@ public final class NameReader {
         uniprotMap.put(xrefId, dbID);
       }
     });
-
-    return retMap;
   }
 
 }

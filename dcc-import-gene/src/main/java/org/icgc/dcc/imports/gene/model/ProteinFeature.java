@@ -35,11 +35,9 @@ public class ProteinFeature {
   private int end;
 
   public ProteinFeature(@NonNull String interproId, @NonNull String hitName, @NonNull String description) {
-
     this.interproId = interproId;
     this.hitName = hitName;
     this.description = description;
-
   }
 
   public ProteinFeature getCopy() {

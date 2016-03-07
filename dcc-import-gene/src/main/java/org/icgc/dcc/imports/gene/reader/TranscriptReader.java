@@ -15,46 +15,30 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.gene.writer;
+package org.icgc.dcc.imports.gene.reader;
 
-import org.icgc.dcc.common.core.model.ReleaseCollection;
-import org.icgc.dcc.imports.core.util.AbstractJongoWriter;
-import org.jongo.MongoCollection;
+import static org.icgc.dcc.imports.gene.core.Sources.TRANSCRIPT_URI;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.mongodb.MongoClientURI;
+import java.util.Map;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Slf4j
-public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
+@Data
+@NoArgsConstructor
+public class TranscriptReader {
 
-  /**
-   * Constants
-   */
-  private static final int STATUS_GENE_COUNT = 10000;
+  private static Map<String, String> transcriptMap = null;
+  private static Map<String, String> transcriptToGene = null;
 
-  /**
-   * State
-   */
-  private int counter = 0;
-  private MongoCollection geneCollection;
-
-  /**
-   * @param mongoUri
-   */
-  public GeneWriter(MongoClientURI mongoUri) {
-    super(mongoUri);
-    this.geneCollection = getCollection(ReleaseCollection.GENE_COLLECTION);
-    this.geneCollection.drop();
-  }
-
-  @Override
-  public void writeFiles(ObjectNode value) {
-    if (++counter % STATUS_GENE_COUNT == 0) {
-      log.info("Writing {}", counter);
-    }
-    this.geneCollection.insert(value);
+  public void read() {
+    BaseReader.read(TRANSCRIPT_URI, line -> {
+      String id = line[0];
+      String stableId = line[14];
+      String geneId = line[1];
+      transcriptMap.put(id, stableId);
+      transcriptToGene.put(id, geneId);
+    });
   }
 
 }

@@ -26,12 +26,10 @@ import org.icgc.dcc.imports.gene.model.ProteinFeature;
 
 import lombok.NonNull;
 import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Constructs the protein domains
  */
-@Slf4j
 public final class DomainReader {
 
   private static final String XREF_URI =
@@ -46,7 +44,6 @@ public final class DomainReader {
       "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/analysis.txt.gz";
 
   public static Map<String, List<ProteinFeature>> createProteinFeatures(@NonNull Map<String, String> transMap) {
-
     val interproMap = interproMap();
     val analysisMap = analysisMap();
 
@@ -82,7 +79,6 @@ public final class DomainReader {
    * @return HashMap of id -> protein feature
    */
   public static Map<String, ProteinFeature> interproMap() {
-
     val descriptionMap = getInterproFromXref();
     val retMap = new HashMap<String, ProteinFeature>();
 
@@ -115,7 +111,6 @@ public final class DomainReader {
   }
 
   private static String getInterproDB() {
-
     val interproId = new StringBuilder();
     BaseReader.read(EXTERNAL_DB_URI, line -> {
       if (line.length > 1 && line[1].equals("Interpro")) {
@@ -123,7 +118,6 @@ public final class DomainReader {
       }
     });
 
-    log.info("Interpro db id: {}", interproId.toString());
     return interproId.toString();
   }
 
