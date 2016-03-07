@@ -17,60 +17,24 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
-import static org.icgc.dcc.imports.gene.core.Sources.XREF_URI;
-
-import java.util.HashMap;
-import java.util.Map;
+import static org.icgc.dcc.imports.gene.core.Sources.EXTERNAL_DB_URI;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.val;
 
-/**
- * Reads display names for genes and constructs map of symbol to gene name
- */
 @Data
-@NoArgsConstructor
-public class NameReader {
+public class ExternalDatabaseReader {
 
-  public final Map<String, String> nameMap = new HashMap<>();
-  public final Map<String, String> entrezMap = new HashMap<>();
-  public final Map<String, String> hgncMap = new HashMap<>();
-  public final Map<String, String> mimMap = new HashMap<>();
-  public final Map<String, String> uniprotMap = new HashMap<>();
+  private String interproId;
 
-  /**
-   * Get the map of xref display id -> gene name Caches external db ids in hashmaps for entrez, hgnc, mim, & uniprot.
-   */
   public void read() {
-    BaseReader.read(XREF_URI, line -> {
-      // Only use the rows we care about.
-      if ("12600".equals(line[1])) {
-        // Gene Wiki
-        String symbol = line[3];
-        String name = line[5];
-        nameMap.put(symbol, name);
-      } else if ("1300".equals(line[1])) {
-        // Entrez
-        String xrefId = line[0];
-        String dbID = line[2];
-        entrezMap.put(xrefId, dbID);
-      } else if ("1100".equals(line[1])) {
-        // HGNC
-        String xrefId = line[0];
-        String dbID = line[2];
-        hgncMap.put(xrefId, dbID);
-      } else if ("1510".equals(line[1])) {
-        // MIM_GENE
-        String xrefId = line[0];
-        String dbID = line[2];
-        mimMap.put(xrefId, dbID);
-      } else if ("2200".equals(line[1])) {
-        // Uniprot/SWISSPROT
-        String xrefId = line[0];
-        String dbID = line[2];
-        uniprotMap.put(xrefId, dbID);
+    val interproId = new StringBuilder();
+    BaseReader.read(EXTERNAL_DB_URI, line -> {
+      if (line.length > 1 && line[1].equals("Interpro")) {
+        interproId.append(line[0]);
       }
     });
-  }
 
+    this.interproId = interproId.toString();
+  }
 }

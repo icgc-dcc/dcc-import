@@ -37,12 +37,13 @@ import lombok.val;
 @RequiredArgsConstructor
 public final class ExternalReader {
 
-  public final NameReader nameReader;
+  public final XrefReader nameReader;
   public final GeneReader geneReader;
+  public final TranslationReader translationReader;
 
   public Map<String, ObjectNode> read() {
     val geneIdMap = geneReader.getGeneIdMap();
-    val transToGeneMap = TransReader.translationToGene();
+    val transToGeneMap = translationReader.getTranslationToGene();
 
     val retMap = new HashMap<String, ObjectNode>();
     BaseReader.read(OBJECT_XREF_URI, line -> {

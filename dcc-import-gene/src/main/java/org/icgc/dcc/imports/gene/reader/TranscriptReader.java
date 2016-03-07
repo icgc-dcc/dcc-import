@@ -19,6 +19,7 @@ package org.icgc.dcc.imports.gene.reader;
 
 import static org.icgc.dcc.imports.gene.core.Sources.TRANSCRIPT_URI;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import lombok.Data;
@@ -28,8 +29,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class TranscriptReader {
 
-  private static Map<String, String> transcriptMap = null;
-  private static Map<String, String> transcriptToGene = null;
+  private final Map<String, String> transcriptMap = new HashMap<>();
+  private final Map<String, String> transcriptToGene = new HashMap<>();
 
   public void read() {
     BaseReader.read(TRANSCRIPT_URI, line -> {

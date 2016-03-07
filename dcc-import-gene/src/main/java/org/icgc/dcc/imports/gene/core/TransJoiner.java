@@ -15,50 +15,36 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.gene.reader;
-
-import static org.icgc.dcc.imports.gene.core.Sources.GENE_URI;
+package org.icgc.dcc.imports.gene.core;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import lombok.Data;
+import org.icgc.dcc.imports.gene.reader.TranscriptReader;
+import org.icgc.dcc.imports.gene.reader.TranslationReader;
+
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.val;
 
-/**
- * Reader for getting gene related maps
- */
-@Data
 @RequiredArgsConstructor
-public class GeneReader {
+public class TransJoiner {
 
-  /**
-   * Dependencies
-   */
+  private final TranslationReader translationReader;
   private final TranscriptReader transcriptReader;
 
   /**
-   * State
+   * Joins transcripts with translations.
+   * @return Map of translation_id to transcript stable id (ENST*)
    */
-  private final Map<String, String> geneIdMap = new HashMap<>();
-  private final Map<String, String> canonicalMap = new HashMap<>();
-  private final Map<String, String> xrefGeneMap = new HashMap<>();
-
-  @SneakyThrows
-  public void read() {
+  public Map<String, String> joinTrans() {
     val transcriptMap = transcriptReader.getTranscriptMap();
+    val translationMap = translationReader.getTranslationMap();
 
-    BaseReader.read(GENE_URI, line -> {
-      String id = line[0];
-      String displayXrefId = line[7];
-      String geneId = line[13];
-      String canonicalTranscript = transcriptMap.get(line[12]);
-      canonicalMap.put(geneId, canonicalTranscript);
-      geneIdMap.put(id, geneId);
-      xrefGeneMap.put(displayXrefId, geneId);
-    });
+    val retMap = new HashMap<String, String>();
+    for (val entry : translationMap.entrySet()) {
+      retMap.put(entry.getValue(), transcriptMap.get(entry.getKey()));
+    }
+    return retMap;
   }
 
 }

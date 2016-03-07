@@ -35,10 +35,10 @@ public class TranslationReader {
   private final Map<String, String> translationToGene;
   private final Map<String, String> transcriptToGene;
 
-  public TranslationReader(Map<String, String> transcriptToGene) {
+  public TranslationReader(TranscriptReader transcriptReader) {
     translationMap = new HashMap<String, String>();
     translationToGene = new HashMap<String, String>();
-    this.transcriptToGene = transcriptToGene;
+    this.transcriptToGene = transcriptReader.getTranscriptToGene();
   }
 
   public void read() {

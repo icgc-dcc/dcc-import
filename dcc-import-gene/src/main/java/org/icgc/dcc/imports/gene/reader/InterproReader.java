@@ -17,47 +17,32 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
-import static org.icgc.dcc.imports.gene.core.Sources.GENE_URI;
+import static org.icgc.dcc.imports.gene.core.Sources.INTERPRO_URI;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import lombok.Data;
+import org.icgc.dcc.imports.gene.model.ProteinFeature;
+
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.val;
 
-/**
- * Reader for getting gene related maps
- */
-@Data
 @RequiredArgsConstructor
-public class GeneReader {
+public class InterproReader {
+
+  private final XrefReader xrefReader;
+  @Getter
+  private final Map<String, ProteinFeature> interproMap = new HashMap<>();
 
   /**
-   * Dependencies
+   * Returns a map of protein features
    */
-  private final TranscriptReader transcriptReader;
-
-  /**
-   * State
-   */
-  private final Map<String, String> geneIdMap = new HashMap<>();
-  private final Map<String, String> canonicalMap = new HashMap<>();
-  private final Map<String, String> xrefGeneMap = new HashMap<>();
-
-  @SneakyThrows
   public void read() {
-    val transcriptMap = transcriptReader.getTranscriptMap();
-
-    BaseReader.read(GENE_URI, line -> {
-      String id = line[0];
-      String displayXrefId = line[7];
-      String geneId = line[13];
-      String canonicalTranscript = transcriptMap.get(line[12]);
-      canonicalMap.put(geneId, canonicalTranscript);
-      geneIdMap.put(id, geneId);
-      xrefGeneMap.put(displayXrefId, geneId);
+    val descriptionMap = xrefReader.getInterproMap();
+    BaseReader.read(INTERPRO_URI, line -> {
+      ProteinFeature pf = new ProteinFeature(line[0], line[1], descriptionMap.get(line[0]));
+      interproMap.put(line[1], pf);
     });
   }
 

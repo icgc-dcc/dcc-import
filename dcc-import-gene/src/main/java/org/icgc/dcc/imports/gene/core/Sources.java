@@ -22,10 +22,14 @@ public final class Sources {
   private static final String BASE_URI = "ftp://ftp.ensembl.org/pub/grch37/release-83/mysql/homo_sapiens_core_83_37/";
   public static final String GENE_URI = BASE_URI + "gene.txt.gz";
   public static final String XREF_URI = BASE_URI + "xref.txt.gz";
+  public static final String EXTERNAL_DB_URI = BASE_URI + "external_db.txt.gz";
   public static final String OBJECT_XREF_URI = BASE_URI + "object_xref.txt.gz";
   public static final String EXTERNAL_SYN_URI = BASE_URI + "external_synonym.txt.gz";
   public static final String TRANSCRIPT_URI = BASE_URI + "transcript.txt.gz";
   public static final String TRANSLATION_URI = BASE_URI + "translation.txt.gz";
+  public static final String PROTEIN_FEATURE_URI = BASE_URI + "protein_feature.txt.gz";
+  public static final String INTERPRO_URI = BASE_URI + "interpro.txt.gz";
+  public static final String ANALYSIS_URI = BASE_URI + "analysis.txt.gz";
 
   public static final String NCBI_URI =
       "ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/ASN_BINARY/Mammalia/Homo_sapiens.ags.gz";

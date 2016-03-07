@@ -17,47 +17,29 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
-import static org.icgc.dcc.imports.gene.core.Sources.GENE_URI;
+import static org.icgc.dcc.imports.gene.core.Sources.ANALYSIS_URI;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.val;
+import lombok.NoArgsConstructor;
 
-/**
- * Reader for getting gene related maps
- */
 @Data
-@RequiredArgsConstructor
-public class GeneReader {
+@NoArgsConstructor
+public class AnalysisReader {
 
-  /**
-   * Dependencies
-   */
-  private final TranscriptReader transcriptReader;
+  private final Map<String, String> analysisMap = new HashMap<>();
 
-  /**
-   * State
-   */
-  private final Map<String, String> geneIdMap = new HashMap<>();
-  private final Map<String, String> canonicalMap = new HashMap<>();
-  private final Map<String, String> xrefGeneMap = new HashMap<>();
-
-  @SneakyThrows
   public void read() {
-    val transcriptMap = transcriptReader.getTranscriptMap();
-
-    BaseReader.read(GENE_URI, line -> {
+    BaseReader.read(ANALYSIS_URI, line -> {
       String id = line[0];
-      String displayXrefId = line[7];
-      String geneId = line[13];
-      String canonicalTranscript = transcriptMap.get(line[12]);
-      canonicalMap.put(geneId, canonicalTranscript);
-      geneIdMap.put(id, geneId);
-      xrefGeneMap.put(displayXrefId, geneId);
+      String gffSource = line[6];
+
+      // We can support additional programs/algorithms for protein domains here
+      if ("pfam".equals(gffSource)) {
+        analysisMap.put(id, gffSource);
+      }
     });
   }
 

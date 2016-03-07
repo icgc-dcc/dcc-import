@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
+import static org.icgc.dcc.imports.gene.core.Sources.PROTEIN_FEATURE_URI;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,28 +26,22 @@ import java.util.Map;
 
 import org.icgc.dcc.imports.gene.model.ProteinFeature;
 
-import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 /**
  * Constructs the protein domains
  */
+@RequiredArgsConstructor
 public final class DomainReader {
 
-  private static final String XREF_URI =
-      "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/xref.txt.gz";
-  private static final String EXTERNAL_DB_URI =
-      "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/external_db.txt.gz";
-  private static final String PROTEIN_FEATURE_URI =
-      "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/protein_feature.txt.gz";
-  private static final String INTERPRO_URI =
-      "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/interpro.txt.gz";
-  private static final String ANALYSIS_URI =
-      "ftp://ftp.ensembl.org/pub/grch37/release-82/mysql/homo_sapiens_core_82_37/analysis.txt.gz";
+  private final Map<String, String> transMap;
+  private final InterproReader interproReader;
+  private final AnalysisReader analysisReader;
 
-  public static Map<String, List<ProteinFeature>> createProteinFeatures(@NonNull Map<String, String> transMap) {
-    val interproMap = interproMap();
-    val analysisMap = analysisMap();
+  public Map<String, List<ProteinFeature>> createProteinFeatures() {
+    val analysisMap = analysisReader.getAnalysisMap();
+    val interproMap = interproReader.getInterproMap();
 
     val retMap = new HashMap<String, List<ProteinFeature>>();
 
@@ -68,70 +64,6 @@ public final class DomainReader {
           }
         }
 
-      }
-    });
-
-    return retMap;
-  }
-
-  /**
-   * Returns a map of protein features
-   * @return HashMap of id -> protein feature
-   */
-  public static Map<String, ProteinFeature> interproMap() {
-    val descriptionMap = getInterproFromXref();
-    val retMap = new HashMap<String, ProteinFeature>();
-
-    BaseReader.read(INTERPRO_URI, line -> {
-      ProteinFeature pf = new ProteinFeature(line[0], line[1], descriptionMap.get(line[0]));
-      retMap.put(line[1], pf);
-    });
-
-    return retMap;
-  }
-
-  /**
-   * Gets the Interpro id and description from the xref table.
-   * @return Hashmap of descriptions keyed to Interpro ids.
-   */
-  public static Map<String, String> getInterproFromXref() {
-
-    val interproDbId = getInterproDB();
-
-    val retMap = new HashMap<String, String>();
-    BaseReader.read(XREF_URI, line -> {
-      if (interproDbId.equals(line[1])) {
-        String description = line[5];
-        String id = line[2];
-        retMap.put(id, description);
-      }
-    });
-
-    return retMap;
-  }
-
-  private static String getInterproDB() {
-    val interproId = new StringBuilder();
-    BaseReader.read(EXTERNAL_DB_URI, line -> {
-      if (line.length > 1 && line[1].equals("Interpro")) {
-        interproId.append(line[0]);
-      }
-    });
-
-    return interproId.toString();
-  }
-
-  private static Map<String, String> analysisMap() {
-
-    val retMap = new HashMap<String, String>();
-
-    BaseReader.read(ANALYSIS_URI, line -> {
-      String id = line[0];
-      String gffSource = line[6];
-
-      // We can support additional programs/algorithms for protein domains here
-      if ("pfam".equals(gffSource)) {
-        retMap.put(id, gffSource);
       }
     });
 
