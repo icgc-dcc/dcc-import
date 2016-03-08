@@ -20,7 +20,6 @@ package org.icgc.dcc.imports.gene.reader;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
@@ -60,8 +59,7 @@ public final class BaseReader {
         lambda.accept(line);
       }
     }
-    val time = watch.stop().elapsed(TimeUnit.SECONDS);
-    log.info("Read finished in {} seconds", time);
+    log.info("Read finished in {}", watch);
   }
 
   @SneakyThrows

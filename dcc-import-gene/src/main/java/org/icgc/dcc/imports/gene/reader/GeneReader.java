@@ -47,7 +47,7 @@ public class GeneReader {
   private final Map<String, String> xrefGeneMap = new HashMap<>();
 
   @SneakyThrows
-  public void read() {
+  public GeneReader read() {
     val transcriptMap = transcriptReader.getTranscriptMap();
 
     BaseReader.read(GENE_URI, line -> {
@@ -59,6 +59,7 @@ public class GeneReader {
       geneIdMap.put(id, geneId);
       xrefGeneMap.put(displayXrefId, geneId);
     });
+    return this;
   }
 
 }

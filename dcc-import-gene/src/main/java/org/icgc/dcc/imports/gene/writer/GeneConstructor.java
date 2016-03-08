@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.icgc.dcc.imports.gene.model.Ensembl;
 import org.icgc.dcc.imports.gene.model.ProteinFeature;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -51,11 +52,7 @@ public class GeneConstructor {
    */
   private final BufferedReader bufferedReader;
   private final Map<String, String> summaryMap;
-  private final Map<String, String> nameMap;
-  private final Map<String, ArrayNode> synMap;
-  private final Map<String, String> canonicalMap;
-  private final Map<String, List<ProteinFeature>> pFeatures;
-  private final Map<String, ObjectNode> externalIds;
+  private final Ensembl ensembl;
   private final GeneWriter writer;
 
   /**
@@ -66,6 +63,7 @@ public class GeneConstructor {
   @SneakyThrows
   public void consumeGenes() {
     log.info("CONSUMING GENES");
+
     ObjectNode geneNode = null;
     ObjectNode curTranscript = null;
     ArrayNode transcripts = MAPPER.createArrayNode();
@@ -93,7 +91,7 @@ public class GeneConstructor {
                     geneNode.get("canonical_transcript_id").asText());
                 transcripts.add(trans);
                 geneNode.put("transcripts", transcripts);
-                geneNode.put("external_db_ids", externalIds.get(geneNode.get("_gene_id").asText()));
+                geneNode.put("external_db_ids", externalIds().get(geneNode.get("_gene_id").asText()));
                 writeGene(geneNode);
                 curTranscript = null;
                 transcripts = MAPPER.createArrayNode();
@@ -107,7 +105,7 @@ public class GeneConstructor {
               geneNode.put("name", getName(geneNode.get("symbol").asText()));
               geneNode.put("description", summaryMap.get(geneNode.get("_gene_id").asText()));
               geneNode.put("synonyms", getDescription(geneNode.get("_gene_id").asText()));
-              geneNode.put("canonical_transcript_id", canonicalMap.get(geneNode.get("_gene_id").asText()));
+              geneNode.put("canonical_transcript_id", canonicalMap().get(geneNode.get("_gene_id").asText()));
 
             } else if (entry.get("type").asText().equals("transcript")) {
               if (curTranscript != null) {
@@ -211,20 +209,11 @@ public class GeneConstructor {
   }
 
   private String getName(String symbol) {
-    if (nameMap.containsKey(symbol)) {
-      return nameMap.get(symbol);
-    } else {
-      return "";
-    }
+    return nameMap().getOrDefault(symbol, "");
   }
 
   private ArrayNode getDescription(String id) {
-    if (synMap.containsKey(id)) {
-      return synMap.get(id);
-    } else {
-      return MAPPER.createArrayNode();
-    }
-
+    return synMap().getOrDefault(id, MAPPER.createArrayNode());
   }
 
   private static HashMap<String, String> parseAttributes(String attributes) {
@@ -280,7 +269,7 @@ public class GeneConstructor {
   }
 
   private ObjectNode attachDomains(ObjectNode transcript) {
-    val pfs = pFeatures.get(transcript.get("id").asText());
+    val pfs = pFeatures().get(transcript.get("id").asText());
     val domains = MAPPER.createArrayNode();
 
     if (pfs != null) {
@@ -476,6 +465,29 @@ public class GeneConstructor {
       seqExonEnd++;
     }
     return seqExonEnd;
+  }
+
+  /*
+   * Ensembl Helpers
+   */
+  private Map<String, String> nameMap() {
+    return this.ensembl.getNameMap();
+  }
+
+  private Map<String, String> canonicalMap() {
+    return this.ensembl.getCanonicalMap();
+  }
+
+  private Map<String, ObjectNode> externalIds() {
+    return this.ensembl.getExternalIds();
+  }
+
+  private Map<String, ArrayNode> synMap() {
+    return this.ensembl.getSynonymMap();
+  }
+
+  private Map<String, List<ProteinFeature>> pFeatures() {
+    return this.ensembl.getPFeatures();
   }
 
 }

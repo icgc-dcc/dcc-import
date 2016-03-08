@@ -17,11 +17,27 @@
  */
 package org.icgc.dcc.imports.gene.model;
 
-import lombok.Builder;
-import lombok.Data;
+import java.util.List;
+import java.util.Map;
 
-@Data
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import lombok.Builder;
+import lombok.Getter;
+
 @Builder
 public class Ensembl {
+
+  @Getter
+  private final Map<String, String> nameMap;
+  @Getter
+  private final Map<String, ArrayNode> synonymMap;
+  @Getter
+  private final Map<String, String> canonicalMap;
+  @Getter
+  private final Map<String, List<ProteinFeature>> pFeatures;
+  @Getter
+  private final Map<String, ObjectNode> externalIds;
 
 }

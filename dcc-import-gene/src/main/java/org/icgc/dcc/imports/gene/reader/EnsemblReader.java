@@ -17,30 +17,49 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
-import static org.icgc.dcc.imports.gene.core.Sources.TRANSCRIPT_URI;
+import org.icgc.dcc.imports.gene.core.TransJoiner;
+import org.icgc.dcc.imports.gene.model.Ensembl;
 
-import java.util.HashMap;
-import java.util.Map;
+import lombok.val;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+public class EnsemblReader {
 
-@Data
-@NoArgsConstructor
-public class TranscriptReader {
+  public Ensembl read() {
+    val transcriptReader = new TranscriptReader().read();
 
-  private final Map<String, String> transcriptMap = new HashMap<>();
-  private final Map<String, String> transcriptToGene = new HashMap<>();
+    val geneReader = new GeneReader(transcriptReader).read();
+    val canonicalMap = geneReader.getCanonicalMap();
 
-  public TranscriptReader read() {
-    BaseReader.read(TRANSCRIPT_URI, line -> {
-      String id = line[0];
-      String stableId = line[14];
-      String geneId = line[1];
-      transcriptMap.put(id, stableId);
-      transcriptToGene.put(id, geneId);
-    });
-    return this;
+    val externalDBReader = new ExternalDatabaseReader().read();
+
+    val synReader = new SynonymReader(geneReader.getXrefGeneMap()).read();
+    val synMap = synReader.getSynMap();
+
+    val translationReader = new TranslationReader(transcriptReader).read();
+
+    val transJoiner = new TransJoiner(translationReader, transcriptReader);
+    val transMap = transJoiner.joinTrans();
+
+    val xrefReader = new XrefReader(externalDBReader).read();
+    val nameMap = xrefReader.getNameMap();
+
+    val analysisReader = new AnalysisReader().read();
+    val interproReader = new InterproReader(xrefReader).read();
+    val domainReader = new DomainReader(transMap, interproReader, analysisReader);
+    val pFeatures = domainReader.createProteinFeatures();
+
+    val externalReader = new ExternalReader(xrefReader, geneReader, translationReader).read();
+    val externalIds = externalReader.getExternalIds();
+
+    val ensembl = Ensembl.builder()
+        .nameMap(nameMap)
+        .synonymMap(synMap)
+        .canonicalMap(canonicalMap)
+        .pFeatures(pFeatures)
+        .externalIds(externalIds)
+        .build();
+
+    return ensembl;
   }
 
 }

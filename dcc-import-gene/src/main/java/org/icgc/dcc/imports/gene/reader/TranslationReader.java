@@ -41,7 +41,7 @@ public class TranslationReader {
     this.transcriptToGene = transcriptReader.getTranscriptToGene();
   }
 
-  public void read() {
+  public TranslationReader read() {
     BaseReader.read(TRANSLATION_URI, line -> {
       String transcriptId = line[1];
       String translationId = line[0];
@@ -54,7 +54,7 @@ public class TranslationReader {
 
       translationToGene.put(translationId, geneId);
     }
-
+    return this;
   }
 
 }

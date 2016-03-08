@@ -31,7 +31,7 @@ public class AnalysisReader {
 
   private final Map<String, String> analysisMap = new HashMap<>();
 
-  public void read() {
+  public AnalysisReader read() {
     BaseReader.read(ANALYSIS_URI, line -> {
       String id = line[0];
       String gffSource = line[6];
@@ -41,6 +41,7 @@ public class AnalysisReader {
         analysisMap.put(id, gffSource);
       }
     });
+    return this;
   }
 
 }

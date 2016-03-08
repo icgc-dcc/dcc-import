@@ -25,8 +25,8 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.val;
 
 /**
  * Class responsible for reading and mapping Gene Synonyms
@@ -34,25 +34,31 @@ import lombok.val;
 @RequiredArgsConstructor
 public class SynonymReader {
 
-  public final Map<String, String> idMap;
+  /**
+   * Dependencies
+   */
+  private final Map<String, String> idMap;
 
-  public Map<String, ArrayNode> read() {
-    val retMap = new HashMap<String, ArrayNode>();
+  /**
+   * State
+   */
+  @Getter
+  private final Map<String, ArrayNode> synMap = new HashMap<>();
 
+  public SynonymReader read() {
     BaseReader.read(EXTERNAL_SYN_URI, line -> {
       String eId = idMap.get(line[0]);
       if (eId != null) {
-        if (retMap.containsKey(eId)) {
-          retMap.get(eId).add(line[1]);
+        if (synMap.containsKey(eId)) {
+          synMap.get(eId).add(line[1]);
         } else {
           ArrayNode newList = DEFAULT.createArrayNode();
           newList.add(line[1]);
-          retMap.put(eId, newList);
+          synMap.put(eId, newList);
         }
       }
     });
-
-    return retMap;
+    return this;
   }
 
 }

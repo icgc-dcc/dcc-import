@@ -47,7 +47,7 @@ public class XrefReader {
    * Get the map of xref display id -> gene name Caches external db ids in hashmaps for entrez, hgnc, mim, & uniprot.
    * Also gets interpro values for domains.
    */
-  public void read() {
+  public XrefReader read() {
     val interproDbId = externalReader.getInterproId();
 
     BaseReader.read(XREF_URI, line -> {
@@ -83,6 +83,7 @@ public class XrefReader {
         interproMap.put(id, description);
       }
     });
+    return this;
   }
 
 }

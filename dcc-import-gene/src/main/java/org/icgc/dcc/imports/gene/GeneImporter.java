@@ -26,18 +26,8 @@ import java.util.zip.GZIPInputStream;
 
 import org.icgc.dcc.imports.core.SourceImporter;
 import org.icgc.dcc.imports.core.model.ImportSource;
-import org.icgc.dcc.imports.gene.core.TransJoiner;
 import org.icgc.dcc.imports.gene.reader.ASNReader;
-import org.icgc.dcc.imports.gene.reader.AnalysisReader;
-import org.icgc.dcc.imports.gene.reader.DomainReader;
-import org.icgc.dcc.imports.gene.reader.ExternalDatabaseReader;
-import org.icgc.dcc.imports.gene.reader.ExternalReader;
-import org.icgc.dcc.imports.gene.reader.GeneReader;
-import org.icgc.dcc.imports.gene.reader.InterproReader;
-import org.icgc.dcc.imports.gene.reader.SynonymReader;
-import org.icgc.dcc.imports.gene.reader.TranscriptReader;
-import org.icgc.dcc.imports.gene.reader.TranslationReader;
-import org.icgc.dcc.imports.gene.reader.XrefReader;
+import org.icgc.dcc.imports.gene.reader.EnsemblReader;
 import org.icgc.dcc.imports.gene.writer.GeneConstructor;
 import org.icgc.dcc.imports.gene.writer.GeneWriter;
 
@@ -70,39 +60,8 @@ public class GeneImporter implements SourceImporter {
     val watch = createStarted();
 
     log.info("Doing Ensembl Data Joining...");
-
-    val transcriptReader = new TranscriptReader();
-    transcriptReader.read();
-
-    val geneReader = new GeneReader(transcriptReader);
-    geneReader.read();
-
-    val externalDBReader = new ExternalDatabaseReader();
-    externalDBReader.read();
-
-    val synReader = new SynonymReader(geneReader.getXrefGeneMap());
-    val synMap = synReader.read();
-
-    val translationReader = new TranslationReader(transcriptReader);
-
-    val transJoiner = new TransJoiner(translationReader, transcriptReader);
-    val transMap = transJoiner.joinTrans();
-
-    val xrefReader = new XrefReader(externalDBReader);
-    xrefReader.read();
-
-    val analysisReader = new AnalysisReader();
-    analysisReader.read();
-
-    val interproReader = new InterproReader(xrefReader);
-    interproReader.read();
-
-    val domainReader = new DomainReader(transMap, interproReader, analysisReader);
-    val pFeatures = domainReader.createProteinFeatures();
-
-    val externalReader = new ExternalReader(xrefReader, geneReader, translationReader);
-    val externalIds = externalReader.read();
-
+    val ensemblReader = new EnsemblReader();
+    val ensembl = ensemblReader.read();
     log.info("... Done Ensemble Data Joining!");
 
     log.info("Starting ASN.1 Import from NCBI.");
@@ -111,15 +70,10 @@ public class GeneImporter implements SourceImporter {
     log.info("Staged {} Summaries from NCBI.", summaryMap.size());
 
     log.info("Writing genes to {}...", mongoUri);
-
     val writer = new GeneWriter(mongoUri);
-
     val constructor =
-        new GeneConstructor(getReader(), summaryMap, xrefReader.getNameMap(), synMap, geneReader.getCanonicalMap(),
-            pFeatures,
-            externalIds, writer);
+        new GeneConstructor(getReader(), summaryMap, ensembl, writer);
     constructor.consumeGenes();
-
     log.info("Finished writing genes in {}", watch);
   }
 

@@ -38,12 +38,13 @@ public class InterproReader {
   /**
    * Returns a map of protein features
    */
-  public void read() {
+  public InterproReader read() {
     val descriptionMap = xrefReader.getInterproMap();
     BaseReader.read(INTERPRO_URI, line -> {
       ProteinFeature pf = new ProteinFeature(line[0], line[1], descriptionMap.get(line[0]));
       interproMap.put(line[1], pf);
     });
+    return this;
   }
 
 }

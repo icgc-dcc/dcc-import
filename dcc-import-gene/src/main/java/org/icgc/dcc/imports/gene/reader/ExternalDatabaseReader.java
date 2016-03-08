@@ -27,14 +27,14 @@ public class ExternalDatabaseReader {
 
   private String interproId;
 
-  public void read() {
+  public ExternalDatabaseReader read() {
     val interproId = new StringBuilder();
     BaseReader.read(EXTERNAL_DB_URI, line -> {
       if (line.length > 1 && line[1].equals("Interpro")) {
         interproId.append(line[0]);
       }
     });
-
     this.interproId = interproId.toString();
+    return this;
   }
 }
