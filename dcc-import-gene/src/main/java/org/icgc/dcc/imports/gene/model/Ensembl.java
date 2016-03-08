@@ -24,20 +24,16 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Value;
 
+@Value
 @Builder
 public class Ensembl {
 
-  @Getter
-  private final Map<String, String> nameMap;
-  @Getter
-  private final Map<String, ArrayNode> synonymMap;
-  @Getter
-  private final Map<String, String> canonicalMap;
-  @Getter
-  private final Map<String, List<ProteinFeature>> pFeatures;
-  @Getter
-  private final Map<String, ObjectNode> externalIds;
+  private Map<String, String> nameMap;
+  private Map<String, ArrayNode> synonymMap;
+  private Map<String, String> canonicalMap;
+  private Map<String, List<ProteinFeature>> pFeatures;
+  private Map<String, ObjectNode> externalIds;
 
 }

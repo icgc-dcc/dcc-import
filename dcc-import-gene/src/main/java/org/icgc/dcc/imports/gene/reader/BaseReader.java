@@ -17,11 +17,12 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
+import static org.icgc.dcc.common.core.util.Splitters.TAB;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.function.Consumer;
-import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import com.google.common.base.Stopwatch;
@@ -37,11 +38,6 @@ import lombok.extern.slf4j.Slf4j;
 public final class BaseReader {
 
   /**
-   * Constants
-   */
-  private static final Pattern TSV = Pattern.compile("\t");
-
-  /**
    * Reads the lines of a file and feeding them to the provided lambda for processing
    * @param URI - String URI of the file to read
    * @param lambda - Lambda encapsulating the callers logic for operating on a line
@@ -55,7 +51,7 @@ public final class BaseReader {
     for (String s = bufferedReader.readLine(); null != s; s = bufferedReader.readLine()) {
       s = s.trim();
       if (s.length() > 0) {
-        String[] line = TSV.split(s);
+        String[] line = TAB.splitToList(s).stream().toArray(String[]::new);
         lambda.accept(line);
       }
     }

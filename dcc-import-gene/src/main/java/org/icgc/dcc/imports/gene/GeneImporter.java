@@ -26,9 +26,9 @@ import java.util.zip.GZIPInputStream;
 
 import org.icgc.dcc.imports.core.SourceImporter;
 import org.icgc.dcc.imports.core.model.ImportSource;
+import org.icgc.dcc.imports.gene.core.GeneConstructor;
 import org.icgc.dcc.imports.gene.reader.ASNReader;
 import org.icgc.dcc.imports.gene.reader.EnsemblReader;
-import org.icgc.dcc.imports.gene.writer.GeneConstructor;
 import org.icgc.dcc.imports.gene.writer.GeneWriter;
 
 import com.mongodb.MongoClientURI;

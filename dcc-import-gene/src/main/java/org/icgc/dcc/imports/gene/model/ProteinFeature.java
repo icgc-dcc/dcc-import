@@ -40,7 +40,7 @@ public class ProteinFeature {
     this.description = description;
   }
 
-  public ProteinFeature getCopy() {
+  public ProteinFeature copy() {
     return new ProteinFeature(this.interproId, this.hitName, this.description);
   }
 

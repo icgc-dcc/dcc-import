@@ -87,7 +87,6 @@ public class ASNReader {
     val fOut = new FileOutputStream(tmpFile);
 
     ByteStreams.copy(gzip, fOut);
-
     return tmpFile.getAbsolutePath();
   }
 

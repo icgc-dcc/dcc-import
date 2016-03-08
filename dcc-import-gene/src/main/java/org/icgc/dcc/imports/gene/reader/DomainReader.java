@@ -48,7 +48,7 @@ public final class DomainReader {
     BaseReader.read(PROTEIN_FEATURE_URI, line -> {
       if (analysisMap.containsKey(line[7])) {
         if (interproMap.containsKey(line[6])) {
-          ProteinFeature pf = interproMap.get(line[6]).getCopy();
+          ProteinFeature pf = interproMap.get(line[6]).copy();
           pf.setStart(Integer.parseInt(line[2]));
           pf.setEnd(Integer.parseInt(line[3]));
           pf.setAnalysisId(line[8]);
