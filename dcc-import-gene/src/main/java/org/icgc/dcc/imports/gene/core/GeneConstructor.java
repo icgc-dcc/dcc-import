@@ -68,6 +68,14 @@ public class GeneConstructor {
   private final GeneWriter writer;
 
   /**
+   * State
+   */
+  ObjectNode geneNode = null;
+  ObjectNode curTranscript = null;
+  ArrayNode transcripts = DEFAULT.createArrayNode();
+  ArrayNode exons = DEFAULT.createArrayNode();
+
+  /**
    * Method responsible for constructing the skeleton of the gene model. It streams the gtf file, constructing the
    * elements of the gene model, and joining in information from the maps provided to the constructor of the class.
    * Write Gene to mongo as soon as it is constructed and moves onto next one.
@@ -75,74 +83,55 @@ public class GeneConstructor {
   @SneakyThrows
   public void consumeGenes() {
     log.info("CONSUMING GENES");
-
-    ObjectNode geneNode = null;
-    ObjectNode curTranscript = null;
-    ArrayNode transcripts = DEFAULT.createArrayNode();
-    ArrayNode exons = DEFAULT.createArrayNode();
-
-    for (String s = bufferedReader.readLine(); null != s; s = bufferedReader.readLine()) {
-      s = s.trim();
+    for (String s = bufferedReader.readLine().trim(); null != s; s = bufferedReader.readLine()) {
       if (s.length() > 0 && s.charAt(0) != '#') {
         val entry = parseLine(s);
-        if (entry != null) {
-
-          if (("gene".equals(asText(entry, "type")))) {
-
-            // Finish constructing the current working gene and write to mongo
-            if (geneNode != null) {
-              // Add the final transcript
-              curTranscript.put("exons", exons);
-              val trans = postProcessTranscript(curTranscript, asText(geneNode, "strand"),
-                  asText(geneNode, "canonical_transcript_id"));
-              transcripts.add(trans);
-              geneNode.put("transcripts", transcripts);
-              geneNode.put("external_db_ids", externalIds().get(asText(geneNode, "_gene_id")));
-              writeGene(geneNode);
-              curTranscript = null;
-              transcripts = DEFAULT.createArrayNode();
-              exons = DEFAULT.createArrayNode();
-            }
-
-            // Move on to next gene
-            geneNode = constructGeneNode(entry);
-
-            // Extra fields for gene object
-            geneNode.put("name", getName(asText(geneNode, "symbol")));
-            geneNode.put("description", summaryMap.getOrDefault(asText(geneNode, "_gene_id"), ""));
-            geneNode.put("synonyms", getDescription(asText(geneNode, "_gene_id")));
-            geneNode.put("canonical_transcript_id", canonicalMap().get(asText(geneNode, "_gene_id")));
-
-          } else if ("transcript".equals(asText(entry, "type"))) {
-            if (curTranscript != null) {
-              curTranscript.put("exons", exons);
-              try {
-                val trans = postProcessTranscript(curTranscript, geneNode.get("strand").asText(),
-                    geneNode.get("canonical_transcript_id").asText());
-                transcripts.add(trans);
-              } catch (Exception e) {
-                log.error(curTranscript.toString());
-                throw e;
-              }
-              exons = DEFAULT.createArrayNode();
-            }
-            curTranscript = constructTranscriptNode(entry);
-          } else if ("exon".equals(asText(entry, "type"))) {
-            exons.add(constructExonNode(entry));
-          } else if ("CDS".equals(asText(entry, "type"))) {
-            ((ObjectNode) exons.get(exons.size() - 1)).put("cds", entry);
-          } else if ("start_codon".equals(asText(entry, "type"))) {
-            curTranscript.put("start_exon", exons.size() - 1);
-          } else if ("stop_codon".equals(asText(entry, "type"))) {
-            curTranscript.put("end_exon", exons.size() - 1);
+        if (("gene".equals(asText(entry, "type")))) {
+          if (geneNode != null) {
+            finalizeAndWriteGene();
           }
-
+          geneNode = constructGeneNode(entry);
+        } else if ("transcript".equals(asText(entry, "type"))) {
+          if (curTranscript != null) {
+            finalizeTranscript();
+          }
+          curTranscript = constructTranscriptNode(entry);
+        } else if ("exon".equals(asText(entry, "type"))) {
+          exons.add(constructExonNode(entry));
+        } else if ("CDS".equals(asText(entry, "type"))) {
+          ((ObjectNode) exons.get(exons.size() - 1)).put("cds", entry);
+        } else if ("start_codon".equals(asText(entry, "type"))) {
+          curTranscript.put("start_exon", exons.size() - 1);
+        } else if ("stop_codon".equals(asText(entry, "type"))) {
+          curTranscript.put("end_exon", exons.size() - 1);
         }
       }
     }
   }
 
-  public void writeGene(@NonNull ObjectNode value) {
+  /**
+   * Helper for setting the final transcript values
+   */
+  private void finalizeAndWriteGene() {
+    // Finish with the current transcript.
+    finalizeTranscript();
+    geneNode.put("transcripts", transcripts);
+    geneNode.put("external_db_ids", externalIds().get(asText(geneNode, "_gene_id")));
+    writeGene(geneNode);
+    // Reset the current state
+    curTranscript = null;
+    transcripts = DEFAULT.createArrayNode();
+  }
+
+  private void finalizeTranscript() {
+    curTranscript.put("exons", exons);
+    val trans =
+        postProcessTranscript(curTranscript, asText(geneNode, "strand"), asText(geneNode, "canonical_transcript_id"));
+    transcripts.add(trans);
+    exons = DEFAULT.createArrayNode();
+  }
+
+  private void writeGene(@NonNull ObjectNode value) {
     writer.writeFiles(value);
   }
 
@@ -156,8 +145,8 @@ public class GeneConstructor {
     val seqname = line[0].trim();
     val source = line[1].trim();
     val type = line[2].trim();
-    String locStart = line[3].trim();
-    String locEnd = line[4].trim();
+    val locStart = line[3].trim();
+    val locEnd = line[4].trim();
 
     char strand = line[6].trim().charAt(0);
     int locationStart = Integer.parseInt(locStart);
@@ -174,8 +163,6 @@ public class GeneConstructor {
     val attributes = line[8];
     val attributeMap = parseAttributes(attributes);
 
-    ObjectNode feature = DEFAULT.createObjectNode();
-
     int strandNumber = 0;
     if (strand == '+') {
       strandNumber = 1;
@@ -183,17 +170,16 @@ public class GeneConstructor {
       strandNumber = -1;
     }
 
+    ObjectNode feature = DEFAULT.createObjectNode();
     feature.put("seqname", seqname);
     feature.put("source", source);
     feature.put("type", type);
     feature.put("locationStart", locationStart);
     feature.put("locationEnd", locationEnd);
     feature.put("strand", strandNumber);
-
     for (val kv : attributeMap.entrySet()) {
       feature.put(kv.getKey(), kv.getValue());
     }
-
     return feature;
   }
 
@@ -217,7 +203,7 @@ public class GeneConstructor {
     return attributeMap;
   }
 
-  private static ObjectNode constructGeneNode(ObjectNode data) {
+  private ObjectNode constructGeneNode(ObjectNode data) {
     val gene = DEFAULT.createObjectNode();
     gene.put("_gene_id", asText(data, "gene_id"));
     gene.put("symbol", asText(data, "gene_name"));
@@ -226,6 +212,12 @@ public class GeneConstructor {
     gene.put("strand", asText(data, "strand"));
     gene.put("start", asInt(data, "locationStart"));
     gene.put("end", asInt(data, "locationEnd"));
+
+    // Joining data from Ensembl and NCBI
+    gene.put("name", getName(asText(gene, "symbol")));
+    gene.put("description", summaryMap.getOrDefault(asText(gene, "_gene_id"), ""));
+    gene.put("synonyms", getDescription(asText(gene, "_gene_id")));
+    gene.put("canonical_transcript_id", canonicalMap().get(asText(gene, "_gene_id")));
     return gene;
   }
 
@@ -323,6 +315,7 @@ public class GeneConstructor {
     transcript.put("start_exon", startExon.asInt());
     transcript.put("end_exon", endExon.asInt());
 
+    // Amino Acids are specified by codons which are made up of 3 bases.
     val aminoAcidLength = Math.round(cdsLength / 3);
     transcript.put("length_cds", (int) cdsLength);
     transcript.put("length_amino_acid", aminoAcidLength);

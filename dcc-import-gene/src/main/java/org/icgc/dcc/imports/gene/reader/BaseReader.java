@@ -27,6 +27,7 @@ import java.util.zip.GZIPInputStream;
 
 import com.google.common.base.Stopwatch;
 
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -43,13 +44,12 @@ public final class BaseReader {
    * @param lambda - Lambda encapsulating the callers logic for operating on a line
    */
   @SneakyThrows
-  public static void read(String URI, Consumer<String[]> lambda) {
+  public static void read(@NonNull String URI, @NonNull Consumer<String[]> lambda) {
     log.info("Reading {}", URI);
     val watch = Stopwatch.createStarted();
     val bufferedReader = getReader(URI);
 
-    for (String s = bufferedReader.readLine(); null != s; s = bufferedReader.readLine()) {
-      s = s.trim();
+    for (String s = bufferedReader.readLine().trim(); null != s; s = bufferedReader.readLine()) {
       if (s.length() > 0) {
         String[] line = TAB.splitToList(s).stream().toArray(String[]::new);
         lambda.accept(line);

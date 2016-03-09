@@ -58,15 +58,13 @@ public final class DomainReader {
           if (retMap.containsKey(ens)) {
             retMap.get(ens).add(pf);
           } else {
-            List<ProteinFeature> al = new ArrayList<ProteinFeature>();
+            List<ProteinFeature> al = new ArrayList<>();
             al.add(pf);
             retMap.put(ens, al);
           }
         }
-
       }
     });
-
     return retMap;
   }
 

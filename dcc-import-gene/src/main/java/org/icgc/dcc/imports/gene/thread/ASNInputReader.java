@@ -20,6 +20,8 @@ package org.icgc.dcc.imports.gene.thread;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import com.google.common.io.ByteStreams;
+
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -37,11 +39,7 @@ public class ASNInputReader implements Runnable {
   @Override
   @SneakyThrows
   public void run() {
-    int n;
-    byte[] buffer = new byte[16384];
-    while ((n = in.read(buffer)) != -1) {
-      out.write(buffer, 0, n);
-    }
+    ByteStreams.copy(in, out);
     in.close();
     out.close();
     log.info("Finished reading ASN.1 input stream.");

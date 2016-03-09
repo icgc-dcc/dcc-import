@@ -35,6 +35,11 @@ import lombok.val;
  */
 public final class TranscriptProcessing {
 
+  /**
+   * Helper for constructing the Transcript JSON object
+   * @param data ObjectNode holding raw json data
+   * @return ObjectNode representing a transcript with default values.
+   */
   public static ObjectNode constructTranscriptNode(ObjectNode data) {
     val transcript = DEFAULT.createObjectNode();
     transcript.put("id", asText(data, "transcript_id"));
@@ -56,6 +61,11 @@ public final class TranscriptProcessing {
     return transcript;
   }
 
+  /**
+   * Helper for constructing the Exon JSON object
+   * @param data ObjectNode holding raw json data
+   * @return ObjectNode represnting an exon with default values.
+   */
   public static ObjectNode constructExonNode(ObjectNode data) {
     val exon = DEFAULT.createObjectNode();
     exon.put("start", asInt(data, "locationStart"));
@@ -63,6 +73,11 @@ public final class TranscriptProcessing {
     return exon;
   }
 
+  /**
+   * Helper for setting the default calculated values for coding regions in an exon.
+   * @param exons Array of exons.
+   * @return The Array of exons with the initial calculated values set.
+   */
   public static ArrayNode exonDefaults(ArrayNode exons) {
     int preExonCdnaEnd = 0;
     for (JsonNode exon : exons) {
@@ -81,9 +96,17 @@ public final class TranscriptProcessing {
     return exons;
   }
 
+  /**
+   * Helper for computing the values of the beginning of the coding region of a transcript and start exon, both with the
+   * coordinate system of the DNA and the coordinate system of the transcript sequence (cDNA).
+   * @param transcript ObjectNode representation of a transcript.
+   * @param exon ObjectNode representation of an exon.
+   * @param strand Flag which determines if we are working on a positive or negative strand.
+   */
   public static void computeStartRegion(ObjectNode transcript, ObjectNode exon, String strand) {
     val cds = exon.get("cds");
     val cdsStart = asInt(cds, "locationStart");
+
     if (strand.equals("-1")) {
       val end = asInt(cds, "locationEnd");
       transcript.put("coding_region_end", end);
@@ -95,12 +118,22 @@ public final class TranscriptProcessing {
       exon.put("cdna_coding_start", asInt(exon, "cdna_start") + (cdsStart - asInt(exon, "start") + 1));
     }
     transcript.put("cdna_coding_start", asInt(exon, "cdna_coding_start"));
+    transcript.put("seq_exon_start", seqExonStart(exon, strand));
   }
 
+  /**
+   * Helper for computing the values of the end of the coding region of a transcript and end exon, both with the
+   * coordinate system of the DNA and the coordinate system of the transcript sequence (cDNA). This helper covers the
+   * edge case where the first three bases of an exon are the stop codon and thus the end exon does not contain a coding
+   * region itself.
+   * @param transcript ObjectNode representation of a transcript.
+   * @param exon ObjectNode representation of a the end exon.
+   * @param i The position of the end exon within the exons of the transcript.
+   * @param strand Flag which determines if we are working on a positive or negative strand.
+   */
   public static void computeEndRegion(ObjectNode transcript, ObjectNode exon, int i, String strand) {
     val cds = exon.path("cds");
     val exons = (ArrayNode) transcript.get("exons");
-    val startExon = transcript.get("start_exon");
 
     if (strand.equals("-1")) {
       if (cds.isMissingNode()) {
@@ -126,8 +159,6 @@ public final class TranscriptProcessing {
       }
     }
 
-    transcript.put("seq_exon_start", seqExonStart(exons.get(startExon.asInt()), strand));
-
     // If stop codon is first 3 base pairs of end exon, there will be no coding sequence region for that exon.
     if (cds.isMissingNode()) {
       transcript.put("cdna_coding_end", asInt(exons.get(i - 1), "cdna_coding_end"));
@@ -138,6 +169,12 @@ public final class TranscriptProcessing {
     }
   }
 
+  /**
+   * Calculates how far into the start exon the coding sequence starts.
+   * @param exon JsonNode representation of start exon.
+   * @param strand Flag which determines if we are working on a positive or negative strand.
+   * @return number of bases as int into the start exon.
+   */
   public static int seqExonStart(JsonNode exon, String strand) {
     int seqExonStart = asInt(exon, "cdna_coding_start") - asInt(exon, "cdna_start");
     if ("-1".equals(strand)) {
@@ -146,6 +183,12 @@ public final class TranscriptProcessing {
     return seqExonStart;
   }
 
+  /**
+   * Calculates how far into the end exon the coding sequence ends.
+   * @param exon JsonNode representation of end exon.
+   * @param strand Flag which determines if we are working on a positive or negative strand.
+   * @return number of bases as int into the end exon.
+   */
   public static int seqExonEnd(JsonNode exon, String strand) {
     int seqExonEnd = asInt(exon, "cdna_coding_end") - asInt(exon, "cdna_coding_start");
     if ("1".equals(strand)) {
@@ -154,6 +197,12 @@ public final class TranscriptProcessing {
     return seqExonEnd;
   }
 
+  /**
+   * Helper for joining the protein features to a transcript as an array of Domain ObjectNodes
+   * @param transcript ObjectNode transcript.
+   * @param pFeatures Map of transcript ids mapping to a List of protein feature objects
+   * @return ObjectNode representation of the transcript with the Domains joined.
+   */
   public static ObjectNode attachDomains(ObjectNode transcript, Map<String, List<ProteinFeature>> pFeatures) {
     val pfs = pFeatures.get(asText(transcript, "id"));
     val domains = DEFAULT.createArrayNode();
