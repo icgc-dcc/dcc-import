@@ -109,9 +109,6 @@ public class GeneConstructor {
     }
   }
 
-  /**
-   * Helper for setting the final transcript values
-   */
   private void finalizeAndWriteGene() {
     // Finish with the current transcript.
     finalizeTranscript();
@@ -137,18 +134,19 @@ public class GeneConstructor {
 
   /**
    * Responsible for parsing the lines of the gtf file and producing generic ObjectNodes
+   * 
    * @param String representing the current line in the gtf file
    * @return ObjectNode representation of the gtf row.
    */
   private ObjectNode parseLine(@NonNull String s) {
-    String[] line = TAB.splitToList(s).stream().toArray(String[]::new);
-    val seqname = line[0].trim();
-    val source = line[1].trim();
-    val type = line[2].trim();
-    val locStart = line[3].trim();
-    val locEnd = line[4].trim();
+    String[] line = TAB.trimResults().splitToList(s).stream().toArray(String[]::new);
+    val seqname = line[0];
+    val source = line[1];
+    val type = line[2];
+    val locStart = line[3];
+    val locEnd = line[4];
 
-    char strand = line[6].trim().charAt(0);
+    char strand = line[6].charAt(0);
     int locationStart = Integer.parseInt(locStart);
     int locationEnd = Integer.parseInt(locEnd);
     if (locationStart > locationEnd) {
@@ -157,18 +155,10 @@ public class GeneConstructor {
       locationEnd = location;
     }
 
-    val negative = locationStart <= 0 && locationEnd <= 0;
-    assert strand == '-' == negative;
+    int strandNumber = convertStrand(strand);
 
     val attributes = line[8];
     val attributeMap = parseAttributes(attributes);
-
-    int strandNumber = 0;
-    if (strand == '+') {
-      strandNumber = 1;
-    } else if (strand == '-') {
-      strandNumber = -1;
-    }
 
     ObjectNode feature = DEFAULT.createObjectNode();
     feature.put("seqname", seqname);
@@ -181,6 +171,16 @@ public class GeneConstructor {
       feature.put(kv.getKey(), kv.getValue());
     }
     return feature;
+  }
+
+  private int convertStrand(char strand) {
+    if (strand == '+') {
+      return 1;
+    } else if (strand == '-') {
+      return -1;
+    } else {
+      return 0;
+    }
   }
 
   private String getName(String symbol) {
@@ -224,12 +224,13 @@ public class GeneConstructor {
   /**
    * This method performs the calculations on transcript and exons to correctly mark coding regions. Heavily based on:
    * https://github.com/icgc-dcc/dcc-heliotrope/blob/working/src/main/scripts/Heliotrope/Update/Ensembl.pm#L885
+   * 
    * @param transcript ObjectNode representation of transcript with exons if any are present
    * @param strand marks if + or - strand
    * @return Processed Transcript ObjectNode
    */
   private ObjectNode postProcessTranscript(ObjectNode transcript, String strand, String canonical) {
-    if (transcript.get("id").asText().equals(canonical)) {
+    if (asText(transcript, "id").equals(canonical)) {
       transcript.put("is_canonical", true);
     } else {
       transcript.put("is_canonical", false);
@@ -292,12 +293,10 @@ public class GeneConstructor {
 
       val cds = exon.path("cds");
       if (!cds.isMissingNode()) {
-
         // Translation id is the protein id of the coding sequence.
         if (transcript.get("translation_id").isNull()) {
           transcript.put("translation_id", asText(cds, "protein_id"));
         }
-
         cdsLength += asInt(cds, "locationEnd") - asInt(cds, "locationStart") + 1;
       }
 

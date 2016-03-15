@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import lombok.NonNull;
 import lombok.val;
 
 /**
@@ -80,7 +81,7 @@ public final class TranscriptProcessing {
    */
   public static ArrayNode exonDefaults(ArrayNode exons) {
     int preExonCdnaEnd = 0;
-    for (JsonNode exon : exons) {
+    for (val exon : exons) {
       ObjectNode exonNode = (ObjectNode) exon;
 
       val exonLength = asInt(exon, "end") - asInt(exon, "start");
@@ -103,7 +104,8 @@ public final class TranscriptProcessing {
    * @param exon ObjectNode representation of an exon.
    * @param strand Flag which determines if we are working on a positive or negative strand.
    */
-  public static void computeStartRegion(ObjectNode transcript, ObjectNode exon, String strand) {
+  public static void computeStartRegion(@NonNull ObjectNode transcript, @NonNull ObjectNode exon,
+      @NonNull String strand) {
     val cds = exon.get("cds");
     val cdsStart = asInt(cds, "locationStart");
 
@@ -131,7 +133,8 @@ public final class TranscriptProcessing {
    * @param i The position of the end exon within the exons of the transcript.
    * @param strand Flag which determines if we are working on a positive or negative strand.
    */
-  public static void computeEndRegion(ObjectNode transcript, ObjectNode exon, int i, String strand) {
+  public static void computeEndRegion(@NonNull ObjectNode transcript, @NonNull ObjectNode exon, int i,
+      @NonNull String strand) {
     val cds = exon.path("cds");
     val exons = (ArrayNode) transcript.get("exons");
 
@@ -175,7 +178,7 @@ public final class TranscriptProcessing {
    * @param strand Flag which determines if we are working on a positive or negative strand.
    * @return number of bases as int into the start exon.
    */
-  public static int seqExonStart(JsonNode exon, String strand) {
+  public static int seqExonStart(@NonNull JsonNode exon, @NonNull String strand) {
     int seqExonStart = asInt(exon, "cdna_coding_start") - asInt(exon, "cdna_start");
     if ("-1".equals(strand)) {
       seqExonStart++;
@@ -189,7 +192,7 @@ public final class TranscriptProcessing {
    * @param strand Flag which determines if we are working on a positive or negative strand.
    * @return number of bases as int into the end exon.
    */
-  public static int seqExonEnd(JsonNode exon, String strand) {
+  public static int seqExonEnd(@NonNull JsonNode exon, @NonNull String strand) {
     int seqExonEnd = asInt(exon, "cdna_coding_end") - asInt(exon, "cdna_coding_start");
     if ("1".equals(strand)) {
       seqExonEnd++;
@@ -203,7 +206,8 @@ public final class TranscriptProcessing {
    * @param pFeatures Map of transcript ids mapping to a List of protein feature objects
    * @return ObjectNode representation of the transcript with the Domains joined.
    */
-  public static ObjectNode attachDomains(ObjectNode transcript, Map<String, List<ProteinFeature>> pFeatures) {
+  public static ObjectNode attachDomains(@NonNull ObjectNode transcript,
+      @NonNull Map<String, List<ProteinFeature>> pFeatures) {
     val pfs = pFeatures.get(asText(transcript, "id"));
     val domains = DEFAULT.createArrayNode();
 
