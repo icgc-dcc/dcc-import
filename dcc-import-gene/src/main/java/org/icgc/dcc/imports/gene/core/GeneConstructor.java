@@ -83,30 +83,33 @@ public class GeneConstructor {
   @SneakyThrows
   public void consumeGenes() {
     log.info("CONSUMING GENES");
-    for (String s = bufferedReader.readLine().trim(); null != s; s = bufferedReader.readLine()) {
-      if (s.length() > 0 && s.charAt(0) != '#') {
-        val entry = parseLine(s);
-        if (("gene".equals(asText(entry, "type")))) {
-          if (geneNode != null) {
-            finalizeAndWriteGene();
-          }
-          geneNode = constructGeneNode(entry);
-        } else if ("transcript".equals(asText(entry, "type"))) {
-          if (curTranscript != null) {
-            finalizeTranscript();
-          }
-          curTranscript = constructTranscriptNode(entry);
-        } else if ("exon".equals(asText(entry, "type"))) {
-          exons.add(constructExonNode(entry));
-        } else if ("CDS".equals(asText(entry, "type"))) {
-          ((ObjectNode) exons.get(exons.size() - 1)).put("cds", entry);
-        } else if ("start_codon".equals(asText(entry, "type"))) {
-          curTranscript.put("start_exon", exons.size() - 1);
-        } else if ("stop_codon".equals(asText(entry, "type"))) {
-          curTranscript.put("end_exon", exons.size() - 1);
-        }
+    bufferedReader.lines().filter(this::isData).map(this::parseLine).forEach(this::handleEntry);
+  }
+
+  private void handleEntry(ObjectNode entry) {
+    if (("gene".equals(asText(entry, "type")))) {
+      if (geneNode != null) {
+        finalizeAndWriteGene();
       }
+      geneNode = constructGeneNode(entry);
+    } else if ("transcript".equals(asText(entry, "type"))) {
+      if (curTranscript != null) {
+        finalizeTranscript();
+      }
+      curTranscript = constructTranscriptNode(entry);
+    } else if ("exon".equals(asText(entry, "type"))) {
+      exons.add(constructExonNode(entry));
+    } else if ("CDS".equals(asText(entry, "type"))) {
+      ((ObjectNode) exons.get(exons.size() - 1)).put("cds", entry);
+    } else if ("start_codon".equals(asText(entry, "type"))) {
+      curTranscript.put("start_exon", exons.size() - 1);
+    } else if ("stop_codon".equals(asText(entry, "type"))) {
+      curTranscript.put("end_exon", exons.size() - 1);
     }
+  }
+
+  private boolean isData(String line) {
+    return line.length() > 0 && line.charAt(0) != '#';
   }
 
   private void finalizeAndWriteGene() {
