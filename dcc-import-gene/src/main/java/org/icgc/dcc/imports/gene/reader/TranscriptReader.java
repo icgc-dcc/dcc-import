@@ -17,30 +17,44 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
-import static org.icgc.dcc.imports.gene.core.Sources.TRANSCRIPT_URI;
+import java.util.List;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.icgc.dcc.imports.gene.model.TranscriptMapping;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.google.common.collect.ImmutableMap;
 
-@Data
-@NoArgsConstructor
-public class TranscriptReader {
+import lombok.val;
 
-  private final Map<String, String> transcriptMap = new HashMap<>();
-  private final Map<String, String> transcriptToGene = new HashMap<>();
+public class TranscriptReader extends TsvReader {
 
-  public TranscriptReader read() {
-    BaseReader.read(TRANSCRIPT_URI, line -> {
-      String id = line[0];
-      String stableId = line[14];
-      String geneId = line[1];
-      transcriptMap.put(id, stableId);
-      transcriptToGene.put(id, geneId);
+  public TranscriptReader(String uri) {
+    super(uri);
+  }
+
+  public TranscriptMapping read() {
+    val transcriptMapBuilder = ImmutableMap.<String, String> builder();
+    val transcriptToGeneBuilder = ImmutableMap.<String, String> builder();
+    readRecords().forEach(record -> {
+      transcriptMapBuilder.put(getId(record), getStableId(record));
+      transcriptToGeneBuilder.put(getId(record), getGeneId(record));
     });
-    return this;
+
+    return TranscriptMapping.builder()
+        .transcriptMap(transcriptMapBuilder.build())
+        .transcriptToGene(transcriptToGeneBuilder.build())
+        .build();
+  }
+
+  private String getId(List<String> record) {
+    return record.get(0);
+  }
+
+  private String getStableId(List<String> record) {
+    return record.get(14);
+  }
+
+  private String getGeneId(List<String> record) {
+    return record.get(1);
   }
 
 }

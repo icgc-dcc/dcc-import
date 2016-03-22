@@ -17,34 +17,53 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
-import static org.icgc.dcc.imports.gene.core.Sources.INTERPRO_URI;
-
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.icgc.dcc.imports.gene.model.ProteinFeature;
+import org.icgc.dcc.imports.gene.model.XrefMapping;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import com.google.common.collect.ImmutableMap;
+
+import lombok.NonNull;
 import lombok.val;
 
-@RequiredArgsConstructor
-public class InterproReader {
+public class InterproReader extends TsvReader {
 
-  private final XrefReader xrefReader;
-  @Getter
-  private final Map<String, ProteinFeature> interproMap = new HashMap<>();
+  /**
+   * Dependencies
+   */
+  private final XrefMapping xrefMapping;
+
+  public InterproReader(String uri, @NonNull XrefMapping xrefMapping) {
+    super(uri);
+    this.xrefMapping = xrefMapping;
+  }
 
   /**
    * Returns a map of protein features
    */
-  public InterproReader read() {
-    val descriptionMap = xrefReader.getInterproMap();
-    BaseReader.read(INTERPRO_URI, line -> {
-      ProteinFeature pf = new ProteinFeature(line[0], line[1], descriptionMap.get(line[0]));
-      interproMap.put(line[1], pf);
+  public Map<String, ProteinFeature> read() {
+
+    val interproMap = ImmutableMap.<String, ProteinFeature> builder();
+    readRecords().forEach(record -> {
+      ProteinFeature pf = new ProteinFeature(getInterproId(record), getHitName(record), getDescription(record));
+      interproMap.put(getHitName(record), pf);
     });
-    return this;
+
+    return interproMap.build();
+  }
+
+  private String getInterproId(List<String> record) {
+    return record.get(0);
+  }
+
+  private String getHitName(List<String> record) {
+    return record.get(1);
+  }
+
+  private String getDescription(List<String> record) {
+    return xrefMapping.getInterproMap().get(getInterproId(record));
   }
 
 }

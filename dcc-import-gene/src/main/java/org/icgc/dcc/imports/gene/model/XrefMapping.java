@@ -15,31 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.gene.reader;
+package org.icgc.dcc.imports.gene.model;
 
-import static org.icgc.dcc.imports.gene.core.Sources.GENE_URI;
-
-import java.util.HashMap;
 import java.util.Map;
 
-import lombok.val;
+import lombok.Builder;
+import lombok.Value;
 
-public final class IdReader {
+/**
+ * Encapsulating class for mappings produced by xref.txt
+ */
+@Value
+@Builder
+public class XrefMapping {
 
-  /**
-   * Reads gene.txt and creates mapping for Display xref to stable gene id
-   * @return Map of xrefId -> stable gene id (ENSG*)
-   */
-  public static Map<String, String> read() {
-
-    val retMap = new HashMap<String, String>();
-    BaseReader.read(GENE_URI, line -> {
-      String displayXrefId = line[7];
-      String stableId = line[13];
-      retMap.put(displayXrefId, stableId);
-    });
-
-    return retMap;
-  }
-
+  Map<String, String> nameMap;
+  Map<String, String> entrezMap;
+  Map<String, String> hgncMap;
+  Map<String, String> mimMap;
+  Map<String, String> uniprotMap;
+  Map<String, String> interproMap;
 }

@@ -17,49 +17,69 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
-import static org.icgc.dcc.imports.gene.core.Sources.GENE_URI;
+import java.util.List;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.icgc.dcc.imports.gene.model.GeneMapping;
+import org.icgc.dcc.imports.gene.model.TranscriptMapping;
 
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
+
+import lombok.NonNull;
 import lombok.val;
 
 /**
  * Reader for getting gene related maps
  */
-@Data
-@RequiredArgsConstructor
-public class GeneReader {
+public class GeneReader extends TsvReader {
 
   /**
    * Dependencies
    */
-  private final TranscriptReader transcriptReader;
+  private final TranscriptMapping transcriptMapping;
 
-  /**
-   * State
-   */
-  private final Map<String, String> geneIdMap = new HashMap<>();
-  private final Map<String, String> canonicalMap = new HashMap<>();
-  private final Map<String, String> xrefGeneMap = new HashMap<>();
+  public GeneReader(String uri, @NonNull TranscriptMapping transcriptMapping) {
+    super(uri);
+    this.transcriptMapping = transcriptMapping;
+  }
 
-  @SneakyThrows
-  public GeneReader read() {
-    val transcriptMap = transcriptReader.getTranscriptMap();
-
-    BaseReader.read(GENE_URI, line -> {
-      String id = line[0];
-      String displayXrefId = line[7];
-      String geneId = line[13];
-      String canonicalTranscript = transcriptMap.get(line[12]);
-      canonicalMap.put(geneId, canonicalTranscript);
-      geneIdMap.put(id, geneId);
-      xrefGeneMap.put(displayXrefId, geneId);
+  public GeneMapping read() {
+    val geneIdMap = ImmutableMap.<String, String> builder();
+    val xrefGeneMap = ImmutableMultimap.<String, String> builder();
+    val canonicalMap = ImmutableMap.<String, String> builder();
+    readRecords().forEach(record -> {
+      geneIdMap.put(getId(record), getGeneId(record));
+      xrefGeneMap.put(getDisplayXrefId(record), getGeneId(record));
+      canonicalMap.put(getGeneId(record), getCanonicalTranscript(record));
     });
-    return this;
+
+    return GeneMapping.builder()
+        .geneIdMap(geneIdMap.build())
+        .xrefGeneMap(xrefGeneMap.build())
+        .canonicalMap(canonicalMap.build())
+        .build();
+  }
+
+  private String getId(List<String> record) {
+    return record.get(0);
+  }
+
+  private String getDisplayXrefId(List<String> record) {
+    return record.get(7);
+  }
+
+  private String getGeneId(List<String> record) {
+    return record.get(13);
+  }
+
+  private String getCanonicalTranscript(List<String> record) {
+    return transcriptMapping
+        .getTranscriptMap()
+        .get(getTranscriptId(record));
+  }
+
+  private String getTranscriptId(List<String> record) {
+    return record.get(12);
   }
 
 }

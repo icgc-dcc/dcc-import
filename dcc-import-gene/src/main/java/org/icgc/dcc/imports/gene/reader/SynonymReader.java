@@ -18,47 +18,59 @@
 package org.icgc.dcc.imports.gene.reader;
 
 import static org.icgc.dcc.common.json.Jackson.DEFAULT;
-import static org.icgc.dcc.imports.gene.core.Sources.EXTERNAL_SYN_URI;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.common.collect.Multimap;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NonNull;
+import lombok.val;
 
 /**
  * Class responsible for reading and mapping Gene Synonyms
  */
-@RequiredArgsConstructor
-public class SynonymReader {
+public class SynonymReader extends TsvReader {
 
   /**
    * Dependencies
    */
-  private final Map<String, String> idMap;
+  private final Multimap<String, String> idMap;
 
-  /**
-   * State
-   */
-  @Getter
-  private final Map<String, ArrayNode> synMap = new HashMap<>();
+  public SynonymReader(String uri, @NonNull Multimap<String, String> idMap) {
+    super(uri);
+    this.idMap = idMap;
+  }
 
-  public SynonymReader read() {
-    BaseReader.read(EXTERNAL_SYN_URI, line -> {
-      String eId = idMap.get(line[0]);
-      if (eId != null) {
-        if (synMap.containsKey(eId)) {
-          synMap.get(eId).add(line[1]);
-        } else {
-          ArrayNode newList = DEFAULT.createArrayNode();
-          newList.add(line[1]);
-          synMap.put(eId, newList);
+  public Map<String, ArrayNode> read() {
+    val synMap = new HashMap<String, ArrayNode>();
+    readRecords().forEach(record -> {
+      Collection<String> eIds = getExternalIds(record);
+      if (eIds != null) {
+        for (String id : eIds) {
+          if (synMap.containsKey(id)) {
+            synMap.get(id).add(getSynonym(record));
+          } else {
+            ArrayNode newList = DEFAULT.createArrayNode();
+            newList.add(getSynonym(record));
+            synMap.put(id, newList);
+          }
         }
       }
     });
-    return this;
+
+    return synMap;
+  }
+
+  private Collection<String> getExternalIds(List<String> record) {
+    return idMap.get(record.get(0));
+  }
+
+  private String getSynonym(List<String> record) {
+    return record.get(1);
   }
 
 }

@@ -17,6 +17,17 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
+import static org.icgc.dcc.imports.gene.core.Sources.ANALYSIS_URI;
+import static org.icgc.dcc.imports.gene.core.Sources.EXTERNAL_DB_URI;
+import static org.icgc.dcc.imports.gene.core.Sources.EXTERNAL_SYN_URI;
+import static org.icgc.dcc.imports.gene.core.Sources.GENE_URI;
+import static org.icgc.dcc.imports.gene.core.Sources.INTERPRO_URI;
+import static org.icgc.dcc.imports.gene.core.Sources.OBJECT_XREF_URI;
+import static org.icgc.dcc.imports.gene.core.Sources.PROTEIN_FEATURE_URI;
+import static org.icgc.dcc.imports.gene.core.Sources.TRANSCRIPT_URI;
+import static org.icgc.dcc.imports.gene.core.Sources.TRANSLATION_URI;
+import static org.icgc.dcc.imports.gene.core.Sources.XREF_URI;
+
 import org.icgc.dcc.imports.gene.core.TransJoiner;
 import org.icgc.dcc.imports.gene.model.Ensembl;
 
@@ -25,36 +36,27 @@ import lombok.val;
 public class EnsemblReader {
 
   public Ensembl read() {
-    val transcriptReader = new TranscriptReader().read();
+    val transcriptMapping = new TranscriptReader(TRANSCRIPT_URI).read();
+    val interproDBId = new ExternalDatabaseReader(EXTERNAL_DB_URI).read();
+    val analysisMap = new AnalysisReader(ANALYSIS_URI).read();
+    val geneMapping = new GeneReader(GENE_URI, transcriptMapping).read();
+    val synMap = new SynonymReader(EXTERNAL_SYN_URI, geneMapping.getXrefGeneMap()).read();
+    val translationMapping = new TranslationReader(TRANSLATION_URI, transcriptMapping).read();
 
-    val geneReader = new GeneReader(transcriptReader).read();
-    val canonicalMap = geneReader.getCanonicalMap();
-
-    val externalDBReader = new ExternalDatabaseReader().read();
-
-    val synReader = new SynonymReader(geneReader.getXrefGeneMap()).read();
-    val synMap = synReader.getSynMap();
-
-    val translationReader = new TranslationReader(transcriptReader).read();
-
-    val transJoiner = new TransJoiner(translationReader, transcriptReader);
+    val transJoiner = new TransJoiner(translationMapping, transcriptMapping);
     val transMap = transJoiner.joinTrans();
 
-    val xrefReader = new XrefReader(externalDBReader).read();
-    val nameMap = xrefReader.getNameMap();
+    val xrefMapping = new XrefReader(XREF_URI, interproDBId).read();
 
-    val analysisReader = new AnalysisReader().read();
-    val interproReader = new InterproReader(xrefReader).read();
-    val domainReader = new DomainReader(transMap, interproReader, analysisReader);
-    val pFeatures = domainReader.createProteinFeatures();
+    val interproMap = new InterproReader(INTERPRO_URI, xrefMapping).read();
+    val pFeatures = new DomainReader(PROTEIN_FEATURE_URI, transMap, interproMap, analysisMap).read();
 
-    val externalReader = new ExternalReader(xrefReader, geneReader, translationReader).read();
-    val externalIds = externalReader.getExternalIds();
+    val externalIds = new ExternalReader(OBJECT_XREF_URI, xrefMapping, geneMapping, translationMapping).read();
 
     val ensembl = Ensembl.builder()
-        .nameMap(nameMap)
+        .nameMap(xrefMapping.getNameMap())
         .synonymMap(synMap)
-        .canonicalMap(canonicalMap)
+        .canonicalMap(geneMapping.getCanonicalMap())
         .pFeatures(pFeatures)
         .externalIds(externalIds)
         .build();

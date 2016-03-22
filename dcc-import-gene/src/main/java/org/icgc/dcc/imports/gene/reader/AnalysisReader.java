@@ -17,31 +17,33 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
-import static org.icgc.dcc.imports.gene.core.Sources.ANALYSIS_URI;
+import static java.util.stream.Collectors.toMap;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+public class AnalysisReader extends TsvReader {
 
-@Data
-@NoArgsConstructor
-public class AnalysisReader {
+  public AnalysisReader(String uri) {
+    super(uri);
+  }
 
-  private final Map<String, String> analysisMap = new HashMap<>();
+  public Map<String, String> read() {
+    return readRecords()
+        .filter(this::isPfam)
+        .collect(toMap(this::getId, this::getGffSource));
+  }
 
-  public AnalysisReader read() {
-    BaseReader.read(ANALYSIS_URI, line -> {
-      String id = line[0];
-      String gffSource = line[6];
+  private boolean isPfam(List<String> record) {
+    return "pfam".equals(getGffSource(record));
+  }
 
-      // We can support additional programs/algorithms for protein domains here
-      if ("pfam".equals(gffSource)) {
-        analysisMap.put(id, gffSource);
-      }
-    });
-    return this;
+  private String getId(List<String> record) {
+    return record.get(0);
+  }
+
+  private String getGffSource(List<String> record) {
+    return record.get(6);
   }
 
 }

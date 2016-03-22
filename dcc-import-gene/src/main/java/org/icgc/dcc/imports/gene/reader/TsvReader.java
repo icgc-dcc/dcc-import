@@ -17,53 +17,45 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.icgc.dcc.common.core.util.Splitters.TAB;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.function.Consumer;
+import java.util.List;
+import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 
-import com.google.common.base.Stopwatch;
-
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * Helper class for reading files and consuming lines.
- */
 @Slf4j
-public final class BaseReader {
+@RequiredArgsConstructor
+public class TsvReader {
 
   /**
-   * Reads the lines of a file and feeding them to the provided lambda for processing
-   * @param URI - String URI of the file to read
-   * @param lambda - Lambda encapsulating the callers logic for operating on a line
+   * Configuration
    */
-  @SneakyThrows
-  public static void read(@NonNull String URI, @NonNull Consumer<String[]> lambda) {
-    log.info("Reading {}", URI);
-    val watch = Stopwatch.createStarted();
-    val bufferedReader = getReader(URI);
+  @NonNull
+  private final String uri;
 
-    for (String s = bufferedReader.readLine().trim(); null != s; s = bufferedReader.readLine()) {
-      if (s.length() > 0) {
-        String[] line = TAB.splitToList(s).stream().toArray(String[]::new);
-        lambda.accept(line);
-      }
-    }
-    log.info("Read finished in {}", watch);
+  @SneakyThrows
+  protected Stream<List<String>> readRecords() {
+    log.info("Reading '{}'...", uri);
+
+    return reader().lines().map(TAB::splitToList);
   }
 
   @SneakyThrows
-  private static BufferedReader getReader(String URI) {
-    val gzip = new GZIPInputStream(new URL(URI).openStream());
-    val inputStreamReader = new InputStreamReader(gzip);
-    val bufferedReader = new BufferedReader(inputStreamReader);
-    return bufferedReader;
+  private BufferedReader reader() {
+    val gzip = new GZIPInputStream(new URL(uri).openStream());
+    val reader = new InputStreamReader(gzip, UTF_8);
+
+    return new BufferedReader(reader);
   }
 
 }

@@ -17,44 +17,59 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
-import static org.icgc.dcc.imports.gene.core.Sources.TRANSLATION_URI;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toMap;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import lombok.Data;
+import org.icgc.dcc.imports.gene.model.TranscriptMapping;
+import org.icgc.dcc.imports.gene.model.TranslationMapping;
+
+import com.google.common.collect.ImmutableMap;
+
+import lombok.NonNull;
 import lombok.val;
 
-@Data
-public class TranslationReader {
+public class TranslationReader extends TsvReader {
 
   /**
-   * State
+   * Dependencies
    */
-  private final Map<String, String> translationMap;
-  private final Map<String, String> translationToGene;
   private final Map<String, String> transcriptToGene;
 
-  public TranslationReader(TranscriptReader transcriptReader) {
-    translationMap = new HashMap<String, String>();
-    translationToGene = new HashMap<String, String>();
-    this.transcriptToGene = transcriptReader.getTranscriptToGene();
+  public TranslationReader(String uri, @NonNull TranscriptMapping transcriptMapping) {
+    super(uri);
+    this.transcriptToGene = transcriptMapping.getTranscriptToGene();
   }
 
-  public TranslationReader read() {
-    BaseReader.read(TRANSLATION_URI, line -> {
-      String transcriptId = line[1];
-      String translationId = line[0];
-      translationMap.put(transcriptId, translationId);
-    });
+  public TranslationMapping read() {
 
+    val translationMap = readRecords()
+        .collect(collectingAndThen(
+            toMap(this::getTranscriptId, this::getTranslationId),
+            ImmutableMap::copyOf));
+
+    val translationToGeneBuilder = ImmutableMap.<String, String> builder();
     for (val entry : translationMap.entrySet()) {
       val translationId = entry.getValue();
       val geneId = transcriptToGene.get(entry.getKey());
-
-      translationToGene.put(translationId, geneId);
+      translationToGeneBuilder.put(translationId, geneId);
     }
-    return this;
+    val translationToGene = translationToGeneBuilder.build();
+
+    return TranslationMapping.builder()
+        .translationMap(translationMap)
+        .translationToGene(translationToGene)
+        .build();
+  }
+
+  private String getTranscriptId(List<String> record) {
+    return record.get(1);
+  }
+
+  private String getTranslationId(List<String> record) {
+    return record.get(0);
   }
 
 }

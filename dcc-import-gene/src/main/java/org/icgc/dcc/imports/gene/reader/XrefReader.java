@@ -17,73 +17,108 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
-import static org.icgc.dcc.imports.gene.core.Sources.XREF_URI;
-
 import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
-import lombok.Data;
+import org.icgc.dcc.imports.gene.model.XrefMapping;
+
+import com.google.common.collect.ImmutableMap;
+
+import lombok.NonNull;
 import lombok.val;
 
 /**
  * Reads display names for genes and constructs map of symbol to gene name
  */
-@Data
-public class XrefReader {
+public class XrefReader extends TsvReader {
 
-  public final ExternalDatabaseReader externalReader;
-  public final Map<String, String> nameMap = new HashMap<>();
-  public final Map<String, String> entrezMap = new HashMap<>();
-  public final Map<String, String> hgncMap = new HashMap<>();
-  public final Map<String, String> mimMap = new HashMap<>();
-  public final Map<String, String> uniprotMap = new HashMap<>();
-  public final Map<String, String> interproMap = new HashMap<>();
+  /**
+   * Dependencies
+   */
+  public final String interproDBId;
 
-  public XrefReader(ExternalDatabaseReader externalReader) {
-    this.externalReader = externalReader;
+  public XrefReader(String uri, @NonNull String interproDBId) {
+    super(uri);
+    this.interproDBId = interproDBId;
   }
 
   /**
    * Get the map of xref display id -> gene name Caches external db ids in hashmaps for entrez, hgnc, mim, & uniprot.
    * Also gets interpro values for domains.
    */
-  public XrefReader read() {
-    val interproDbId = externalReader.getInterproId();
+  public XrefMapping read() {
+    // HashMap needed for name/entrez due to duplicate entries for some uncharacterized locations.
+    val nameMapBuilder = new HashMap<String, String>();
+    val entrezMapBuilder = new HashMap<String, String>();
+    val hgncMapBuilder = ImmutableMap.<String, String> builder();
+    val mimGeneMapBuider = ImmutableMap.<String, String> builder();
+    val uniprotMapBuilder = ImmutableMap.<String, String> builder();
+    val interproMapBuilder = ImmutableMap.<String, String> builder();
 
-    BaseReader.read(XREF_URI, line -> {
-      // Only use the rows we care about.
-      if ("12600".equals(line[1])) {
-        // Gene Wiki
-        String symbol = line[3];
-        String name = line[5];
-        nameMap.put(symbol, name);
-      } else if ("1300".equals(line[1])) {
-        // Entrez
-        String xrefId = line[0];
-        String dbID = line[2];
-        entrezMap.put(xrefId, dbID);
-      } else if ("1100".equals(line[1])) {
-        // HGNC
-        String xrefId = line[0];
-        String dbID = line[2];
-        hgncMap.put(xrefId, dbID);
-      } else if ("1510".equals(line[1])) {
-        // MIM_GENE
-        String xrefId = line[0];
-        String dbID = line[2];
-        mimMap.put(xrefId, dbID);
-      } else if ("2200".equals(line[1])) {
-        // Uniprot/SWISSPROT
-        String xrefId = line[0];
-        String dbID = line[2];
-        uniprotMap.put(xrefId, dbID);
-      } else if (interproDbId.equals(line[1])) {
-        String description = line[5];
-        String id = line[2];
-        interproMap.put(id, description);
+    readRecords().forEach(record -> {
+      if (isGeneWiki(record)) {
+        nameMapBuilder.put(getSymbol(record), getName(record));
+      } else if (isEntrez(record)) {
+        entrezMapBuilder.put(getXrefId(record), getDbId(record));
+      } else if (isHGNC(record)) {
+        hgncMapBuilder.put(getXrefId(record), getDbId(record));
+      } else if (isMimGene(record)) {
+        mimGeneMapBuider.put(getXrefId(record), getDbId(record));
+      } else if (isUniprot(record)) {
+        uniprotMapBuilder.put(getXrefId(record), getDbId(record));
+      } else if (isInterpro(record)) {
+        interproMapBuilder.put(getDbId(record), getName(record));
       }
     });
-    return this;
+
+    return XrefMapping.builder()
+        .nameMap(ImmutableMap.copyOf(nameMapBuilder))
+        .entrezMap(ImmutableMap.copyOf(entrezMapBuilder))
+        .hgncMap(hgncMapBuilder.build())
+        .mimMap(mimGeneMapBuider.build())
+        .uniprotMap(uniprotMapBuilder.build())
+        .interproMap(interproMapBuilder.build())
+        .build();
+  }
+
+  private boolean isGeneWiki(List<String> record) {
+    return "12600".equals(record.get(1));
+  }
+
+  private boolean isEntrez(List<String> record) {
+    return "1300".equals(record.get(1));
+  }
+
+  private boolean isHGNC(List<String> record) {
+    return "1100".equals(record.get(1));
+  }
+
+  private boolean isMimGene(List<String> record) {
+    return "1510".equals(record.get(1));
+  }
+
+  private boolean isUniprot(List<String> record) {
+    return "2200".equals(record.get(1));
+  }
+
+  private boolean isInterpro(List<String> record) {
+    return interproDBId.equals(record.get(1));
+  }
+
+  private String getSymbol(List<String> record) {
+    return record.get(3);
+  }
+
+  private String getName(List<String> record) {
+    return record.get(5);
+  }
+
+  private String getXrefId(List<String> record) {
+    return record.get(0);
+  }
+
+  private String getDbId(List<String> record) {
+    return record.get(2);
   }
 
 }

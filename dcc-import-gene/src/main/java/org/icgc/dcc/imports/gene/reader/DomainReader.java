@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
-import static org.icgc.dcc.imports.gene.core.Sources.PROTEIN_FEATURE_URI;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,34 +24,45 @@ import java.util.Map;
 
 import org.icgc.dcc.imports.gene.model.ProteinFeature;
 
-import lombok.RequiredArgsConstructor;
+import com.google.common.collect.ImmutableMap;
+
+import lombok.NonNull;
 import lombok.val;
 
 /**
  * Constructs the protein domains
  */
-@RequiredArgsConstructor
-public final class DomainReader {
+public final class DomainReader extends TsvReader {
 
+  /**
+   * Dependencies
+   */
   private final Map<String, String> transMap;
-  private final InterproReader interproReader;
-  private final AnalysisReader analysisReader;
+  private final Map<String, ProteinFeature> interproMap;
+  private final Map<String, String> analysisMap;
 
-  public Map<String, List<ProteinFeature>> createProteinFeatures() {
-    val analysisMap = analysisReader.getAnalysisMap();
-    val interproMap = interproReader.getInterproMap();
+  public DomainReader(String uri,
+      @NonNull Map<String, String> transMap,
+      @NonNull Map<String, ProteinFeature> interproMap,
+      @NonNull Map<String, String> analysisMap) {
+    super(uri);
+    this.transMap = transMap;
+    this.interproMap = interproMap;
+    this.analysisMap = analysisMap;
+  }
 
+  public Map<String, List<ProteinFeature>> read() {
     val retMap = new HashMap<String, List<ProteinFeature>>();
 
-    BaseReader.read(PROTEIN_FEATURE_URI, line -> {
-      if (analysisMap.containsKey(line[7])) {
-        if (interproMap.containsKey(line[6])) {
-          ProteinFeature pf = interproMap.get(line[6]).copy();
-          pf.setStart(Integer.parseInt(line[2]));
-          pf.setEnd(Integer.parseInt(line[3]));
-          pf.setAnalysisId(line[8]);
-          pf.setGffSource(analysisMap.get(line[7]));
-          String ens = transMap.get(line[1]);
+    readRecords().forEach(record -> {
+      if (analysisMap.containsKey(getAnalysisId(record))) {
+        if (interproMap.containsKey(getInterproId(record))) {
+          ProteinFeature pf = interproMap.get(getInterproId(record)).copy();
+          pf.setStart(getStart(record));
+          pf.setEnd(getEnd(record));
+          pf.setAnalysisId(getPfAnalysisId(record));
+          pf.setGffSource(getGffSource(record));
+          String ens = transMap.get(getTranscriptId(record));
 
           if (retMap.containsKey(ens)) {
             retMap.get(ens).add(pf);
@@ -65,7 +74,36 @@ public final class DomainReader {
         }
       }
     });
-    return retMap;
+
+    return ImmutableMap.<String, List<ProteinFeature>> copyOf(retMap);
+  }
+
+  private String getAnalysisId(List<String> record) {
+    return record.get(7);
+  }
+
+  private String getInterproId(List<String> record) {
+    return record.get(6);
+  }
+
+  private int getStart(List<String> record) {
+    return Integer.parseInt(record.get(2));
+  }
+
+  private int getEnd(List<String> record) {
+    return Integer.parseInt(record.get(3));
+  }
+
+  private String getPfAnalysisId(List<String> record) {
+    return record.get(8);
+  }
+
+  private String getGffSource(List<String> record) {
+    return analysisMap.get(getAnalysisId(record));
+  }
+
+  private String getTranscriptId(List<String> record) {
+    return record.get(1);
   }
 
 }

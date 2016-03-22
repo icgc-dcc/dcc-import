@@ -15,36 +15,23 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.gene.core;
+package org.icgc.dcc.imports.gene.model;
 
-import java.util.HashMap;
 import java.util.Map;
 
-import org.icgc.dcc.imports.gene.model.TranscriptMapping;
-import org.icgc.dcc.imports.gene.model.TranslationMapping;
+import com.google.common.collect.Multimap;
 
-import lombok.RequiredArgsConstructor;
-import lombok.val;
+import lombok.Builder;
+import lombok.Value;
 
-@RequiredArgsConstructor
-public class TransJoiner {
+/**
+ * Encapsulating class for mappings produced by gene.txt
+ */
+@Value
+@Builder
+public class GeneMapping {
 
-  private final TranslationMapping translationReader;
-  private final TranscriptMapping transcriptMapping;
-
-  /**
-   * Joins transcripts with translations.
-   * @return Map of translation_id to transcript stable id (ENST*)
-   */
-  public Map<String, String> joinTrans() {
-    val transcriptMap = transcriptMapping.getTranscriptMap();
-    val translationMap = translationReader.getTranslationMap();
-
-    val retMap = new HashMap<String, String>();
-    for (val entry : translationMap.entrySet()) {
-      retMap.put(entry.getValue(), transcriptMap.get(entry.getKey()));
-    }
-    return retMap;
-  }
-
+  Map<String, String> geneIdMap;
+  Map<String, String> canonicalMap;
+  Multimap<String, String> xrefGeneMap;
 }

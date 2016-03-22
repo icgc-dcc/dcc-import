@@ -17,24 +17,35 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
-import static org.icgc.dcc.imports.gene.core.Sources.EXTERNAL_DB_URI;
+import static java.util.stream.Collectors.toList;
 
-import lombok.Data;
-import lombok.val;
+import java.util.List;
 
-@Data
-public class ExternalDatabaseReader {
+public class ExternalDatabaseReader extends TsvReader {
 
-  private String interproId;
-
-  public ExternalDatabaseReader read() {
-    val interproId = new StringBuilder();
-    BaseReader.read(EXTERNAL_DB_URI, line -> {
-      if (line.length > 1 && line[1].equals("Interpro")) {
-        interproId.append(line[0]);
-      }
-    });
-    this.interproId = interproId.toString();
-    return this;
+  public ExternalDatabaseReader(String uri) {
+    super(uri);
   }
+
+  public String read() {
+    return readRecords()
+        .filter(record -> record.size() > 1)
+        .filter(this::isInterpro)
+        .map(this::getDBId)
+        .collect(toList())
+        .get(0);
+  }
+
+  private boolean isInterpro(List<String> record) {
+    return getDBName(record).equals("Interpro");
+  }
+
+  private String getDBName(List<String> record) {
+    return record.get(1);
+  }
+
+  private String getDBId(List<String> record) {
+    return record.get(0);
+  }
+
 }

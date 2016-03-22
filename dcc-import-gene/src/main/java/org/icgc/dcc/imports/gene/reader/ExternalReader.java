@@ -18,86 +18,122 @@
 package org.icgc.dcc.imports.gene.reader;
 
 import static org.icgc.dcc.common.json.Jackson.DEFAULT;
-import static org.icgc.dcc.imports.gene.core.Sources.OBJECT_XREF_URI;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+
+import org.icgc.dcc.imports.gene.model.GeneMapping;
+import org.icgc.dcc.imports.gene.model.TranslationMapping;
+import org.icgc.dcc.imports.gene.model.XrefMapping;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NonNull;
 import lombok.val;
 
 /**
  * Responsible for creating a map of gene to external db ids
  */
-@RequiredArgsConstructor
-public final class ExternalReader {
+public final class ExternalReader extends TsvReader {
 
   /**
    * Dependencies
    */
-  private final XrefReader nameReader;
-  private final GeneReader geneReader;
-  private final TranslationReader translationReader;
+  private final XrefMapping xrefMapping;
+  private final Map<String, String> getIdMap;
+  private final Map<String, String> translationToGene;
 
-  /**
-   * State
-   */
-  @Getter
-  private final Map<String, ObjectNode> externalIds = new HashMap<>();
+  public ExternalReader(String uri,
+      @NonNull XrefMapping xrefMapping,
+      @NonNull GeneMapping geneMapping,
+      @NonNull TranslationMapping translationMapping) {
+    super(uri);
+    this.xrefMapping = xrefMapping;
+    this.getIdMap = geneMapping.getGeneIdMap();
+    this.translationToGene = translationMapping.getTranslationToGene();
 
-  public ExternalReader read() {
-    val geneIdMap = geneReader.getGeneIdMap();
-    val transToGeneMap = translationReader.getTranslationToGene();
-
-    BaseReader.read(OBJECT_XREF_URI, line -> {
-      if ("Gene".equals(line[2])) {
-        String geneId = geneIdMap.get(line[1]);
-        ObjectNode externalDbs = getExternalDbs(geneId);
-
-        String xrefId = line[3];
-        if (nameReader.getEntrezMap().containsKey(xrefId)) {
-          ArrayNode arrayNode = (ArrayNode) externalDbs.get("entrez_gene");
-          arrayNode.add(nameReader.getEntrezMap().get(xrefId));
-        } else if (nameReader.getHgncMap().containsKey(xrefId)) {
-          ArrayNode arrayNode = (ArrayNode) externalDbs.get("hgnc");
-          arrayNode.add(nameReader.getHgncMap().get(xrefId));
-        } else if (nameReader.getMimMap().containsKey(xrefId)) {
-          ArrayNode arrayNode = (ArrayNode) externalDbs.get("omim_gene");
-          arrayNode.add(nameReader.getMimMap().get(xrefId));
-        }
-
-      } else if ("Translation".equals(line[2])) {
-        // Uniprot Ids are for proteins, which means we match them to translations and eventually work up to a gene/
-        String geneId = geneIdMap.get(transToGeneMap.get(line[1]));
-        ObjectNode externalDbs = getExternalDbs(geneId);
-
-        String xrefId = line[3];
-        if (nameReader.getUniprotMap().containsKey(xrefId)) {
-          ArrayNode arrayNode = (ArrayNode) externalDbs.get("uniprotkb_swissprot");
-          String uniprot = nameReader.getUniprotMap().get(xrefId);
-
-          Iterator<JsonNode> iter = arrayNode.elements();
-          boolean contained = false;
-          while (iter.hasNext()) {
-            contained = iter.next().asText().equals(uniprot);
-          }
-
-          if (!contained) {
-            arrayNode.add(uniprot);
-          }
-        }
-      }
-    });
-    return this;
   }
 
-  private ObjectNode getExternalDbs(String geneId) {
+  public Map<String, ObjectNode> read() {
+    val externalIds = new HashMap<String, ObjectNode>();
+
+    readRecords().forEach(record -> {
+      if (isGene(record)) {
+        handleExternalGeneIds(record, externalIds);
+      } else if (isTranslation(record)) {
+        handleUniprotIds(record, externalIds);
+      }
+    });
+
+    return ImmutableMap.<String, ObjectNode> copyOf(externalIds);
+  }
+
+  private void handleExternalGeneIds(List<String> record, Map<String, ObjectNode> externalIds) {
+    val xrefId = getXrefId(record);
+    String geneId = getIdMap.get(getItemId(record));
+
+    ObjectNode externalDbs = getExternalDbs(geneId, externalIds);
+
+    if (xrefMapping.getEntrezMap().containsKey(xrefId)) {
+      ArrayNode arrayNode = (ArrayNode) externalDbs.get("entrez_gene");
+      arrayNode.add(xrefMapping.getEntrezMap().get(xrefId));
+    } else if (xrefMapping.getHgncMap().containsKey(xrefId)) {
+      ArrayNode arrayNode = (ArrayNode) externalDbs.get("hgnc");
+      arrayNode.add(xrefMapping.getHgncMap().get(xrefId));
+    } else if (xrefMapping.getMimMap().containsKey(xrefId)) {
+      ArrayNode arrayNode = (ArrayNode) externalDbs.get("omim_gene");
+      arrayNode.add(xrefMapping.getMimMap().get(xrefId));
+    }
+  }
+
+  private void handleUniprotIds(List<String> record, Map<String, ObjectNode> externalIds) {
+    // Uniprot Ids are for proteins, which means we match them to translations and eventually work up to a gene/
+    String geneId = getIdMap.get(translationToGene.get(getItemId(record)));
+    ObjectNode externalDbs = getExternalDbs(geneId, externalIds);
+
+    String xrefId = getXrefId(record);
+    if (xrefMapping.getUniprotMap().containsKey(xrefId)) {
+      ArrayNode arrayNode = (ArrayNode) externalDbs.get("uniprotkb_swissprot");
+      String uniprot = xrefMapping.getUniprotMap().get(xrefId);
+
+      Iterator<JsonNode> iter = arrayNode.elements();
+      boolean contained = false;
+      while (iter.hasNext()) {
+        contained = iter.next().asText().equals(uniprot);
+      }
+
+      if (!contained) {
+        arrayNode.add(uniprot);
+      }
+    }
+  }
+
+  private String getXrefId(List<String> record) {
+    return record.get(3);
+  }
+
+  private String getType(List<String> record) {
+    return record.get(2);
+  }
+
+  private String getItemId(List<String> record) {
+    return record.get(1);
+  }
+
+  private boolean isGene(List<String> record) {
+    return "Gene".equals(getType(record));
+  }
+
+  private boolean isTranslation(List<String> record) {
+    return "Translation".equals(getType(record));
+  }
+
+  private ObjectNode getExternalDbs(String geneId, Map<String, ObjectNode> externalIds) {
     if (externalIds.containsKey(geneId)) {
       return externalIds.get(geneId);
     } else {
