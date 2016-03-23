@@ -56,7 +56,6 @@ public final class ExternalReader extends TsvReader {
     this.xrefMapping = xrefMapping;
     this.getIdMap = geneMapping.getGeneIdMap();
     this.translationToGene = translationMapping.getTranslationToGene();
-
   }
 
   public Map<String, ObjectNode> read() {
@@ -70,7 +69,7 @@ public final class ExternalReader extends TsvReader {
       }
     });
 
-    return ImmutableMap.<String, ObjectNode> copyOf(externalIds);
+    return ImmutableMap.copyOf(externalIds);
   }
 
   private void handleExternalGeneIds(List<String> record, Map<String, ObjectNode> externalIds) {
@@ -93,13 +92,13 @@ public final class ExternalReader extends TsvReader {
 
   private void handleUniprotIds(List<String> record, Map<String, ObjectNode> externalIds) {
     // Uniprot Ids are for proteins, which means we match them to translations and eventually work up to a gene/
-    String geneId = getIdMap.get(translationToGene.get(getItemId(record)));
-    ObjectNode externalDbs = getExternalDbs(geneId, externalIds);
+    val geneId = getIdMap.get(translationToGene.get(getItemId(record)));
+    val externalDbs = getExternalDbs(geneId, externalIds);
 
-    String xrefId = getXrefId(record);
+    val xrefId = getXrefId(record);
     if (xrefMapping.getUniprotMap().containsKey(xrefId)) {
-      ArrayNode arrayNode = (ArrayNode) externalDbs.get("uniprotkb_swissprot");
-      String uniprot = xrefMapping.getUniprotMap().get(xrefId);
+      val arrayNode = (ArrayNode) externalDbs.get("uniprotkb_swissprot");
+      val uniprot = xrefMapping.getUniprotMap().get(xrefId);
 
       Iterator<JsonNode> iter = arrayNode.elements();
       boolean contained = false;

@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.imports.gene.core;
 
+import static java.util.stream.Collectors.toMap;
 import static org.icgc.dcc.common.core.util.Splitters.SEMICOLON;
 import static org.icgc.dcc.common.core.util.Splitters.TAB;
 import static org.icgc.dcc.common.json.Jackson.DEFAULT;
@@ -30,7 +31,6 @@ import static org.icgc.dcc.imports.gene.core.TranscriptProcessing.constructTrans
 import static org.icgc.dcc.imports.gene.core.TranscriptProcessing.exonDefaults;
 
 import java.io.BufferedReader;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -62,9 +62,13 @@ public class GeneConstructor {
   /**
    * Dependencies
    */
+  @NonNull
   private final BufferedReader bufferedReader;
+  @NonNull
   private final Map<String, String> summaryMap;
+  @NonNull
   private final Ensembl ensembl;
+  @NonNull
   private final GeneWriter writer;
 
   /**
@@ -194,16 +198,26 @@ public class GeneConstructor {
     return synMap().getOrDefault(id, DEFAULT.createArrayNode());
   }
 
-  private static Map<String, String> parseAttributes(String attributes) {
-    val attributeMap = new HashMap<String, String>();
-    val tokens = SEMICOLON.split(attributes);
-    for (val token : tokens) {
-      String[] kv = UNKNOWN_WHITESPACE.split(QUOTES.matcher(token.trim()).replaceAll(""));
-      if (kv.length == 2) {
-        attributeMap.put(kv[0], kv[1]);
-      }
-    }
-    return attributeMap;
+  /**
+   * Last column of data is semicolon separated attributes which are represented as key values separated by whitespace.
+   * 
+   * @param attributes String representation of raw attributes
+   * @return A Map of attribute name to attribute value.
+   */
+  private static Map<String, String> parseAttributes(String keyValueAttributes) {
+    return SEMICOLON.splitToList(keyValueAttributes).stream()
+        .map(GeneConstructor::stripQuotes)
+        .map(UNKNOWN_WHITESPACE::split)
+        .filter(GeneConstructor::isValidAttribute)
+        .collect(toMap(attr -> attr[0], attr -> attr[1]));
+  }
+
+  private static String stripQuotes(String token) {
+    return QUOTES.matcher(token.trim()).replaceAll("");
+  }
+
+  private static boolean isValidAttribute(String[] attr) {
+    return attr.length == 2 && !attr[0].equals("tag") && !attr[0].equals("cdds_id");
   }
 
   private ObjectNode constructGeneNode(ObjectNode data) {
@@ -233,11 +247,7 @@ public class GeneConstructor {
    * @return Processed Transcript ObjectNode
    */
   private ObjectNode postProcessTranscript(ObjectNode transcript, String strand, String canonical) {
-    if (asText(transcript, "id").equals(canonical)) {
-      transcript.put("is_canonical", true);
-    } else {
-      transcript.put("is_canonical", false);
-    }
+    transcript.put("is_canonical", isCanonical(transcript, canonical));
 
     val exons = exonDefaults((ArrayNode) transcript.get("exons"));
     transcript.put("number_of_exons", exons.size());
@@ -323,6 +333,10 @@ public class GeneConstructor {
     transcript.put("length_amino_acid", aminoAcidLength);
 
     return attachDomains(transcript, pFeatures());
+  }
+
+  private static boolean isCanonical(ObjectNode transcript, String canonical) {
+    return asText(transcript, "id").equals(canonical);
   }
 
   /*

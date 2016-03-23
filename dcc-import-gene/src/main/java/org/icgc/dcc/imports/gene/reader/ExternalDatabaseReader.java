@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
-import static java.util.stream.Collectors.toList;
-
 import java.util.List;
 
 public class ExternalDatabaseReader extends TsvReader {
@@ -32,8 +30,8 @@ public class ExternalDatabaseReader extends TsvReader {
         .filter(record -> record.size() > 1)
         .filter(this::isInterpro)
         .map(this::getDBId)
-        .collect(toList())
-        .get(0);
+        .findFirst()
+        .orElse(null);
   }
 
   private boolean isInterpro(List<String> record) {

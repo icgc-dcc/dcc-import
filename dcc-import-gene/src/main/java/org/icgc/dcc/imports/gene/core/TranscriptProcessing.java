@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.imports.gene.core;
 
+import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.common.json.Jackson.DEFAULT;
 
 import java.util.List;
@@ -28,12 +29,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
 
 /**
  * Collection of stateless helpers used for processing transcripts and exons
  */
+@NoArgsConstructor(access = PRIVATE)
 public final class TranscriptProcessing {
 
   /**
@@ -41,7 +44,7 @@ public final class TranscriptProcessing {
    * @param data ObjectNode holding raw json data
    * @return ObjectNode representing a transcript with default values.
    */
-  public static ObjectNode constructTranscriptNode(ObjectNode data) {
+  public static ObjectNode constructTranscriptNode(@NonNull ObjectNode data) {
     val transcript = DEFAULT.createObjectNode();
     transcript.put("id", asText(data, "transcript_id"));
     transcript.put("name", asText(data, "transcript_name"));
@@ -82,7 +85,7 @@ public final class TranscriptProcessing {
   public static ArrayNode exonDefaults(ArrayNode exons) {
     int preExonCdnaEnd = 0;
     for (val exon : exons) {
-      ObjectNode exonNode = (ObjectNode) exon;
+      val exonNode = (ObjectNode) exon;
 
       val exonLength = asInt(exon, "end") - asInt(exon, "start");
       exonNode.put("cdna_start", preExonCdnaEnd + 1);
@@ -94,12 +97,14 @@ public final class TranscriptProcessing {
       exonNode.put("cdna_coding_start", 0);
       exonNode.put("cdna_coding_end", 0);
     }
+
     return exons;
   }
 
   /**
    * Helper for computing the values of the beginning of the coding region of a transcript and start exon, both with the
    * coordinate system of the DNA and the coordinate system of the transcript sequence (cDNA).
+   * 
    * @param transcript ObjectNode representation of a transcript.
    * @param exon ObjectNode representation of an exon.
    * @param strand Flag which determines if we are working on a positive or negative strand.
@@ -119,6 +124,7 @@ public final class TranscriptProcessing {
       exon.put("genomic_coding_start", cdsStart);
       exon.put("cdna_coding_start", asInt(exon, "cdna_start") + (cdsStart - asInt(exon, "start") + 1));
     }
+
     transcript.put("cdna_coding_start", asInt(exon, "cdna_coding_start"));
     transcript.put("seq_exon_start", seqExonStart(exon, strand));
   }
@@ -128,6 +134,7 @@ public final class TranscriptProcessing {
    * coordinate system of the DNA and the coordinate system of the transcript sequence (cDNA). This helper covers the
    * edge case where the first three bases of an exon are the stop codon and thus the end exon does not contain a coding
    * region itself.
+   * 
    * @param transcript ObjectNode representation of a transcript.
    * @param exon ObjectNode representation of a the end exon.
    * @param i The position of the end exon within the exons of the transcript.

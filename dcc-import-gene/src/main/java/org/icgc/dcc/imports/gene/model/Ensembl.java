@@ -30,10 +30,10 @@ import lombok.Value;
 @Builder
 public class Ensembl {
 
-  private Map<String, String> nameMap;
-  private Map<String, ArrayNode> synonymMap;
-  private Map<String, String> canonicalMap;
-  private Map<String, List<ProteinFeature>> pFeatures;
-  private Map<String, ObjectNode> externalIds;
+  Map<String, String> nameMap;
+  Map<String, ArrayNode> synonymMap;
+  Map<String, String> canonicalMap;
+  Map<String, List<ProteinFeature>> pFeatures;
+  Map<String, ObjectNode> externalIds;
 
 }

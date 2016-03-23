@@ -23,13 +23,16 @@ import java.util.Map;
 import org.icgc.dcc.imports.gene.model.TranscriptMapping;
 import org.icgc.dcc.imports.gene.model.TranslationMapping;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 @RequiredArgsConstructor
 public class TransJoiner {
 
+  @NonNull
   private final TranslationMapping translationReader;
+  @NonNull
   private final TranscriptMapping transcriptMapping;
 
   /**

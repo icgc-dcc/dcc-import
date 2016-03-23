@@ -81,39 +81,39 @@ public class XrefReader extends TsvReader {
         .build();
   }
 
-  private boolean isGeneWiki(List<String> record) {
-    return "12600".equals(record.get(1));
-  }
-
-  private boolean isEntrez(List<String> record) {
-    return "1300".equals(record.get(1));
-  }
-
-  private boolean isHGNC(List<String> record) {
-    return "1100".equals(record.get(1));
-  }
-
-  private boolean isMimGene(List<String> record) {
-    return "1510".equals(record.get(1));
-  }
-
-  private boolean isUniprot(List<String> record) {
-    return "2200".equals(record.get(1));
-  }
-
   private boolean isInterpro(List<String> record) {
     return interproDBId.equals(record.get(1));
   }
 
-  private String getSymbol(List<String> record) {
+  private static boolean isGeneWiki(List<String> record) {
+    return "12600".equals(record.get(1));
+  }
+
+  private static boolean isEntrez(List<String> record) {
+    return "1300".equals(record.get(1));
+  }
+
+  private static boolean isHGNC(List<String> record) {
+    return "1100".equals(record.get(1));
+  }
+
+  private static boolean isMimGene(List<String> record) {
+    return "1510".equals(record.get(1));
+  }
+
+  private static boolean isUniprot(List<String> record) {
+    return "2200".equals(record.get(1));
+  }
+
+  private static String getSymbol(List<String> record) {
     return record.get(3);
   }
 
-  private String getName(List<String> record) {
+  private static String getName(List<String> record) {
     return record.get(5);
   }
 
-  private String getXrefId(List<String> record) {
+  private static String getXrefId(List<String> record) {
     return record.get(0);
   }
 

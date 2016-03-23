@@ -23,7 +23,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
   <parent>
     <groupId>org.icgc.dcc</groupId>
     <artifactId>dcc-parent</artifactId>
-    <version>19</version>
+    <version>29</version>
   </parent>
 
   <artifactId>dcc-import</artifactId>
@@ -117,11 +117,6 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
         <artifactId>dcc-common-client</artifactId>
         <version>${dcc-common.version}</version>
       </dependency>
-      <dependency>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>dcc-common-resources</artifactId>
-        <version>${dcc-common.version}</version>
-      </dependency>
 
       <!-- JSON -->
       <dependency>
@@ -154,12 +149,6 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
   </dependencyManagement>
 
   <dependencies>
-
-    <!-- DCC - Common -->
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>dcc-common-resources</artifactId>
-    </dependency>
 
     <!-- JSON -->
     <dependency>

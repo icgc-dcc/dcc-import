@@ -23,37 +23,20 @@ import static org.icgc.dcc.imports.diagram.reader.DiagramReader.REACTOME_BASE_UR
 
 import java.net.URL;
 
-import lombok.NonNull;
-import lombok.val;
-
 import com.google.common.io.Resources;
+
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.val;
 
 public class DiagramXmlReader {
 
   private final static String DIAGRAM_XML_URL = REACTOME_BASE_URL + "pathwayDiagram/%s/XML";
 
-  public String readPathwayXml(@NonNull String dbId) throws Exception {
+  @SneakyThrows
+  public String readPathwayXml(@NonNull String dbId) {
     val url = new URL(format(DIAGRAM_XML_URL, dbId));
-    return escape(Resources.toString(url, UTF_8));
+    return Resources.toString(url, UTF_8);
   }
-
-  private String escape(String xml) {
-    for (String[] replacement : replacements) {
-      xml.replace(replacement[0], replacement[1]);
-    }
-    return xml;
-  }
-
-  private String[][] replacements =
-  {
-      { "\b", "\\b" },
-      { "\n", "\\n" },
-      { "\t", "\\t" },
-      { "\f", "\\f" },
-      { "\r", "\\r" },
-      { "\"", "\\\"" },
-      { "\\", "\\\\" },
-      { "/", "\\/" }
-  };
 
 }

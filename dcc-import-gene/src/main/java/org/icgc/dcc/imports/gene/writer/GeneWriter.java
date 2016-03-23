@@ -38,7 +38,7 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
    * State
    */
   private int counter = 0;
-  private MongoCollection geneCollection;
+  private final MongoCollection geneCollection;
 
   /**
    * @param mongoUri

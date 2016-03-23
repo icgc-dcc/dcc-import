@@ -22,19 +22,19 @@ import java.io.OutputStream;
 
 import com.google.common.io.ByteStreams;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@RequiredArgsConstructor
 public class ASNInputReader implements Runnable {
 
-  private InputStream in;
-  private OutputStream out;
-
-  public ASNInputReader(InputStream in, OutputStream out) {
-    this.in = in;
-    this.out = out;
-  }
+  @NonNull
+  private final InputStream in;
+  @NonNull
+  private final OutputStream out;
 
   @Override
   @SneakyThrows

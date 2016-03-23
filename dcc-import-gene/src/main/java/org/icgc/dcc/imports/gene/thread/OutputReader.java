@@ -25,18 +25,18 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.icgc.dcc.imports.gene.reader.XMLHandler;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 
+@RequiredArgsConstructor
 public class OutputReader implements Runnable {
 
-  private InputStream in;
-  private Map<String, String> summaryMap;
-
-  public OutputReader(InputStream in, Map<String, String> summaryMap) {
-    this.in = in;
-    this.summaryMap = summaryMap;
-  }
+  @NonNull
+  private final InputStream in;
+  @NonNull
+  private final Map<String, String> summaryMap;
 
   @Override
   @SneakyThrows

@@ -17,6 +17,11 @@
  */
 package org.icgc.dcc.imports.gene.core;
 
+import static lombok.AccessLevel.PRIVATE;
+
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = PRIVATE)
 public final class Sources {
 
   private static final String BASE_URI = "ftp://ftp.ensembl.org/pub/grch37/release-83/mysql/homo_sapiens_core_83_37/";

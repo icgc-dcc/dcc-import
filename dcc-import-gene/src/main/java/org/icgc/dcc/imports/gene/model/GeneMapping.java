@@ -34,4 +34,5 @@ public class GeneMapping {
   Map<String, String> geneIdMap;
   Map<String, String> canonicalMap;
   Multimap<String, String> xrefGeneMap;
+
 }

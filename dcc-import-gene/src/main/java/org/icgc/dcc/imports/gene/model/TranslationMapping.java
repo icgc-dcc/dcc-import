@@ -31,4 +31,5 @@ public class TranslationMapping {
 
   Map<String, String> translationMap;
   Map<String, String> translationToGene;
+
 }

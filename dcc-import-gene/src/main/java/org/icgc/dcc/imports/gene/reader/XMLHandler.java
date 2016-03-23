@@ -47,8 +47,8 @@ public class XMLHandler extends DefaultHandler {
     if ("Entrezgene_summary".equals(qName)) {
       currentValue = new StringBuilder();
     }
-    this.elementStack.push(qName);
 
+    this.elementStack.push(qName);
   }
 
   @Override
@@ -56,8 +56,8 @@ public class XMLHandler extends DefaultHandler {
     if ("Entrezgene_summary".equals(qName)) {
       summaryMap.put(currentId, currentValue.toString());
     }
-    this.elementStack.pop();
 
+    this.elementStack.pop();
   }
 
   @Override
