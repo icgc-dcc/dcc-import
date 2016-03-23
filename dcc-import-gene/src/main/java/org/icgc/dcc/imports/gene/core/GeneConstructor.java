@@ -18,9 +18,9 @@
 package org.icgc.dcc.imports.gene.core;
 
 import static java.util.stream.Collectors.toMap;
+import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 import static org.icgc.dcc.common.core.util.Splitters.SEMICOLON;
 import static org.icgc.dcc.common.core.util.Splitters.TAB;
-import static org.icgc.dcc.common.json.Jackson.DEFAULT;
 import static org.icgc.dcc.imports.gene.core.TranscriptProcessing.asInt;
 import static org.icgc.dcc.imports.gene.core.TranscriptProcessing.asText;
 import static org.icgc.dcc.imports.gene.core.TranscriptProcessing.attachDomains;
@@ -31,7 +31,6 @@ import static org.icgc.dcc.imports.gene.core.TranscriptProcessing.constructTrans
 import static org.icgc.dcc.imports.gene.core.TranscriptProcessing.exonDefaults;
 
 import java.io.BufferedReader;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -42,6 +41,8 @@ import org.icgc.dcc.imports.gene.writer.GeneWriter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Multimap;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -58,6 +59,7 @@ public class GeneConstructor {
    */
   private final static Pattern QUOTES = Pattern.compile("\"");
   private final static Pattern UNKNOWN_WHITESPACE = Pattern.compile("\\s+");
+  private final static Splitter TAB_TRIM = TAB.trimResults();
 
   /**
    * Dependencies
@@ -121,6 +123,10 @@ public class GeneConstructor {
     finalizeTranscript();
     geneNode.put("transcripts", transcripts);
     geneNode.put("external_db_ids", externalIds().get(asText(geneNode, "_gene_id")));
+
+    if (asText(geneNode, "name").isEmpty()) {
+      geneNode.put("name", asText(geneNode, "symbol"));
+    }
     writeGene(geneNode);
     // Reset the current state
     curTranscript = null;
@@ -146,7 +152,7 @@ public class GeneConstructor {
    * @return ObjectNode representation of the gtf row.
    */
   private ObjectNode parseLine(@NonNull String s) {
-    String[] line = TAB.trimResults().splitToList(s).stream().toArray(String[]::new);
+    String[] line = TAB_TRIM.trimResults().splitToList(s).stream().toArray(String[]::new);
     val seqname = line[0];
     val source = line[1];
     val type = line[2];
@@ -358,7 +364,7 @@ public class GeneConstructor {
     return this.ensembl.getSynonymMap();
   }
 
-  private Map<String, List<ProteinFeature>> pFeatures() {
+  private Multimap<String, ProteinFeature> pFeatures() {
     return this.ensembl.getPFeatures();
   }
 

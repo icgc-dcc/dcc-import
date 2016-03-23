@@ -17,16 +17,15 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableMap;
+
 import java.util.List;
 import java.util.Map;
 
 import org.icgc.dcc.imports.gene.model.ProteinFeature;
 import org.icgc.dcc.imports.gene.model.XrefMapping;
 
-import com.google.common.collect.ImmutableMap;
-
 import lombok.NonNull;
-import lombok.val;
 
 public class InterproReader extends TsvReader {
 
@@ -44,21 +43,18 @@ public class InterproReader extends TsvReader {
    * Returns a map of protein features
    */
   public Map<String, ProteinFeature> read() {
-
-    val interproMap = ImmutableMap.<String, ProteinFeature> builder();
-    readRecords().forEach(record -> {
-      ProteinFeature pf = new ProteinFeature(getInterproId(record), getHitName(record), getDescription(record));
-      interproMap.put(getHitName(record), pf);
-    });
-
-    return interproMap.build();
+    return readRecords().map(this::createProteinFeature).collect(toImmutableMap(ProteinFeature::getHitName));
   }
 
-  private String getInterproId(List<String> record) {
+  private ProteinFeature createProteinFeature(List<String> record) {
+    return new ProteinFeature(getInterproId(record), getHitName(record), getDescription(record));
+  }
+
+  private static String getInterproId(List<String> record) {
     return record.get(0);
   }
 
-  private String getHitName(List<String> record) {
+  private static String getHitName(List<String> record) {
     return record.get(1);
   }
 

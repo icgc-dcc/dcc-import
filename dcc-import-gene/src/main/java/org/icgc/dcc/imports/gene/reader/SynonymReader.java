@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
-import static org.icgc.dcc.common.json.Jackson.DEFAULT;
+import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -47,19 +47,10 @@ public class SynonymReader extends TsvReader {
 
   public Map<String, ArrayNode> read() {
     val synMap = new HashMap<String, ArrayNode>();
+
     readRecords().forEach(record -> {
-      Collection<String> eIds = getExternalIds(record);
-      if (eIds != null) {
-        for (String id : eIds) {
-          if (synMap.containsKey(id)) {
-            synMap.get(id).add(getSynonym(record));
-          } else {
-            ArrayNode newList = DEFAULT.createArrayNode();
-            newList.add(getSynonym(record));
-            synMap.put(id, newList);
-          }
-        }
-      }
+      getExternalIds(record)
+          .forEach(id -> synMap.computeIfAbsent(id, x -> DEFAULT.createArrayNode()).add(getSynonym(record)));
     });
 
     return synMap;

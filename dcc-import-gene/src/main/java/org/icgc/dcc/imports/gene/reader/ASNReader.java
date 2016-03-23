@@ -47,7 +47,7 @@ public class ASNReader {
    * @return Map of gene_id -> summary text
    */
   @SneakyThrows
-  public Map<String, String> callGene2Xml() {
+  public Map<String, String> readSummary() {
     val summaryMap = new ConcurrentHashMap<String, String>();
     val downloadUtil = getCmd();
 

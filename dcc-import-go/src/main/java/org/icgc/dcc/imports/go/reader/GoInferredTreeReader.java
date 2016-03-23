@@ -18,7 +18,7 @@
 package org.icgc.dcc.imports.go.reader;
 
 import static com.google.common.base.Stopwatch.createStarted;
-import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
+import static org.icgc.dcc.common.core.util.Formats.formatCount;
 import static owltools.graph.RelationSets.REGULATES;
 
 import java.io.IOException;
@@ -26,21 +26,20 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.imports.geneset.model.go.GoInferredTreeNode;
 import org.icgc.dcc.imports.go.util.GoInferredTreeBuilder;
 import org.obolibrary.oboformat.parser.OBOFormatParserException;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 
+import com.google.common.collect.ImmutableMap;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 import owltools.graph.OWLGraphWrapper;
 import owltools.graph.RelationSets;
 import owltools.io.ParserWrapper;
-
-import com.google.common.collect.ImmutableMap;
 
 /**
  * Reads an "inferred tree" as defined by the Amigo project.

@@ -18,7 +18,7 @@
 package org.icgc.dcc.imports.pathway.reader;
 
 import static com.google.common.base.Stopwatch.createStarted;
-import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
+import static org.icgc.dcc.common.core.util.Formats.formatCount;
 
 import java.io.IOException;
 import java.net.URI;
@@ -26,10 +26,10 @@ import java.net.URI;
 import org.icgc.dcc.imports.pathway.core.PathwayModel;
 import org.icgc.dcc.imports.pathway.model.Pathway;
 
+import com.google.common.collect.Maps;
+
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-
-import com.google.common.collect.Maps;
 
 @Slf4j
 public class PathwayModelReader {

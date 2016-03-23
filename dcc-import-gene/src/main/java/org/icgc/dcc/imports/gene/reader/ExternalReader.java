@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
-import static org.icgc.dcc.common.json.Jackson.DEFAULT;
+import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 
 import java.util.HashMap;
 import java.util.Iterator;

@@ -18,7 +18,7 @@
 package org.icgc.dcc.imports.go;
 
 import static com.google.common.base.Stopwatch.createStarted;
-import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
+import static org.icgc.dcc.common.core.util.Formats.formatCount;
 import static org.icgc.dcc.common.core.util.URLs.getUrl;
 import static org.icgc.dcc.imports.go.util.GoTermAncestorResolver.resolveTermAncestors;
 

@@ -33,6 +33,7 @@ import org.icgc.dcc.imports.gene.writer.GeneWriter;
 
 import com.mongodb.MongoClientURI;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
@@ -42,6 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class GeneImporter implements SourceImporter {
 
+  @NonNull
   private final URI gtfUri;
   private final MongoClientURI mongoUri;
 
@@ -66,7 +68,7 @@ public class GeneImporter implements SourceImporter {
 
     log.info("Starting ASN.1 Import from NCBI.");
     val asnReader = new ASNReader();
-    val summaryMap = asnReader.callGene2Xml();
+    val summaryMap = asnReader.readSummary();
     log.info("Staged {} Summaries from NCBI.", summaryMap.size());
 
     log.info("Writing genes to {}...", mongoUri);

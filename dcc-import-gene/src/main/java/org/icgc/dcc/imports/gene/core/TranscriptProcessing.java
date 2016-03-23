@@ -18,16 +18,14 @@
 package org.icgc.dcc.imports.gene.core;
 
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.common.json.Jackson.DEFAULT;
-
-import java.util.List;
-import java.util.Map;
+import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 
 import org.icgc.dcc.imports.gene.model.ProteinFeature;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Multimap;
 
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -154,7 +152,7 @@ public final class TranscriptProcessing {
         transcript.put("coding_region_start", start);
         exon.put("genomic_coding_start", start);
         exon.put("cdna_coding_end", asInt(exon, "cdna_coding_start") + asInt(exon, "genomic_coding_end")
-            - asInt(exon, "genomic_coding_start") + 1);
+            - asInt(exon, "genomic_coding_start"));
       }
     } else {
       if (cds.isMissingNode()) {
@@ -200,11 +198,7 @@ public final class TranscriptProcessing {
    * @return number of bases as int into the end exon.
    */
   public static int seqExonEnd(@NonNull JsonNode exon, @NonNull String strand) {
-    int seqExonEnd = asInt(exon, "cdna_coding_end") - asInt(exon, "cdna_coding_start");
-    if ("1".equals(strand)) {
-      seqExonEnd++;
-    }
-    return seqExonEnd;
+    return asInt(exon, "cdna_coding_end") - asInt(exon, "cdna_coding_start") + 1;
   }
 
   /**
@@ -214,7 +208,7 @@ public final class TranscriptProcessing {
    * @return ObjectNode representation of the transcript with the Domains joined.
    */
   public static ObjectNode attachDomains(@NonNull ObjectNode transcript,
-      @NonNull Map<String, List<ProteinFeature>> pFeatures) {
+      @NonNull Multimap<String, ProteinFeature> pFeatures) {
     val pfs = pFeatures.get(asText(transcript, "id"));
     val domains = DEFAULT.createArrayNode();
 

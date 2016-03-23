@@ -17,14 +17,15 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.icgc.dcc.imports.gene.model.ProteinFeature;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 
 import lombok.NonNull;
 import lombok.val;
@@ -51,31 +52,26 @@ public final class DomainReader extends TsvReader {
     this.analysisMap = analysisMap;
   }
 
-  public Map<String, List<ProteinFeature>> read() {
-    val retMap = new HashMap<String, List<ProteinFeature>>();
+  public Multimap<String, ProteinFeature> read() {
+    val retMap = ImmutableMultimap.<String, ProteinFeature> builder();
+    readRecords().filter(this::hasInterproAnalysis).map(this::createProteinFeature).forEach(retMap::put);
 
-    readRecords().forEach(record -> {
-      if (analysisMap.containsKey(getAnalysisId(record))) {
-        if (interproMap.containsKey(getInterproId(record))) {
-          ProteinFeature pf = interproMap.get(getInterproId(record)).copy();
-          pf.setStart(getStart(record));
-          pf.setEnd(getEnd(record));
-          pf.setAnalysisId(getPfAnalysisId(record));
-          pf.setGffSource(getGffSource(record));
-          String ens = transMap.get(getTranscriptId(record));
+    return retMap.build();
+  }
 
-          if (retMap.containsKey(ens)) {
-            retMap.get(ens).add(pf);
-          } else {
-            List<ProteinFeature> al = new ArrayList<>();
-            al.add(pf);
-            retMap.put(ens, al);
-          }
-        }
-      }
-    });
+  private Entry<String, ProteinFeature> createProteinFeature(List<String> record) {
+    ProteinFeature pf = interproMap.get(getInterproId(record)).copy();
+    pf.setStart(getStart(record));
+    pf.setEnd(getEnd(record));
+    pf.setAnalysisId(getPfAnalysisId(record));
+    pf.setGffSource(getGffSource(record));
 
-    return ImmutableMap.<String, List<ProteinFeature>> copyOf(retMap);
+    String ens = transMap.get(getTranscriptId(record));
+    return new SimpleEntry<String, ProteinFeature>(ens, pf);
+  }
+
+  private boolean hasInterproAnalysis(List<String> record) {
+    return analysisMap.containsKey(getAnalysisId(record)) && interproMap.containsKey(getInterproId(record));
   }
 
   private String getAnalysisId(List<String> record) {

@@ -17,11 +17,11 @@
  */
 package org.icgc.dcc.imports.gene.model;
 
-import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Multimap;
 
 import lombok.Builder;
 import lombok.Value;
@@ -33,7 +33,7 @@ public class Ensembl {
   Map<String, String> nameMap;
   Map<String, ArrayNode> synonymMap;
   Map<String, String> canonicalMap;
-  Map<String, List<ProteinFeature>> pFeatures;
+  Multimap<String, ProteinFeature> pFeatures;
   Map<String, ObjectNode> externalIds;
 
 }

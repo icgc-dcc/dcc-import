@@ -19,7 +19,7 @@ package org.icgc.dcc.imports.diagram.model;
 
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.icgc.dcc.common.json.Jackson.DEFAULT;
+import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 
 import java.util.List;
 

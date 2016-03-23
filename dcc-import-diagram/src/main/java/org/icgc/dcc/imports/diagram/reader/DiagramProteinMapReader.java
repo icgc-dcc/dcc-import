@@ -18,7 +18,7 @@
 package org.icgc.dcc.imports.diagram.reader;
 
 import static java.lang.String.format;
-import static org.icgc.dcc.common.json.Jackson.DEFAULT;
+import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 import static org.icgc.dcc.imports.diagram.reader.DiagramReader.REACTOME_BASE_URL;
 
 import java.io.IOException;

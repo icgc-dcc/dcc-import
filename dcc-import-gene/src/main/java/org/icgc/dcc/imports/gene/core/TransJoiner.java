@@ -17,7 +17,8 @@
  */
 package org.icgc.dcc.imports.gene.core;
 
-import java.util.HashMap;
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableMap;
+
 import java.util.Map;
 
 import org.icgc.dcc.imports.gene.model.TranscriptMapping;
@@ -43,11 +44,8 @@ public class TransJoiner {
     val transcriptMap = transcriptMapping.getTranscriptMap();
     val translationMap = translationReader.getTranslationMap();
 
-    val retMap = new HashMap<String, String>();
-    for (val entry : translationMap.entrySet()) {
-      retMap.put(entry.getValue(), transcriptMap.get(entry.getKey()));
-    }
-    return retMap;
+    return translationMap.entrySet().stream()
+        .collect(toImmutableMap(e -> e.getValue(), e -> transcriptMap.get(e.getKey())));
   }
 
 }
