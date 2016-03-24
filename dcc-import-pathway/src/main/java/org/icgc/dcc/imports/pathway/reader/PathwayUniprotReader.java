@@ -39,8 +39,12 @@ public class PathwayUniprotReader extends AbstractTsvMapReader {
    */
   private static final String HOMO_SAPIEN = "Homo sapiens";
   private static final String[] CSV_HEADER =
-      { FieldNames.PATHWAY_UNIPROT_ID, FieldNames.PATHWAY_REACTOME_ID, FieldNames.PATHWAY_URL, // Not used
-          FieldNames.PATHWAY_NAME, FieldNames.PATHWAY_EVIDENCE_CODE, FieldNames.PATHWAY_SPECIES
+      { FieldNames.PATHWAY_UNIPROT_ID,
+          FieldNames.PATHWAY_REACTOME_ID,
+          FieldNames.PATHWAY_URL, // Not used
+          FieldNames.PATHWAY_NAME,
+          FieldNames.PATHWAY_EVIDENCE_CODE,
+          FieldNames.PATHWAY_SPECIES
       };
 
   @SneakyThrows

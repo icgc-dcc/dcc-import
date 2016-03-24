@@ -117,7 +117,7 @@ public class XrefReader extends TsvReader {
     return record.get(0);
   }
 
-  private String getDbId(List<String> record) {
+  private static String getDbId(List<String> record) {
     return record.get(2);
   }
 

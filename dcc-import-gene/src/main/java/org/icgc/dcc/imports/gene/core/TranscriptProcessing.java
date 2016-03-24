@@ -60,6 +60,7 @@ public final class TranscriptProcessing {
     transcript.putNull("length_amino_acid");
     transcript.putNull("length_cds");
     transcript.put("domains", DEFAULT.createArrayNode());
+
     return transcript;
   }
 

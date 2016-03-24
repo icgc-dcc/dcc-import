@@ -173,7 +173,7 @@ public class GeneConstructor {
     val attributes = line[8];
     val attributeMap = parseAttributes(attributes);
 
-    ObjectNode feature = DEFAULT.createObjectNode();
+    val feature = DEFAULT.createObjectNode();
     feature.put("seqname", seqname);
     feature.put("source", source);
     feature.put("type", type);
@@ -183,6 +183,7 @@ public class GeneConstructor {
     for (val kv : attributeMap.entrySet()) {
       feature.put(kv.getKey(), kv.getValue());
     }
+
     return feature;
   }
 

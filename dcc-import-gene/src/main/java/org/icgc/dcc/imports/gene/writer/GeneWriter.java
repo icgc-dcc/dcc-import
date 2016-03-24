@@ -40,9 +40,6 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
   private int counter = 0;
   private final MongoCollection geneCollection;
 
-  /**
-   * @param mongoUri
-   */
   public GeneWriter(MongoClientURI mongoUri) {
     super(mongoUri);
     this.geneCollection = getCollection(ReleaseCollection.GENE_COLLECTION);

@@ -20,7 +20,6 @@ package org.icgc.dcc.imports.gene.thread;
 import java.io.InputStream;
 import java.util.Map;
 
-import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.icgc.dcc.imports.gene.reader.XMLHandler;
@@ -47,7 +46,7 @@ public class OutputReader implements Runnable {
     factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
     val handler = new XMLHandler(summaryMap);
 
-    SAXParser saxParser = factory.newSAXParser();
+    val saxParser = factory.newSAXParser();
     saxParser.parse(in, handler);
   }
 

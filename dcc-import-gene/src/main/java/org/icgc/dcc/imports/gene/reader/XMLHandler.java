@@ -25,22 +25,28 @@ import java.util.Stack;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@RequiredArgsConstructor
 public class XMLHandler extends DefaultHandler {
 
-  private Stack<String> elementStack = new Stack<String>();
+  /**
+   * State
+   */
+  private final Stack<String> elementStack = new Stack<String>();
   private boolean isEnsembl = false;
   private String currentId;
   private StringBuilder currentValue;
-  public Map<String, String> summaryMap;
+  private final Map<String, String> summaryMap;
 
+  /**
+   * Dependencies
+   */
+  @NonNull
   public List<String> ids = new ArrayList<String>();
-
-  public XMLHandler(Map<String, String> summaryMap) {
-    this.summaryMap = summaryMap;
-  }
 
   @Override
   public void startElement(String uri, String localName, String qName, Attributes attributes) {
@@ -65,18 +71,18 @@ public class XMLHandler extends DefaultHandler {
     String value = new String(ch, start, length).trim();
     if (value.length() == 0) return;
 
-    if (isEnsembl && isGene() && currentElement().equals("Object-id_str")) {
+    if (isGeneId()) {
       ids.add(value);
       isEnsembl = false;
       currentId = value;
       if (ids.size() % 10000 == 0) {
         log.info("Reading {} from xml.", ids.size());
       }
-    } else if (currentElement().equals("Dbtag_db")) {
+    } else if (isDbName()) {
       if (value.equals("Ensembl")) {
         isEnsembl = true;
       }
-    } else if (currentElement().equals("Entrezgene_summary")) {
+    } else if (isSummary()) {
       currentValue.append(value);
     }
   }
@@ -91,6 +97,18 @@ public class XMLHandler extends DefaultHandler {
    */
   private boolean isGene() {
     return this.elementStack.size() == 9;
+  }
+
+  private boolean isGeneId() {
+    return isEnsembl && isGene() && currentElement().equals("Object-id_str");
+  }
+
+  private boolean isSummary() {
+    return currentElement().equals("Entrezgene_summary");
+  }
+
+  private boolean isDbName() {
+    return currentElement().equals("Dbtag_db");
   }
 
 }
