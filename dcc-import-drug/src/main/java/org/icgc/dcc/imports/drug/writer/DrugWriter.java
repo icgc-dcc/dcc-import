@@ -41,7 +41,7 @@ public class DrugWriter extends AbstractJongoWriter<List<ObjectNode>> {
   }
 
   @Override
-  public void writeFiles(@NonNull List<ObjectNode> values) {
+  public void writeValue(@NonNull List<ObjectNode> values) {
     drugCollection = getCollection(ReleaseCollection.DRUG_COLLECTION);
     
     log.info("Dropping current Drug collection...");

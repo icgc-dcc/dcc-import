@@ -101,7 +101,7 @@ public class DiagramImporter implements SourceImporter {
   private void writeDiagramModel(DiagramModel model) throws UnknownHostException, IOException {
     @Cleanup
     val writer = new DiagramWriter(mongoUri);
-    writer.writeFiles(model);
+    writer.writeValue(model);
   }
 
 }

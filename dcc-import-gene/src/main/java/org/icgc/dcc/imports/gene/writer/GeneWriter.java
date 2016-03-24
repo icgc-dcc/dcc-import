@@ -47,7 +47,7 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
   }
 
   @Override
-  public void writeFiles(ObjectNode value) {
+  public void writeValue(ObjectNode value) {
     if (++counter % STATUS_GENE_COUNT == 0) {
       log.info("Writing {}", counter);
     }

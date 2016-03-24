@@ -25,6 +25,6 @@ public abstract class AbstractJongoWriter<T> extends AbstractJongoComponent {
     super(mongoUri);
   }
 
-  abstract public void writeFiles(T value);
+  abstract public void writeValue(T value);
 
 }

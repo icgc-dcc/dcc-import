@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.
+ * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,47 +15,12 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.pathway.writer;
+package org.icgc.dcc.imports.gene.joiner;
 
-import static com.google.common.base.Stopwatch.createStarted;
-import static org.icgc.dcc.common.core.model.ReleaseCollection.GENE_COLLECTION;
-import static org.icgc.dcc.common.core.model.ReleaseCollection.GENE_SET_COLLECTION;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import org.icgc.dcc.imports.core.util.AbstractJongoWriter;
-import org.icgc.dcc.imports.pathway.core.PathwayModel;
+public interface GeneJoiner {
 
-import lombok.NonNull;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
-import com.mongodb.MongoClientURI;
-
-@Slf4j
-public class PathwayWriter extends AbstractJongoWriter<PathwayModel> {
-
-  public PathwayWriter(@NonNull MongoClientURI mongoUri) {
-    super(mongoUri);
-  }
-
-  @Override
-  public void writeValue(@NonNull PathwayModel model) {
-    val watch = createStarted();
-
-    log.info("Writing gene sets to {}...", mongoUri);
-    writeGeneSets(model);
-
-    log.info("Writing gene gene sets to {}...", mongoUri);
-    writeGeneGeneSets(model);
-
-    log.info("Finished writing gene sets and gene gene sets in {}", watch);
-  }
-
-  private void writeGeneSets(PathwayModel model) {
-    new PathwayGeneSetWriter(getCollection(GENE_SET_COLLECTION)).write(model);
-  }
-
-  private void writeGeneGeneSets(PathwayModel model) {
-    new PathwayGeneGeneSetWriter(getCollection(GENE_COLLECTION)).write(model);
-  }
+  public ObjectNode join(ObjectNode gene);
 
 }

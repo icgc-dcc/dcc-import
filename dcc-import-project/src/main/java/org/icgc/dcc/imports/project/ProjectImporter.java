@@ -81,7 +81,7 @@ public class ProjectImporter implements SourceImporter {
   private void writeProjects(Iterable<Project> specifiedProjects) throws IOException {
     @Cleanup
     val writer = new ProjectWriter(mongoUri);
-    writer.writeFiles(specifiedProjects);
+    writer.writeValue(specifiedProjects);
   }
 
 }

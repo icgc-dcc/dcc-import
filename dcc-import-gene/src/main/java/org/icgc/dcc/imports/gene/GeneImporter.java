@@ -19,16 +19,20 @@ package org.icgc.dcc.imports.gene;
 
 import static com.google.common.base.Stopwatch.createStarted;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.net.URI;
-import java.util.zip.GZIPInputStream;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.StreamSupport;
 
 import org.icgc.dcc.imports.core.SourceImporter;
 import org.icgc.dcc.imports.core.model.ImportSource;
-import org.icgc.dcc.imports.gene.core.GeneConstructor;
+import org.icgc.dcc.imports.gene.core.GeneIterator;
+import org.icgc.dcc.imports.gene.joiner.EnsemblJoiner;
+import org.icgc.dcc.imports.gene.joiner.EntrezJoiner;
+import org.icgc.dcc.imports.gene.processor.TranscriptProcessor;
 import org.icgc.dcc.imports.gene.reader.ASNReader;
 import org.icgc.dcc.imports.gene.reader.EnsemblReader;
+import org.icgc.dcc.imports.gene.reader.GeneGtfReader;
 import org.icgc.dcc.imports.gene.writer.GeneWriter;
 
 import com.mongodb.MongoClientURI;
@@ -63,29 +67,32 @@ public class GeneImporter implements SourceImporter {
 
     log.info("Doing Ensembl Data Joining...");
     val ensemblReader = new EnsemblReader();
-    val ensembl = ensemblReader.read();
+    val ensembleJoiner = new EnsemblJoiner(ensemblReader.read());
     log.info("... Done Ensemble Data Joining!");
 
     log.info("Starting ASN.1 Import from NCBI.");
     val asnReader = new ASNReader();
     val summaryMap = asnReader.readSummary();
+    val entrezJoiner = new EntrezJoiner(summaryMap);
     log.info("Staged {} Summaries from NCBI.", summaryMap.size());
 
     log.info("Writing genes to {}...", mongoUri);
+    val gtfReader = new GeneGtfReader(gtfUri.toString());
+
+    val gtfStream = gtfReader.read();
+    val geneStream = StreamSupport.stream(
+        Spliterators.spliteratorUnknownSize(new GeneIterator(gtfStream.iterator()), Spliterator.ORDERED), false);
+
     val writer = new GeneWriter(mongoUri);
-    val constructor =
-        new GeneConstructor(getReader(), summaryMap, ensembl, writer);
-    constructor.consumeGenes();
+    geneStream
+        .map(ensembleJoiner::join)
+        .map(entrezJoiner::join)
+        .map(TranscriptProcessor::process)
+        .forEach(writer::writeValue);
+
+    writer.close();
+
     log.info("Finished writing genes in {}", watch);
-  }
-
-  @SneakyThrows
-  private BufferedReader getReader() {
-    val gzip = new GZIPInputStream(gtfUri.toURL().openStream());
-    val inputStreamReader = new InputStreamReader(gzip);
-    val bufferedReader = new BufferedReader(inputStreamReader);
-
-    return bufferedReader;
   }
 
 }
