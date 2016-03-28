@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.imports.gene.core;
 
+import static com.google.common.collect.Maps.immutableEntry;
 import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 import static org.icgc.dcc.imports.gene.core.TranscriptProcessing.asInt;
 import static org.icgc.dcc.imports.gene.core.TranscriptProcessing.asText;
@@ -28,7 +29,6 @@ import java.util.Map.Entry;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Maps;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -90,7 +90,7 @@ public class GeneIterator implements Iterator<ObjectNode> {
 
     // We ran out of lines to read so finish current state.
     if (geneState.finished == false) {
-      finalizeAndWriteGene(geneState);
+      finalizeGene(geneState);
       return geneState.geneNode;
     }
 
@@ -104,11 +104,11 @@ public class GeneIterator implements Iterator<ObjectNode> {
 
     if (("gene".equals(asText(entry, "type")))) {
       if (geneNode != null) {
-        geneState = finalizeAndWriteGene(geneState);
+        geneState = finalizeGene(geneState);
         val nextState = new GeneState();
         nextState.geneNode = constructGeneNode(entry);
 
-        return Maps.immutableEntry(geneState, nextState);
+        return immutableEntry(geneState, nextState);
       }
 
       geneState.geneNode = constructGeneNode(entry);
@@ -128,7 +128,7 @@ public class GeneIterator implements Iterator<ObjectNode> {
       curTranscript.put("end_exon", exons.size() - 1);
     }
 
-    return Maps.immutableEntry(geneState, geneState);
+    return immutableEntry(geneState, geneState);
   }
 
   private ObjectNode constructGeneNode(ObjectNode data) {
@@ -144,7 +144,7 @@ public class GeneIterator implements Iterator<ObjectNode> {
     return gene;
   }
 
-  private GeneState finalizeAndWriteGene(GeneState geneState) {
+  private GeneState finalizeGene(GeneState geneState) {
     // Finish with the current transcript.
     geneState = finalizeTranscript(geneState);
     geneState.geneNode.put("transcripts", geneState.transcripts);

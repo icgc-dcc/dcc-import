@@ -15,27 +15,36 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.gene.joiner;
+package org.icgc.dcc.imports.gene.reader;
 
-import static org.icgc.dcc.imports.gene.core.TranscriptProcessing.asText;
+import static com.google.common.collect.Maps.immutableEntry;
+import static java.lang.Integer.parseInt;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.icgc.dcc.common.core.util.stream.Collectors;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+public class ExonReader extends TsvReader {
 
-@RequiredArgsConstructor
-public class EntrezJoiner implements GeneJoiner {
+  public ExonReader(String uri) {
+    super(uri);
+  }
 
-  @NonNull
-  private final Map<String, String> summaryMap;
+  public Map<String, Entry<Integer, Integer>> read() {
+    return readRecords().collect(Collectors.toImmutableMap(r -> getStableId(r), r -> getPhaseTuple(r)));
+  }
 
-  @Override
-  public ObjectNode join(ObjectNode gene) {
-    gene.put("description", summaryMap.getOrDefault(asText(gene, "_gene_id"), ""));
-    return gene;
+  private String getStableId(List<String> record) {
+    return record.get(9);
+  }
+
+  /**
+   * Returns phase tuple in order of (start phase, end phase)
+   */
+  private Entry<Integer, Integer> getPhaseTuple(List<String> record) {
+    return immutableEntry(parseInt(record.get(5)), parseInt(record.get(6)));
   }
 
 }

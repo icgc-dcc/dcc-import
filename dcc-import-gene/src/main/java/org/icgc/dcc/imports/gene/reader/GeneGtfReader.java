@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.NonNull;
@@ -43,22 +42,12 @@ public class GeneGtfReader extends TsvReader {
   private final static Pattern QUOTES = Pattern.compile("\"");
   private final static Pattern UNKNOWN_WHITESPACE = Pattern.compile("\\s+");
 
-  /**
-   * State
-   */
-  ObjectNode geneNode = null;
-  ObjectNode curTranscript = null;
-  ArrayNode transcripts = DEFAULT.createArrayNode();
-  ArrayNode exons = DEFAULT.createArrayNode();
-
   public GeneGtfReader(String uri) {
     super(uri);
   }
 
   /**
-   * Method responsible for constructing the skeleton of the gene model. It streams the gtf file, constructing the
-   * elements of the gene model, and joining in information from the maps provided to the constructor of the class.
-   * Write Gene to mongo as soon as it is constructed and moves onto next one.
+   * Streams GTF file as a Stream of ObjectNodes.
    */
   @SneakyThrows
   public Stream<ObjectNode> read() {
@@ -111,7 +100,7 @@ public class GeneGtfReader extends TsvReader {
     return feature;
   }
 
-  private int convertStrand(char strand) {
+  private static int convertStrand(char strand) {
     if (strand == '+') {
       return 1;
     } else if (strand == '-') {

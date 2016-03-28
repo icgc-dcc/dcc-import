@@ -18,6 +18,7 @@
 package org.icgc.dcc.imports.gene.reader;
 
 import static org.icgc.dcc.imports.gene.core.Sources.ANALYSIS_URI;
+import static org.icgc.dcc.imports.gene.core.Sources.EXON_URI;
 import static org.icgc.dcc.imports.gene.core.Sources.EXTERNAL_DB_URI;
 import static org.icgc.dcc.imports.gene.core.Sources.EXTERNAL_SYN_URI;
 import static org.icgc.dcc.imports.gene.core.Sources.GENE_URI;
@@ -39,6 +40,7 @@ public class EnsemblReader {
     val transcriptMapping = new TranscriptReader(TRANSCRIPT_URI).read();
     val interproDBId = new ExternalDatabaseReader(EXTERNAL_DB_URI).read();
     val analysisMap = new AnalysisReader(ANALYSIS_URI).read();
+    val exonMap = new ExonReader(EXON_URI).read();
     val geneMapping = new GeneReader(GENE_URI, transcriptMapping).read();
     val synMap = new SynonymReader(EXTERNAL_SYN_URI, geneMapping.getXrefGeneMap()).read();
     val translationMapping = new TranslationReader(TRANSLATION_URI, transcriptMapping).read();
@@ -56,6 +58,7 @@ public class EnsemblReader {
     val ensembl = Ensembl.builder()
         .nameMap(xrefMapping.getNameMap())
         .synonymMap(synMap)
+        .exonPhaseMap(exonMap)
         .canonicalMap(geneMapping.getCanonicalMap())
         .pFeatures(pFeatures)
         .externalIds(externalIds)

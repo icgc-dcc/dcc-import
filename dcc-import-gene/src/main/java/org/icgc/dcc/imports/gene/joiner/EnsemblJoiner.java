@@ -21,6 +21,7 @@ import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 import static org.icgc.dcc.imports.gene.core.TranscriptProcessing.asText;
 
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.icgc.dcc.imports.gene.model.Ensembl;
 import org.icgc.dcc.imports.gene.model.ProteinFeature;
@@ -45,7 +46,10 @@ public class EnsemblJoiner implements GeneJoiner {
     gene.put("external_db_ids", externalIds().get(asText(gene, "_gene_id")));
 
     val transcripts = (ArrayNode) gene.get("transcripts");
-    transcripts.forEach(transcript -> attachProteinFeatures((ObjectNode) transcript));
+    transcripts.forEach(transcript -> {
+      joinExonPhase((ArrayNode) transcript.get("exons"));
+      attachProteinFeatures((ObjectNode) transcript);
+    });
 
     return gene;
   }
@@ -68,6 +72,19 @@ public class EnsemblJoiner implements GeneJoiner {
     }
 
     transcript.put("domains", domains);
+  }
+
+  private void joinExonPhase(ArrayNode exons) {
+    for (val exon : exons) {
+      val exonNode = (ObjectNode) exon;
+      val phase = exonPhase().get(asText(exonNode, "id"));
+      if (phase != null) {
+        exonNode.put("start_phase", phase.getKey());
+        exonNode.put("end_phase", phase.getValue());
+        exonNode.remove("id");
+      }
+    }
+
   }
 
   private String getName(ObjectNode gene) {
@@ -99,6 +116,10 @@ public class EnsemblJoiner implements GeneJoiner {
 
   private Multimap<String, ProteinFeature> pFeatures() {
     return this.ensembl.getPFeatures();
+  }
+
+  private Map<String, Entry<Integer, Integer>> exonPhase() {
+    return this.ensembl.getExonPhaseMap();
   }
 
 }

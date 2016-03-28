@@ -18,9 +18,10 @@
 package org.icgc.dcc.imports.gene;
 
 import static com.google.common.base.Stopwatch.createStarted;
+import static java.util.Spliterator.DISTINCT;
+import static java.util.Spliterator.NONNULL;
 
 import java.net.URI;
-import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.StreamSupport;
 
@@ -37,6 +38,7 @@ import org.icgc.dcc.imports.gene.writer.GeneWriter;
 
 import com.mongodb.MongoClientURI;
 
+import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -80,17 +82,16 @@ public class GeneImporter implements SourceImporter {
     val gtfReader = new GeneGtfReader(gtfUri.toString());
 
     val gtfStream = gtfReader.read();
-    val geneStream = StreamSupport.stream(
-        Spliterators.spliteratorUnknownSize(new GeneIterator(gtfStream.iterator()), Spliterator.ORDERED), false);
+    val genes = StreamSupport.stream(
+        Spliterators.spliteratorUnknownSize(new GeneIterator(gtfStream.iterator()), NONNULL | DISTINCT), false);
 
+    @Cleanup
     val writer = new GeneWriter(mongoUri);
-    geneStream
+    genes
         .map(ensembleJoiner::join)
         .map(entrezJoiner::join)
         .map(TranscriptProcessor::process)
         .forEach(writer::writeValue);
-
-    writer.close();
 
     log.info("Finished writing genes in {}", watch);
   }

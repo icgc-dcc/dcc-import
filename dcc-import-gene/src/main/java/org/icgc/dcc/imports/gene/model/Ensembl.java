@@ -18,6 +18,7 @@
 package org.icgc.dcc.imports.gene.model;
 
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -33,6 +34,7 @@ public class Ensembl {
   Map<String, String> nameMap;
   Map<String, ArrayNode> synonymMap;
   Map<String, String> canonicalMap;
+  Map<String, Entry<Integer, Integer>> exonPhaseMap;
   Multimap<String, ProteinFeature> pFeatures;
   Map<String, ObjectNode> externalIds;
 

@@ -35,6 +35,7 @@ public final class Sources {
   public static final String PROTEIN_FEATURE_URI = BASE_URI + "protein_feature.txt.gz";
   public static final String INTERPRO_URI = BASE_URI + "interpro.txt.gz";
   public static final String ANALYSIS_URI = BASE_URI + "analysis.txt.gz";
+  public static final String EXON_URI = BASE_URI + "exon.txt.gz";
 
   public static final String NCBI_URI =
       "ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/ASN_BINARY/Mammalia/Homo_sapiens.ags.gz";

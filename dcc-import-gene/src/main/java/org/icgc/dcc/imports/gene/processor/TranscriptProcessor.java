@@ -29,9 +29,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.val;
 
-/**
- * 
- */
 public class TranscriptProcessor {
 
   public static ObjectNode process(ObjectNode gene) {
@@ -39,7 +36,7 @@ public class TranscriptProcessor {
   }
 
   private static ObjectNode processTranscripts(ObjectNode gene) {
-    val transcripts = (ArrayNode) gene.get("transcripts");
+    val transcripts = gene.withArray("transcripts");
     transcripts.forEach(transcript -> {
       postProcessTranscript((ObjectNode) transcript, asText(gene, "strand"), asText(gene, "canonical_transcript_id"));
     });
@@ -81,7 +78,7 @@ public class TranscriptProcessor {
 
     // In case there is no end codon
     if (endExon.isMissingNode()) {
-      for (int i = exons.size() - 1; i > 0; i--) {
+      for (int i = exons.size() - 1; i >= 0; i--) {
         if (!exons.get(i).path("cds").isMissingNode()) {
           transcript.put("end_exon", i);
           endExon = transcript.path("end_exon");
@@ -141,11 +138,17 @@ public class TranscriptProcessor {
     transcript.put("length_cds", (int) cdsLength);
     transcript.put("length_amino_acid", aminoAcidLength);
 
+    exons.forEach(e -> cleanExon((ObjectNode) e));
+
     return transcript;
   }
 
   private static boolean isCanonical(ObjectNode transcript, String canonical) {
     return asText(transcript, "id").equals(canonical);
+  }
+
+  private static void cleanExon(ObjectNode exon) {
+    exon.remove("cds");
   }
 
 }

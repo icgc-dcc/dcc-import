@@ -67,12 +67,13 @@ public final class TranscriptProcessing {
   /**
    * Helper for constructing the Exon JSON object
    * @param data ObjectNode holding raw json data
-   * @return ObjectNode represnting an exon with default values.
+   * @return ObjectNode representing an exon with default values.
    */
   public static ObjectNode constructExonNode(ObjectNode data) {
     val exon = DEFAULT.createObjectNode();
     exon.put("start", asInt(data, "locationStart"));
     exon.put("end", asInt(data, "locationEnd"));
+    exon.put("id", asText(data, "exon_id"));
     return exon;
   }
 
@@ -121,7 +122,7 @@ public final class TranscriptProcessing {
     } else {
       transcript.put("coding_region_start", cdsStart);
       exon.put("genomic_coding_start", cdsStart);
-      exon.put("cdna_coding_start", asInt(exon, "cdna_start") + (cdsStart - asInt(exon, "start") + 1));
+      exon.put("cdna_coding_start", asInt(exon, "cdna_start") + (cdsStart - asInt(exon, "start")));
     }
 
     transcript.put("cdna_coding_start", asInt(exon, "cdna_coding_start"));
@@ -185,11 +186,7 @@ public final class TranscriptProcessing {
    * @return number of bases as int into the start exon.
    */
   public static int seqExonStart(@NonNull JsonNode exon, @NonNull String strand) {
-    int seqExonStart = asInt(exon, "cdna_coding_start") - asInt(exon, "cdna_start");
-    if ("-1".equals(strand)) {
-      seqExonStart++;
-    }
-    return seqExonStart;
+    return asInt(exon, "cdna_coding_start") - asInt(exon, "cdna_start") + 1;
   }
 
   /**
