@@ -55,8 +55,8 @@ public class GeneGtfReader extends TsvReader {
     return readRecords().filter(this::isData).map(this::parseLine);
   }
 
-  private boolean isData(List<String> line) {
-    return line.size() > 0 && line.get(0).charAt(0) != '#';
+  protected boolean isData(List<String> line) {
+    return !line.isEmpty() && !line.get(0).isEmpty() && line.get(0).charAt(0) != '#';
   }
 
   /**
@@ -65,7 +65,7 @@ public class GeneGtfReader extends TsvReader {
    * @param String representing the current line in the gtf file
    * @return ObjectNode representation of the gtf row.
    */
-  private ObjectNode parseLine(@NonNull List<String> line) {
+  protected ObjectNode parseLine(@NonNull List<String> line) {
     val seqname = line.get(0);
     val source = line.get(1);
     val type = line.get(2);

@@ -161,7 +161,7 @@ public class GeneIterator implements Iterator<ObjectNode> {
     return geneState;
   }
 
-  class GeneState {
+  static class GeneState {
 
     ObjectNode geneNode = null;
     ObjectNode curTranscript = null;

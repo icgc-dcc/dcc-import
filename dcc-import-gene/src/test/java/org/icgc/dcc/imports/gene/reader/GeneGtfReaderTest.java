@@ -17,33 +17,56 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
-import static com.google.common.collect.Maps.immutableEntry;
-import static java.lang.Integer.parseInt;
-import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableMap;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.icgc.dcc.common.core.util.Splitters.TAB;
+import static org.icgc.dcc.imports.gene.core.TranscriptProcessing.asInt;
+import static org.icgc.dcc.imports.gene.core.TranscriptProcessing.asText;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
-public class ExonReader extends TsvReader {
+import org.junit.Test;
 
-  public ExonReader(String uri) {
-    super(uri);
+import lombok.val;
+
+public class GeneGtfReaderTest {
+
+  public static final List<String> GTF_LINE =
+      TAB.splitToList(
+          "1\tensembl\ttranscript\t11872\t14412\t.\t+\t.\tgene_id \"ENSG00000223972\"; gene_version \"4\"; transcript_id \"ENST00000515242\";");
+
+  @Test
+  public void testIsData1() {
+    val line = TAB.splitToList("# THIS IS NOT DATA");
+    val reader = new GeneGtfReader("test");
+    reader.isData(line);
+    assertThat(reader.isData(line)).isEqualTo(false);
   }
 
-  public Map<String, Entry<Integer, Integer>> read() {
-    return readRecords().collect(toImmutableMap(this::getStableId, this::getPhaseTuple));
+  @Test
+  public void testIsData2() {
+    val line = TAB.splitToList("");
+    val reader = new GeneGtfReader("test");
+    assertThat(reader.isData(line)).isEqualTo(false);
   }
 
-  private String getStableId(List<String> record) {
-    return record.get(9);
+  @Test
+  public void testIsData3() {
+    val reader = new GeneGtfReader("test");
+    assertThat(reader.isData(GTF_LINE)).isEqualTo(true);
   }
 
-  /**
-   * Returns phase tuple in order of (start phase, end phase)
-   */
-  private Entry<Integer, Integer> getPhaseTuple(List<String> record) {
-    return immutableEntry(parseInt(record.get(5)), parseInt(record.get(6)));
+  @Test
+  public void testParseLine1() {
+    val reader = new GeneGtfReader("test");
+    val entry = reader.parseLine(GTF_LINE);
+    assertThat(entry).isNotNull();
+    assertThat(asText(entry, "source")).isEqualTo("ensembl");
+    assertThat(asText(entry, "type")).isEqualTo("transcript");
+    assertThat(asInt(entry, "locationStart")).isEqualTo(11872);
+    assertThat(asInt(entry, "locationEnd")).isEqualTo(14412);
+    assertThat(asText(entry, "strand")).isEqualTo("1");
+    assertThat(asText(entry, "gene_id")).isEqualTo("ENSG00000223972");
+    assertThat(asText(entry, "transcript_id")).isEqualTo("ENST00000515242");
   }
 
 }

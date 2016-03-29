@@ -30,12 +30,14 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Multimap;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 @RequiredArgsConstructor
 public class EnsemblJoiner implements GeneJoiner {
 
+  @NonNull
   private final Ensembl ensembl;
 
   @Override
@@ -84,7 +86,6 @@ public class EnsemblJoiner implements GeneJoiner {
         exonNode.remove("id");
       }
     }
-
   }
 
   private String getName(ObjectNode gene) {

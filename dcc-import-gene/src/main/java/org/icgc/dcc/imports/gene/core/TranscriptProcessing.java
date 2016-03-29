@@ -39,6 +39,7 @@ public final class TranscriptProcessing {
 
   /**
    * Helper for constructing the Transcript JSON object
+   * 
    * @param data ObjectNode holding raw json data
    * @return ObjectNode representing a transcript with default values.
    */
@@ -66,6 +67,7 @@ public final class TranscriptProcessing {
 
   /**
    * Helper for constructing the Exon JSON object
+   * 
    * @param data ObjectNode holding raw json data
    * @return ObjectNode representing an exon with default values.
    */
@@ -126,7 +128,7 @@ public final class TranscriptProcessing {
     }
 
     transcript.put("cdna_coding_start", asInt(exon, "cdna_coding_start"));
-    transcript.put("seq_exon_start", seqExonStart(exon, strand));
+    transcript.put("seq_exon_start", seqExonStart(exon));
   }
 
   /**
@@ -172,35 +174,36 @@ public final class TranscriptProcessing {
     // If stop codon is first 3 base pairs of end exon, there will be no coding sequence region for that exon.
     if (cds.isMissingNode()) {
       transcript.put("cdna_coding_end", asInt(exons.get(i - 1), "cdna_coding_end"));
-      transcript.put("seq_exon_end", seqExonEnd(exons.get(i - 1), strand));
+      transcript.put("seq_exon_end", seqExonEnd(exons.get(i - 1)));
     } else {
       transcript.put("cdna_coding_end", asInt(exon, "cdna_coding_end"));
-      transcript.put("seq_exon_end", seqExonEnd(exon, strand));
+      transcript.put("seq_exon_end", seqExonEnd(exon));
     }
   }
 
   /**
    * Calculates how far into the start exon the coding sequence starts.
+   * 
    * @param exon JsonNode representation of start exon.
-   * @param strand Flag which determines if we are working on a positive or negative strand.
    * @return number of bases as int into the start exon.
    */
-  public static int seqExonStart(@NonNull JsonNode exon, @NonNull String strand) {
+  public static int seqExonStart(@NonNull JsonNode exon) {
     return asInt(exon, "cdna_coding_start") - asInt(exon, "cdna_start") + 1;
   }
 
   /**
    * Calculates how far into the end exon the coding sequence ends.
+   * 
    * @param exon JsonNode representation of end exon.
-   * @param strand Flag which determines if we are working on a positive or negative strand.
    * @return number of bases as int into the end exon.
    */
-  public static int seqExonEnd(@NonNull JsonNode exon, @NonNull String strand) {
+  public static int seqExonEnd(@NonNull JsonNode exon) {
     return asInt(exon, "cdna_coding_end") - asInt(exon, "cdna_coding_start") + 1;
   }
 
   /**
    * Helper for joining the protein features to a transcript as an array of Domain ObjectNodes
+   * 
    * @param transcript ObjectNode transcript.
    * @param pFeatures Map of transcript ids mapping to a List of protein feature objects
    * @return ObjectNode representation of the transcript with the Domains joined.
