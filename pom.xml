@@ -196,7 +196,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 
     <!-- Versions - JSON -->
     <json-path.version>1.2</json-path.version>
-    <json-schema-validator.version>1.5.3</json-schema-validator.version>
+    <json-schema-validator.version>2.0.4</json-schema-validator.version>
 
     <!-- Versions - Utilities -->
     <commons-lang3.version>3.3.2</commons-lang3.version>

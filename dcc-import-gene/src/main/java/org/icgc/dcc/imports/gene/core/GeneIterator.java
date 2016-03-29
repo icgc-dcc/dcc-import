@@ -137,7 +137,7 @@ public class GeneIterator implements Iterator<ObjectNode> {
     gene.put("symbol", asText(data, "gene_name"));
     gene.put("biotype", asText(data, "gene_biotype"));
     gene.put("chromosome", asText(data, "seqname"));
-    gene.put("strand", asText(data, "strand"));
+    gene.put("strand", asInt(data, "strand"));
     gene.put("start", asInt(data, "locationStart"));
     gene.put("end", asInt(data, "locationEnd"));
 

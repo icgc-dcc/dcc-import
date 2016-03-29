@@ -38,7 +38,7 @@ public class TranscriptProcessor {
   private static ObjectNode processTranscripts(ObjectNode gene) {
     val transcripts = gene.withArray("transcripts");
     transcripts.forEach(transcript -> {
-      postProcessTranscript((ObjectNode) transcript, asText(gene, "strand"), asText(gene, "canonical_transcript_id"));
+      postProcessTranscript((ObjectNode) transcript, asInt(gene, "strand"), asText(gene, "canonical_transcript_id"));
     });
 
     return gene;
@@ -52,7 +52,7 @@ public class TranscriptProcessor {
    * @param strand marks if + or - strand
    * @return Processed Transcript ObjectNode
    */
-  private static ObjectNode postProcessTranscript(ObjectNode transcript, String strand, String canonical) {
+  private static ObjectNode postProcessTranscript(ObjectNode transcript, Integer strand, String canonical) {
     transcript.put("is_canonical", isCanonical(transcript, canonical));
 
     val exons = exonDefaults((ArrayNode) transcript.get("exons"));
@@ -62,7 +62,7 @@ public class TranscriptProcessor {
     JsonNode endExon = transcript.path("end_exon");
 
     if (exons.size() > 0) {
-      transcript.put("length", asText(exons.get(exons.size() - 1), "cdna_end"));
+      transcript.put("length", asInt(exons.get(exons.size() - 1), "cdna_end"));
     }
 
     // In case there is no start codon

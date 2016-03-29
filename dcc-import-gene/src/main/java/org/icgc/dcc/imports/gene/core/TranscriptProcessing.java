@@ -112,11 +112,11 @@ public final class TranscriptProcessing {
    * @param strand Flag which determines if we are working on a positive or negative strand.
    */
   public static void computeStartRegion(@NonNull ObjectNode transcript, @NonNull ObjectNode exon,
-      @NonNull String strand) {
+      @NonNull Integer strand) {
     val cds = exon.get("cds");
     val cdsStart = asInt(cds, "locationStart");
 
-    if (strand.equals("-1")) {
+    if (strand == -1) {
       val end = asInt(cds, "locationEnd");
       transcript.put("coding_region_end", end);
       exon.put("genomic_coding_end", end);
@@ -143,11 +143,11 @@ public final class TranscriptProcessing {
    * @param strand Flag which determines if we are working on a positive or negative strand.
    */
   public static void computeEndRegion(@NonNull ObjectNode transcript, @NonNull ObjectNode exon, int i,
-      @NonNull String strand) {
+      @NonNull Integer strand) {
     val cds = exon.path("cds");
     val exons = (ArrayNode) transcript.get("exons");
 
-    if (strand.equals("-1")) {
+    if (strand == -1) {
       if (cds.isMissingNode()) {
         val start = asInt(exons.get(i - 1).path("cds"), "locationStart");
         transcript.put("coding_region_start", start);
