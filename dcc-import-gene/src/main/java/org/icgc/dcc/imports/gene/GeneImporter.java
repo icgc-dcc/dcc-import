@@ -18,15 +18,22 @@
 package org.icgc.dcc.imports.gene;
 
 import static com.google.common.base.Stopwatch.createStarted;
-import static org.icgc.dcc.imports.gene.util.AllGeneFilter.all;
+import static java.util.Spliterator.DISTINCT;
+import static java.util.Spliterator.NONNULL;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
+import java.util.Spliterators;
+import java.util.stream.StreamSupport;
 
 import org.icgc.dcc.imports.core.SourceImporter;
 import org.icgc.dcc.imports.core.model.ImportSource;
-import org.icgc.dcc.imports.gene.core.GeneFilter;
+import org.icgc.dcc.imports.gene.core.GeneIterator;
+import org.icgc.dcc.imports.gene.joiner.EnsemblJoiner;
+import org.icgc.dcc.imports.gene.joiner.EntrezJoiner;
+import org.icgc.dcc.imports.gene.processor.TranscriptProcessor;
+import org.icgc.dcc.imports.gene.reader.ASNReader;
+import org.icgc.dcc.imports.gene.reader.EnsemblReader;
+import org.icgc.dcc.imports.gene.reader.GeneGtfReader;
 import org.icgc.dcc.imports.gene.writer.GeneWriter;
 
 import com.mongodb.MongoClientURI;
@@ -43,46 +50,50 @@ import lombok.extern.slf4j.Slf4j;
 public class GeneImporter implements SourceImporter {
 
   @NonNull
-  private final URI genesBsonUri;
-  @NonNull
+  private final URI gtfUri;
   private final MongoClientURI mongoUri;
-
-  public GeneImporter(@NonNull MongoClientURI mongoUri, @NonNull URI genesBsonUri) {
-    this.genesBsonUri = genesBsonUri;
-    this.mongoUri = mongoUri;
-  }
 
   @Override
   public ImportSource getSource() {
     return ImportSource.GENES;
   }
 
+  /**
+   * Main pipeline execution for creating gene model. Calls all readers to pre-compute hashmaps of relevant information
+   * before streaming GTF file for construction of gene model skeleton.
+   */
+  @SneakyThrows
   @Override
   public void execute() {
-    execute(all());
-  }
-
-  @SneakyThrows
-  public void execute(GeneFilter geneFilter) {
     val watch = createStarted();
 
-    log.info("Reading genes BSON stream from {}...", genesBsonUri);
-    val genesBson = readGenesBson();
+    log.info("Doing Ensembl Data Joining...");
+    val ensemblReader = new EnsemblReader();
+    val ensembleJoiner = new EnsemblJoiner(ensemblReader.read());
+    log.info("... Done Ensemble Data Joining!");
+
+    log.info("Starting ASN.1 Import from NCBI.");
+    val asnReader = new ASNReader();
+    val summaryMap = asnReader.readSummary();
+    val entrezJoiner = new EntrezJoiner(summaryMap);
+    log.info("Staged {} Summaries from NCBI.", summaryMap.size());
 
     log.info("Writing genes to {}...", mongoUri);
-    writeGenes(genesBson, geneFilter);
+    val gtfReader = new GeneGtfReader(gtfUri.toString());
 
-    log.info("Finished writing genes iin {}", watch);
-  }
+    val gtfStream = gtfReader.read();
+    val genes = StreamSupport.stream(
+        Spliterators.spliteratorUnknownSize(new GeneIterator(gtfStream.iterator()), NONNULL | DISTINCT), false);
 
-  private InputStream readGenesBson() throws IOException {
-    return genesBsonUri.toURL().openStream();
-  }
-
-  private void writeGenes(InputStream genesBson, GeneFilter geneFilter) throws IOException {
     @Cleanup
     val writer = new GeneWriter(mongoUri);
-    writer.write(genesBson, geneFilter);
+    genes
+        .map(ensembleJoiner::join)
+        .map(entrezJoiner::join)
+        .map(TranscriptProcessor::process)
+        .forEach(writer::writeValue);
+
+    log.info("Finished writing genes in {}", watch);
   }
 
 }

@@ -37,7 +37,7 @@ public class ProjectWriter extends AbstractJongoWriter<Iterable<Project>> {
   }
 
   @Override
-  public void writeFiles(Iterable<Project> projects) {
+  public void writeValue(Iterable<Project> projects) {
     log.info("Clearing project documents...");
     val projectCollection = getCollection(PROJECT_COLLECTION);
     clearProjects(projectCollection);

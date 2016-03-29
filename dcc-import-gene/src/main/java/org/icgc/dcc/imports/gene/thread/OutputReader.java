@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.
+ * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,15 +15,39 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.gene.core;
+package org.icgc.dcc.imports.gene.thread;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import java.io.InputStream;
+import java.util.Map;
 
-/**
- * Abstraction to allow for templated transformation and persistence.
- */
-public interface GeneCallback {
+import javax.xml.parsers.SAXParserFactory;
 
-  void handle(JsonNode gene);
+import org.icgc.dcc.imports.gene.reader.XMLHandler;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
+
+@RequiredArgsConstructor
+public class OutputReader implements Runnable {
+
+  @NonNull
+  private final InputStream in;
+  @NonNull
+  private final Map<String, String> summaryMap;
+
+  @Override
+  @SneakyThrows
+  public void run() {
+    val factory = SAXParserFactory.newInstance();
+    factory.setValidating(false);
+    factory.setFeature("http://xml.org/sax/features/validation", false);
+    factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+    val handler = new XMLHandler(summaryMap);
+
+    val saxParser = factory.newSAXParser();
+    saxParser.parse(in, handler);
+  }
 
 }

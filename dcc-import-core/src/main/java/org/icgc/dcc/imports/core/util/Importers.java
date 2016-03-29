@@ -23,10 +23,11 @@ import static org.icgc.dcc.common.core.util.URIs.getUri;
 
 import java.net.URI;
 
+import com.mongodb.MongoClientURI;
+
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-
-import com.mongodb.MongoClientURI;
+import lombok.SneakyThrows;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class Importers {
@@ -61,6 +62,8 @@ public final class Importers {
   private static final String IMPORT_ARTIFACT_REMOTE_REPO =
       "http://seqwaremaven.oicr.on.ca/artifactory/dcc-dependencies";
   private static final String IMPORT_ARTIFACT_REMOTE_URL = IMPORT_ARTIFACT_REMOTE_REPO + "/" + IMPORT_ARTIFACT_PATH;
+  private static final String GENES_GTF =
+      "ftp://ftp.ensembl.org/pub/grch37/release-82/gtf/homo_sapiens/Homo_sapiens.GRCh37.82.gtf.gz";
 
   /**
    * Helpers.
@@ -90,6 +93,11 @@ public final class Importers {
 
   public static final URI getRemoteGenesBsonUri() {
     return getRemoteImportFileUri(REACTOME_GENES_BSON_FILENAME);
+  }
+
+  @SneakyThrows
+  public static final URI getRemoteGenesGtf() {
+    return new URI(GENES_GTF);
   }
 
   public static final URI getRemoteCgsUri() {

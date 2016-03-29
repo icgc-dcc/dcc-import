@@ -17,19 +17,19 @@
  */
 package org.icgc.dcc.imports.pathway.reader;
 
-import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
+import static org.icgc.dcc.common.core.util.Formats.formatCount;
 
 import java.net.URI;
-
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.common.core.model.FieldNames;
 import org.icgc.dcc.imports.core.util.AbstractTsvMapReader;
 import org.icgc.dcc.imports.pathway.model.PathwayUniprot;
 
 import com.google.common.collect.ImmutableList;
+
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PathwayUniprotReader extends AbstractTsvMapReader {
@@ -38,14 +38,14 @@ public class PathwayUniprotReader extends AbstractTsvMapReader {
    * Constants.
    */
   private static final String HOMO_SAPIEN = "Homo sapiens";
-  private static final String[] CSV_HEADER = {
-      FieldNames.PATHWAY_UNIPROT_ID,
-      FieldNames.PATHWAY_REACTOME_ID,
-      FieldNames.PATHWAY_URL, // Not used
-      FieldNames.PATHWAY_NAME,
-      FieldNames.PATHWAY_EVIDENCE_CODE,
-      FieldNames.PATHWAY_SPECIES
-  };
+  private static final String[] CSV_HEADER =
+      { FieldNames.PATHWAY_UNIPROT_ID,
+          FieldNames.PATHWAY_REACTOME_ID,
+          FieldNames.PATHWAY_URL, // Not used
+          FieldNames.PATHWAY_NAME,
+          FieldNames.PATHWAY_EVIDENCE_CODE,
+          FieldNames.PATHWAY_SPECIES
+      };
 
   @SneakyThrows
   public Iterable<PathwayUniprot> read(URI uniprotFile) {

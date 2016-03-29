@@ -17,24 +17,15 @@
  */
 package org.icgc.dcc.imports.gene;
 
-import static org.icgc.dcc.common.core.model.ReleaseDatabase.GENOME;
-import static org.icgc.dcc.imports.core.util.Importers.getLocalMongoClientUri;
-import static org.icgc.dcc.imports.core.util.Importers.getRemoteGenesBsonUri;
+import static org.icgc.dcc.imports.core.util.Importers.getRemoteGenesGtf;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
-import org.icgc.dcc.imports.gene.GeneImporter;
-import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 
-@Slf4j
 public class GeneImporterTest {
 
   /**
@@ -47,19 +38,11 @@ public class GeneImporterTest {
    */
   GeneImporter importer;
 
-  @Before
-  public void setUp() throws IOException, URISyntaxException {
-    this.releaseUri = getLocalMongoClientUri("dcc-genome");
-    val genesMongo = new MongoClient(releaseUri);
-
-    log.info("Dropping '{}'...", GENOME.getId());
-    genesMongo.dropDatabase(GENOME.getId());
-
-    this.importer = new GeneImporter(releaseUri, getRemoteGenesBsonUri());
-  }
-
   @Test
+  @Ignore
   public void testExecute() throws IOException {
+    this.releaseUri = new MongoClientURI("mongodb://127.0.0.1:27017/dcc-genome-test");
+    this.importer = new GeneImporter(getRemoteGenesGtf(), releaseUri);
     importer.execute();
   }
 

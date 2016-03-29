@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.
+ * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,41 +15,34 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.gene.util;
+package org.icgc.dcc.imports.gene.thread;
 
-import java.util.Set;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-import org.icgc.dcc.imports.gene.core.GeneFilter;
+import com.google.common.io.ByteStreams;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.val;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
+@Slf4j
 @RequiredArgsConstructor
-public class InGeneFilter implements GeneFilter {
+public class ASNInputReader implements Runnable {
 
-  /**
-   * Configuration.
-   */
   @NonNull
-  private final Set<String> geneIds;
+  private final InputStream in;
+  @NonNull
+  private final OutputStream out;
 
   @Override
-  public boolean filter(JsonNode gene) {
-    val text = gene.toString();
-    for (val geneId : geneIds) {
-      if (text.contains(geneId)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  public static InGeneFilter in(Set<String> geneIds) {
-    return new InGeneFilter(geneIds);
+  @SneakyThrows
+  public void run() {
+    ByteStreams.copy(in, out);
+    in.close();
+    out.close();
+    log.info("Finished reading ASN.1 input stream.");
   }
 
 }

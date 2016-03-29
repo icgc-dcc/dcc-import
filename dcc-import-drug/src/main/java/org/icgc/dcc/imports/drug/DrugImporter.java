@@ -81,7 +81,7 @@ public class DrugImporter implements SourceImporter {
   @SneakyThrows
   private void writeDrugs(List<ObjectNode> drugs) {
     val drugWriter = new DrugWriter(mongoUri);
-    drugWriter.writeFiles(drugs);
+    drugWriter.writeValue(drugs);
     log.info("FINISHED WRITING TO MONGO");
     drugWriter.close();
   }

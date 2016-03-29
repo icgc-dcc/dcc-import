@@ -21,7 +21,7 @@ import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.base.Strings.repeat;
 import static com.google.common.collect.Maps.uniqueIndex;
 import static org.icgc.dcc.imports.core.util.Importers.getRemoteCgsUri;
-import static org.icgc.dcc.imports.core.util.Importers.getRemoteGenesBsonUri;
+import static org.icgc.dcc.imports.core.util.Importers.getRemoteGenesGtf;
 
 import java.util.Collection;
 import java.util.List;
@@ -122,7 +122,7 @@ public class Importer {
   private Map<ImportSource, SourceImporter> createImporters(CGPClient cgpClient) {
     val importers = ImmutableList.<SourceImporter> of(
         new ProjectImporter(mongoUri, cgpClient),
-        new GeneImporter(mongoUri, getRemoteGenesBsonUri()),
+        new GeneImporter(getRemoteGenesGtf(), mongoUri),
         new DrugImporter(mongoUri),
         new CgcImporter(mongoUri, getRemoteCgsUri()),
         new PathwayImporter(mongoUri),

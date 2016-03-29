@@ -17,16 +17,13 @@
  */
 package org.icgc.dcc.imports.pathway.reader;
 
-import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
+import static org.icgc.dcc.common.core.util.Formats.formatCount;
 import static org.icgc.dcc.imports.pathway.util.PathwaySegmentConverter.convertPathwayNode;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Stack;
-
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.imports.core.util.Documents;
 import org.icgc.dcc.imports.geneset.model.pathway.PathwaySegment;
@@ -36,6 +33,9 @@ import org.w3c.dom.Node;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
+
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PathwayHierarchyReader {

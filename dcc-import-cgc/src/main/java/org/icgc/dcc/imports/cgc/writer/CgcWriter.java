@@ -39,7 +39,7 @@ public class CgcWriter extends AbstractJongoWriter<Iterable<Map<String, String>>
   }
 
   @Override
-  public void writeFiles(@NonNull Iterable<Map<String, String>> model) {
+  public void writeValue(@NonNull Iterable<Map<String, String>> model) {
     val watch = createStarted();
 
     log.info("Writing gene sets to {}...", mongoUri);

@@ -20,21 +20,21 @@ package org.icgc.dcc.imports.go.writer;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.Sets.difference;
 import static com.google.common.collect.Sets.intersection;
-import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
+import static org.icgc.dcc.common.core.util.Formats.formatCount;
 import static org.icgc.dcc.imports.core.util.Genes.getGeneId;
 import static org.icgc.dcc.imports.geneset.model.GeneSetType.GO_TERM;
 import static org.icgc.dcc.imports.go.util.GoAssociationIndexer.indexUniProtId;
 
 import java.util.Set;
 
-import lombok.NonNull;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.imports.geneset.writer.AbstractGeneGeneSetWriter;
 import org.icgc.dcc.imports.go.model.GoModel;
 import org.icgc.dcc.imports.go.util.GoGeneGeneSetsBuilder;
 import org.jongo.MongoCollection;
+
+import lombok.NonNull;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class GoGeneGeneSetWriter extends AbstractGeneGeneSetWriter {

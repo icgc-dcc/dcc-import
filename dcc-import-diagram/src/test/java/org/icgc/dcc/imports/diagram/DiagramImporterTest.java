@@ -19,7 +19,6 @@ package org.icgc.dcc.imports.diagram;
 
 import static org.icgc.dcc.imports.core.util.Importers.getLocalMongoClientUri;
 
-import org.icgc.dcc.imports.diagram.DiagramImporter;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -28,7 +27,7 @@ public class DiagramImporterTest {
 
   @Test
   public void testExecute() {
-    new DiagramImporter(getLocalMongoClientUri("dcc-genome")).execute();
+    new DiagramImporter(getLocalMongoClientUri("dcc-genome-test")).execute();
   }
 
 }

@@ -38,7 +38,7 @@ public class PathwayWriter extends AbstractJongoWriter<PathwayModel> {
   }
 
   @Override
-  public void writeFiles(@NonNull PathwayModel model) {
+  public void writeValue(@NonNull PathwayModel model) {
     val watch = createStarted();
 
     log.info("Writing gene sets to {}...", mongoUri);

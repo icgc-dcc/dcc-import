@@ -18,7 +18,7 @@
 package org.icgc.dcc.imports.cgc;
 
 import static com.google.common.base.Stopwatch.createStarted;
-import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
+import static org.icgc.dcc.common.core.util.Formats.formatCount;
 
 import java.io.IOException;
 import java.net.URI;
@@ -84,7 +84,7 @@ public class CgcImporter implements SourceImporter {
   private void writeCgc(Iterable<Map<String, String>> cgc) throws IOException {
     @Cleanup
     val writer = new CgcWriter(mongoUri);
-    writer.writeFiles(cgc);
+    writer.writeValue(cgc);
   }
 
 }

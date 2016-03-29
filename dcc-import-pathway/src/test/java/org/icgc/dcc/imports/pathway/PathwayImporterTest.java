@@ -17,29 +17,27 @@
  */
 package org.icgc.dcc.imports.pathway;
 
-import lombok.SneakyThrows;
-import lombok.val;
-
 import static org.icgc.dcc.imports.core.util.Importers.getLocalMongoClientUri;
-import static org.icgc.dcc.imports.core.util.Importers.getRemoteGenesBsonUri;
+import static org.icgc.dcc.imports.core.util.Importers.getRemoteGenesGtf;
 import static org.icgc.dcc.imports.core.util.Importers.getRemoteReactomeHierarchyUri;
 import static org.icgc.dcc.imports.core.util.Importers.getRemoteReactomeSummationUri;
 import static org.icgc.dcc.imports.core.util.Importers.getRemoteReactomeUniprotUri;
 
 import org.icgc.dcc.imports.gene.GeneImporter;
-import org.icgc.dcc.imports.pathway.PathwayImporter;
 import org.junit.Before;
 import org.junit.Test;
+
+import lombok.SneakyThrows;
+import lombok.val;
 
 public class PathwayImporterTest {
 
   @Before
   public void setUp() {
     // Create a fresh copy of the entire gene model
-    new GeneImporter(
-        getLocalMongoClientUri("dcc-genome"),
-        getRemoteGenesBsonUri())
-        .execute();
+    new GeneImporter(getRemoteGenesGtf(),
+        getLocalMongoClientUri("dcc-genome-test"))
+            .execute();
   }
 
   @Test

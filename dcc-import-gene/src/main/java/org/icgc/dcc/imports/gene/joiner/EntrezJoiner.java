@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.
+ * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,21 +15,27 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.gene.core;
+package org.icgc.dcc.imports.gene.joiner;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import static org.icgc.dcc.imports.gene.core.TranscriptProcessing.asText;
 
-/**
- * Callback to determine if a gene should be filtered.
- */
-public interface GeneFilter {
+import java.util.Map;
 
-  /**
-   * Callback method that returns {@code true} to include and {@code false} to exclude.
-   * 
-   * @param gene - the gene to examine
-   * @return include status
-   */
-  boolean filter(JsonNode gene);
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+public class EntrezJoiner implements GeneJoiner {
+
+  @NonNull
+  private final Map<String, String> summaryMap;
+
+  @Override
+  public ObjectNode join(ObjectNode gene) {
+    gene.put("description", summaryMap.getOrDefault(asText(gene, "_gene_id"), ""));
+    return gene;
+  }
 
 }

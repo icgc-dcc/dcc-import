@@ -93,7 +93,7 @@ public class PathwayImporter implements SourceImporter {
   private void writePathwayModel(PathwayModel model) throws UnknownHostException, IOException {
     @Cleanup
     val writer = new PathwayWriter(mongoUri);
-    writer.writeFiles(model);
+    writer.writeValue(model);
   }
 
 }

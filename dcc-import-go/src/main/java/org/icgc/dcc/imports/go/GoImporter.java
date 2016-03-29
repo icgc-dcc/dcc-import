@@ -18,7 +18,7 @@
 package org.icgc.dcc.imports.go;
 
 import static com.google.common.base.Stopwatch.createStarted;
-import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
+import static org.icgc.dcc.common.core.util.Formats.formatCount;
 import static org.icgc.dcc.common.core.util.URLs.getUrl;
 import static org.icgc.dcc.imports.go.util.GoTermAncestorResolver.resolveTermAncestors;
 
@@ -201,7 +201,7 @@ public class GoImporter implements SourceImporter {
   private static void persistModel(GoModel model, MongoClientURI mongoUri) throws UnknownHostException, IOException {
     @Cleanup
     val writer = new GoWriter(mongoUri);
-    writer.writeFiles(model);
+    writer.writeValue(model);
   }
 
 }

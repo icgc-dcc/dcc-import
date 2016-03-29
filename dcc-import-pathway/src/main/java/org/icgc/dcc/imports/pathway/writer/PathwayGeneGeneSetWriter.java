@@ -17,18 +17,17 @@
  */
 package org.icgc.dcc.imports.pathway.writer;
 
-import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
+import static org.icgc.dcc.common.core.util.Formats.formatCount;
 import static org.icgc.dcc.imports.geneset.model.GeneSetType.PATHWAY;
 
 import org.icgc.dcc.imports.geneset.writer.AbstractGeneGeneSetWriter;
 import org.icgc.dcc.imports.pathway.core.PathwayModel;
 import org.icgc.dcc.imports.pathway.util.PathwayGeneGeneSetsBuilder;
+import org.jongo.MongoCollection;
 
 import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-
-import org.jongo.MongoCollection;
 
 @Slf4j
 public class PathwayGeneGeneSetWriter extends AbstractGeneGeneSetWriter {

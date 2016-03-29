@@ -58,7 +58,7 @@ public class ProjectWriterTest {
       @Cleanup
       val writer = new ProjectWriter(mongoClientUri);
   
-      writer.writeFiles(ImmutableList.of(Project.builder().__project_id("test").build()));
+      writer.writeValue(ImmutableList.of(Project.builder().__project_id("test").build()));
   
       log.info("Project: {}", getJongo(mongoClientUri).getCollection(ReleaseCollection.PROJECT_COLLECTION.getId())
           .findOne()

@@ -18,7 +18,7 @@
 package org.icgc.dcc.imports.go.core;
 
 import static com.google.common.base.Stopwatch.createStarted;
-import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
+import static org.icgc.dcc.common.core.util.Formats.formatCount;
 import static org.icgc.dcc.imports.go.util.GoAssociationAggregator.aggregateAssociations;
 import static org.icgc.dcc.imports.go.util.GoAssociationFilter.filterNegativeAssociations;
 import static org.icgc.dcc.imports.go.util.GoAssociationFilter.filterPositiveAssociations;

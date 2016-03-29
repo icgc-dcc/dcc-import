@@ -18,20 +18,20 @@
 package org.icgc.dcc.imports.go.core;
 
 import static com.google.common.base.Stopwatch.createStarted;
-import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
+import static org.icgc.dcc.common.core.util.Formats.formatCount;
 import static org.icgc.dcc.imports.go.util.GoTermFilter.filterCurrentTerms;
 import static org.icgc.dcc.imports.go.util.GoTermFilter.filterObsoleteTerms;
 
 import java.io.IOException;
 
+import org.icgc.dcc.imports.go.model.GoTerm;
+import org.icgc.dcc.imports.go.reader.GoTermReader;
+import org.obolibrary.oboformat.parser.OBOFormatParserException;
+
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-
-import org.icgc.dcc.imports.go.model.GoTerm;
-import org.icgc.dcc.imports.go.reader.GoTermReader;
-import org.obolibrary.oboformat.parser.OBOFormatParserException;
 
 @Slf4j
 @RequiredArgsConstructor
