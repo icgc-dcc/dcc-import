@@ -1,16 +1,13 @@
-ICGC DCC - Import Heliotrope
+ICGC DCC - Import Resources
 ===
 
-This bundle contains several static resources used by the importer.
+This details the creation of a jar file that contains several static resources used by the importer modules. Although the jar is named `dcc-heliotrope.jar` (poorly named), it has no relationship with the Heliotrope project.
 
 ### Last Updated:
 - `cancer_gene_census.tsv`: *May 28th, 2015*.
 - `pathway_hier.txt`: *November 28th, 2014, release 52*.
 - `uniprot_2_reactome.txt`: *May 28th, 2015*.
 - `pathway_2_summation.txt`: *May 28th, 2015*.
-- `genes.bson`: *February 5, 2015*, removed genes with bad chromosomes.
-- `gene2xml`: *February 5, 2015*.
-
 
 ### 1. Updating Resources:
 
@@ -63,10 +60,6 @@ The file might be available on the `csv` format. It can be converted to the `tsv
 ```bash
 tr ',' '\t' < cancer_gene_census.csv > cancer_gene_census.tsv
 ```
-
-##### 2.3. gene2xml and gene.bson
-These 2 binary files rarely (if ever) get updated. Cosult others to see if any update is required and hope that the answer is no. 
-
 
 ### 2. Verify Resources.
 
@@ -156,14 +149,14 @@ After modifying the file, repeat step 3.2 to recreate the jar file.
 Now that the artifact passes local testing it needs to be published to central artifactory. This is also needed because ETL integration test expects the resource in artifactory. Use the [deploy page](http://seqwaremaven.oicr.on.ca/artifactory/webapp/deployartifact.html) and upload the final jar file.
 
 
-#### 4.5. Run all ETL tests
+#### 4.5. Run all Import tests
 ```bash
-cd dcc-etl
+cd dcc-import
 mvn clean package
 ```
 
-### 5. Publish new ETL release.
-Push the changes to repository and wait for Continuous Integration to verify the build. Optionally, publish the complete ETL release to artifactory.
+### 5. Publish new Import release.
+Push the changes to repository and wait for Continuous Integration to verify the build. Optionally, publish the complete Import release to Artifactory.
 
 ### 6. Update this document.
 Reflect the changes and their date.
