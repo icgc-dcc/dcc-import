@@ -38,7 +38,6 @@ public class GeneGtfReaderTest {
   public void testIsData1() {
     val line = TAB.splitToList("# THIS IS NOT DATA");
     val reader = new GeneGtfReader("test");
-    reader.isData(line);
     assertThat(reader.isData(line)).isEqualTo(false);
   }
 

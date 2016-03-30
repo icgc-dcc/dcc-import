@@ -45,7 +45,7 @@ public enum ImportSource implements Identifiable {
   @NonNull
   private final String id;
 
-  @Getter(lazy = true)
+  @Getter
   @Accessors(fluent = true)
   private static final Set<ImportSource> all = ImmutableSet.copyOf(values());
 

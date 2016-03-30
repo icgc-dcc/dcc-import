@@ -31,22 +31,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.imports.geneset.model.go.GoInferredTreeNode;
 import org.semanticweb.owlapi.model.OWLClass;
-
-import owltools.graph.OWLGraphWrapper;
-import owltools.graph.shunt.OWLShuntEdge;
-import owltools.graph.shunt.OWLShuntGraph;
-import owltools.graph.shunt.OWLShuntNode;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+import owltools.graph.OWLGraphWrapper;
+import owltools.graph.shunt.OWLShuntEdge;
+import owltools.graph.shunt.OWLShuntGraph;
+import owltools.graph.shunt.OWLShuntNode;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -218,8 +217,9 @@ public class GoInferredTreeBuilder {
     Map<String, Integer> maxNodeDistanceFromRoot = maxInfoClimber(term_acc);
     Map<Integer, List<String>> levelLists = Maps.<Integer, List<String>> newHashMap();
 
-    for (String goId : maxNodeDistanceFromRoot.keySet()) {
-      Integer level = maxNodeDistanceFromRoot.get(goId);
+    for (val entry : maxNodeDistanceFromRoot.entrySet()) {
+      val goId = entry.getKey();
+      val level = entry.getValue();
       if (levelLists.get(level) == null) {
         levelLists.put(level, new ArrayList<String>());
       }
@@ -248,7 +248,8 @@ public class GoInferredTreeBuilder {
   private Map<String, Integer> maxInfoClimber(String goId) {
     Set<String> currentSet = Sets.<String> newHashSet();
     currentSet.add(goId);
-    return maxInfoClimberHelper(currentSet, 0, Maps.<String, Integer> newHashMap(), Maps.<String, Integer> newHashMap());
+    return maxInfoClimberHelper(currentSet, 0, Maps.<String, Integer> newHashMap(),
+        Maps.<String, Integer> newHashMap());
   }
 
   private Map<String, Integer> maxInfoClimberHelper(Set<String> currentSet, int currentTermDistance,
@@ -257,7 +258,7 @@ public class GoInferredTreeBuilder {
     if (!currentSet.isEmpty()) {
       for (String item : currentSet) {
         if (encounteredHistory.get(item) == null) {
-          encounteredHistory.put(item, new Integer(1));
+          encounteredHistory.put(item, 1);
           completeHistory.put(item, currentTermDistance);
         } else {
           if (completeHistory.get(item) < currentTermDistance) {

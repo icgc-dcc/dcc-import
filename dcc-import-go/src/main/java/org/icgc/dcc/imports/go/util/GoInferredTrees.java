@@ -108,8 +108,7 @@ public final class GoInferredTrees {
 
   public static int inferredTreeNodeCount(Map<String, List<GoInferredTreeNode>> inferredTrees) {
     int count = 0;
-    for (val goId : inferredTrees.keySet()) {
-      val inferredTree = inferredTrees.get(goId);
+    for (val inferredTree : inferredTrees.values()) {
       count += inferredTree.size();
     }
 

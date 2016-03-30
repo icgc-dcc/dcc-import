@@ -30,16 +30,16 @@ import org.icgc.dcc.imports.pathway.model.Pathway;
 import org.icgc.dcc.imports.pathway.model.PathwaySummation;
 import org.icgc.dcc.imports.pathway.model.PathwayUniprot;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 
 @Data
 @Builder
@@ -117,8 +117,7 @@ public class PathwayModel {
 
   private void indexPathwayUniprots() {
     pathwaysByUniprot = HashMultimap.create();
-    for (val reactomeId : pathways.keySet()) {
-      val pathway = pathways.get(reactomeId);
+    for (val pathway : pathways.values()) {
       for (val uniprotId : pathway.getUniprots()) {
         pathwaysByUniprot.put(uniprotId, pathway);
       }

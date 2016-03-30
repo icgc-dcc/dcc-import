@@ -25,20 +25,18 @@ import java.util.Set;
 
 import org.icgc.dcc.imports.geneset.model.go.GoInferredTreeNode;
 
+import com.google.common.collect.ImmutableSet;
+
 import lombok.NoArgsConstructor;
 import lombok.val;
-
-import com.google.common.collect.ImmutableSet;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class GoInferredTreeIndexer {
 
   public static Set<String> getAllGoIds(Map<String, List<GoInferredTreeNode>> inferredTrees) {
-
     val goIds = ImmutableSet.<String> builder();
 
-    for (val goId : inferredTrees.keySet()) {
-      val inferredTree = inferredTrees.get(goId);
+    for (val inferredTree : inferredTrees.values()) {
       for (val inferredTreeNode : inferredTree) {
         goIds.add(inferredTreeNode.getId());
       }
