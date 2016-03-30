@@ -32,7 +32,7 @@ public class TrialsReader extends Reader {
   /**
    * Constants
    */
-  private final static String TRIALS_URL = "http://files.docking.org/export/oicr/trials.ldjson";
+  private final static String TRIALS_URL = BASE_URL + "trials.ldjson";
   private final static ObjectMapper MAPPER = new ObjectMapper();
   private MappingIterator<ObjectNode> trials;
   

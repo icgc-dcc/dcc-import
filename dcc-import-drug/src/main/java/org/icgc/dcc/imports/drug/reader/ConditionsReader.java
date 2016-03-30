@@ -29,7 +29,7 @@ import lombok.val;
 
 public class ConditionsReader extends Reader {
   
-  private final static String CONDITIONS_URL = "http://files.docking.org/export/oicr/conditions.ldjson";
+  private final static String CONDITIONS_URL = BASE_URL + "conditions.ldjson";
   
   public ConditionsReader() {
     super(CONDITIONS_URL);
