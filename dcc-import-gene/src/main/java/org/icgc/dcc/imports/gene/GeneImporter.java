@@ -35,7 +35,7 @@ import org.icgc.dcc.imports.gene.core.GeneIterator;
 import org.icgc.dcc.imports.gene.joiner.EnsemblJoiner;
 import org.icgc.dcc.imports.gene.joiner.EntrezJoiner;
 import org.icgc.dcc.imports.gene.processor.TranscriptProcessor;
-import org.icgc.dcc.imports.gene.reader.ASNReader;
+import org.icgc.dcc.imports.gene.reader.EntrezReader;
 import org.icgc.dcc.imports.gene.reader.EnsemblReader;
 import org.icgc.dcc.imports.gene.reader.GeneGtfReader;
 import org.icgc.dcc.imports.gene.writer.GeneWriter;
@@ -123,7 +123,7 @@ public class GeneImporter implements SourceImporter {
 
   private static Function<? super ObjectNode, ? extends ObjectNode> joinEntrez() {
     log.info("Reading NCBI summaries...");
-    val asnReader = new ASNReader();
+    val asnReader = new EntrezReader();
     val summaryMap = asnReader.readSummary();
     log.info("Finished reading {} NCBI summaries", formatCount(summaryMap.size()));
 

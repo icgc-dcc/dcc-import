@@ -27,9 +27,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.GZIPInputStream;
 
-import org.icgc.dcc.imports.gene.thread.ASNInputReader;
-import org.icgc.dcc.imports.gene.thread.OutputReader;
-
 import com.google.common.io.ByteStreams;
 
 import lombok.Cleanup;
@@ -38,25 +35,26 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class ASNReader {
+public class EntrezReader {
 
   private static final String BASE_URI = "ftp://ftp.ncbi.nih.gov/toolbox/ncbi_tools/cmdline/";
 
   /**
-   * Runs gene2Xml binary and feeds it ASN.1 dump from NCBI and streams output as XML
+   * Runs gene2xml binary and feeds it ASN.1 dump from NCBI and streams output as XML.
+   * 
    * @return Map of gene_id -> summary text
    */
   @SneakyThrows
   public Map<String, String> readSummary() {
     val summaryMap = new ConcurrentHashMap<String, String>();
-    val binary = getCmd();
+    val executable = resolveExecutable();
 
     @Cleanup
     val gzip = new GZIPInputStream(new URL(NCBI_URI).openStream());
 
-    val process = Runtime.getRuntime().exec(binary + " -b T");
-    val inThread = new Thread(new ASNInputReader(gzip, process.getOutputStream()));
-    val outThread = new Thread(new OutputReader(process.getInputStream(), summaryMap));
+    val process = Runtime.getRuntime().exec(executable + " -b T");
+    val inThread = new Thread(new EntrezASNReader(gzip, process.getOutputStream()));
+    val outThread = new Thread(new EntrezXMLReader(process.getInputStream(), summaryMap));
     inThread.start();
     outThread.start();
     process.waitFor();
@@ -69,7 +67,7 @@ public class ASNReader {
    * @return Path to runnable binary.
    */
   @SneakyThrows
-  public static String getCmd() {
+  public static String resolveExecutable() {
     val platform = System.getProperty("os.name");
     log.info("Detecting current platform as: {}", platform);
 

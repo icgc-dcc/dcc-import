@@ -15,39 +15,48 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.gene.thread;
+package org.icgc.dcc.imports.gene.reader;
+
+import static com.google.common.io.Closeables.close;
 
 import java.io.InputStream;
-import java.util.Map;
+import java.io.OutputStream;
 
-import javax.xml.parsers.SAXParserFactory;
-
-import org.icgc.dcc.imports.gene.reader.XMLHandler;
+import com.google.common.base.Stopwatch;
+import com.google.common.io.ByteStreams;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RequiredArgsConstructor
-public class OutputReader implements Runnable {
+public class EntrezASNReader implements Runnable {
 
+  /**
+   * State.
+   */
   @NonNull
   private final InputStream in;
   @NonNull
-  private final Map<String, String> summaryMap;
+  private final OutputStream out;
 
   @Override
   @SneakyThrows
   public void run() {
-    val factory = SAXParserFactory.newInstance();
-    factory.setValidating(false);
-    factory.setFeature("http://xml.org/sax/features/validation", false);
-    factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-    val handler = new XMLHandler(summaryMap);
+    val watch = Stopwatch.createStarted();
 
-    val saxParser = factory.newSAXParser();
-    saxParser.parse(in, handler);
+    try {
+      log.info("Reading ASN.1 input stream...");
+      ByteStreams.copy(in, out);
+      log.info("Finished reading ASN.1 input stream in {}", watch);
+    } finally {
+      val swallow = true;
+      close(in, swallow);
+      close(out, swallow);
+    }
   }
 
 }

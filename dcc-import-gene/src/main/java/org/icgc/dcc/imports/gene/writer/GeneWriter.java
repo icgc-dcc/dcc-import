@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.imports.gene.writer;
 
+import static org.icgc.dcc.common.core.util.Formats.formatCount;
+
 import org.icgc.dcc.common.core.model.ReleaseCollection;
 import org.icgc.dcc.imports.core.util.AbstractJongoWriter;
 import org.jongo.MongoCollection;
@@ -43,15 +45,17 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
   public GeneWriter(MongoClientURI mongoUri) {
     super(mongoUri);
     this.geneCollection = getCollection(ReleaseCollection.GENE_COLLECTION);
-    this.geneCollection.drop();
+
+    geneCollection.drop();
   }
 
   @Override
   public void writeValue(ObjectNode value) {
     if (++counter % STATUS_GENE_COUNT == 0) {
-      log.info("Writing {}", counter);
+      log.info("Writing {}", formatCount(counter));
     }
-    this.geneCollection.insert(value);
+
+    geneCollection.insert(value);
   }
 
 }
