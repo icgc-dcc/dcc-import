@@ -17,13 +17,11 @@
  */
 package org.icgc.dcc.imports.project.util;
 
-import lombok.NonNull;
-
 import com.mongodb.MongoClientURI;
 
 public abstract class AbstractJongoWriter<T> extends AbstractJongoComponent {
 
-  public AbstractJongoWriter(@NonNull MongoClientURI mongoUri) {
+  public AbstractJongoWriter(MongoClientURI mongoUri) {
     super(mongoUri);
   }
 

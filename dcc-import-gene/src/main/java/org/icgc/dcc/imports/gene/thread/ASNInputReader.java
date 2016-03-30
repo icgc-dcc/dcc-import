@@ -17,20 +17,27 @@
  */
 package org.icgc.dcc.imports.gene.thread;
 
+import static com.google.common.io.Closeables.close;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.io.ByteStreams;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
 public class ASNInputReader implements Runnable {
 
+  /**
+   * State.
+   */
   @NonNull
   private final InputStream in;
   @NonNull
@@ -39,10 +46,17 @@ public class ASNInputReader implements Runnable {
   @Override
   @SneakyThrows
   public void run() {
-    ByteStreams.copy(in, out);
-    in.close();
-    out.close();
-    log.info("Finished reading ASN.1 input stream.");
+    val watch = Stopwatch.createStarted();
+
+    try {
+      log.info("Reading ASN.1 input stream...");
+      ByteStreams.copy(in, out);
+      log.info("Finished reading ASN.1 input stream in {}", watch);
+    } finally {
+      val swallow = true;
+      close(in, swallow);
+      close(out, swallow);
+    }
   }
 
 }

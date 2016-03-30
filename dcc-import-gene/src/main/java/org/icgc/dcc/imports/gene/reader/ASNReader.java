@@ -49,12 +49,12 @@ public class ASNReader {
   @SneakyThrows
   public Map<String, String> readSummary() {
     val summaryMap = new ConcurrentHashMap<String, String>();
-    val downloadUtil = getCmd();
+    val binary = getCmd();
 
     @Cleanup
     val gzip = new GZIPInputStream(new URL(NCBI_URI).openStream());
 
-    val process = Runtime.getRuntime().exec(downloadUtil + " -b T");
+    val process = Runtime.getRuntime().exec(binary + " -b T");
     val inThread = new Thread(new ASNInputReader(gzip, process.getOutputStream()));
     val outThread = new Thread(new OutputReader(process.getInputStream(), summaryMap));
     inThread.start();
@@ -84,9 +84,10 @@ public class ASNReader {
     @Cleanup
     val ftpInputStream = new URL(download).openStream();
     val gzip = new GZIPInputStream(ftpInputStream);
+    @Cleanup
     val fOut = new FileOutputStream(tmpFile);
-
     ByteStreams.copy(gzip, fOut);
+
     return tmpFile.getAbsolutePath();
   }
 
