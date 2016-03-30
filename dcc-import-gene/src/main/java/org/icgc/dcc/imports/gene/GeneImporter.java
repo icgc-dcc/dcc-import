@@ -20,10 +20,14 @@ package org.icgc.dcc.imports.gene;
 import static com.google.common.base.Stopwatch.createStarted;
 import static java.util.Spliterator.DISTINCT;
 import static java.util.Spliterator.NONNULL;
+import static java.util.Spliterators.spliteratorUnknownSize;
+import static java.util.stream.StreamSupport.stream;
+import static org.icgc.dcc.common.core.util.Formats.formatCount;
 
+import java.io.IOException;
 import java.net.URI;
-import java.util.Spliterators;
-import java.util.stream.StreamSupport;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import org.icgc.dcc.imports.core.SourceImporter;
 import org.icgc.dcc.imports.core.model.ImportSource;
@@ -36,6 +40,7 @@ import org.icgc.dcc.imports.gene.reader.EnsemblReader;
 import org.icgc.dcc.imports.gene.reader.GeneGtfReader;
 import org.icgc.dcc.imports.gene.writer.GeneWriter;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.MongoClientURI;
 
 import lombok.Cleanup;
@@ -49,8 +54,12 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class GeneImporter implements SourceImporter {
 
+  /**
+   * Configuration.
+   */
   @NonNull
   private final URI gtfUri;
+  @NonNull
   private final MongoClientURI mongoUri;
 
   @Override
@@ -62,38 +71,63 @@ public class GeneImporter implements SourceImporter {
    * Main pipeline execution for creating gene model. Calls all readers to pre-compute hashmaps of relevant information
    * before streaming GTF file for construction of gene model skeleton.
    */
-  @SneakyThrows
   @Override
+  @SneakyThrows
   public void execute() {
+    log.info("Importing genes...");
     val watch = createStarted();
 
-    log.info("Doing Ensembl Data Joining...");
-    val ensemblReader = new EnsemblReader();
-    val ensembleJoiner = new EnsemblJoiner(ensemblReader.read());
-    log.info("... Done Ensemble Data Joining!");
+    // Extract
+    val genes = readGenes();
 
-    log.info("Starting ASN.1 Import from NCBI.");
-    val asnReader = new ASNReader();
-    val summaryMap = asnReader.readSummary();
-    val entrezJoiner = new EntrezJoiner(summaryMap);
-    log.info("Staged {} Summaries from NCBI.", summaryMap.size());
+    // Transform
+    val transformed = transformGenes(genes);
 
-    log.info("Writing genes to {}...", mongoUri);
+    // Load
+    writeGenes(transformed);
+
+    log.info("Finished importing genes in {}", watch);
+  }
+
+  private Stream<ObjectNode> readGenes() {
     val gtfReader = new GeneGtfReader(gtfUri.toString());
-
     val gtfStream = gtfReader.read();
-    val genes = StreamSupport.stream(
-        Spliterators.spliteratorUnknownSize(new GeneIterator(gtfStream.iterator()), NONNULL | DISTINCT), false);
+    val iterator = new GeneIterator(gtfStream.iterator());
 
+    return stream(spliteratorUnknownSize(iterator, NONNULL | DISTINCT), false);
+  }
+
+  private Stream<ObjectNode> transformGenes(Stream<ObjectNode> genes) {
+    return genes
+        .map(joinEnsemble())
+        .map(joinEntrez())
+        .map(TranscriptProcessor::process);
+  }
+
+  private void writeGenes(Stream<ObjectNode> genes) throws IOException {
+    log.info("Writing genes to {}...", mongoUri);
     @Cleanup
     val writer = new GeneWriter(mongoUri);
-    genes
-        .map(ensembleJoiner::join)
-        .map(entrezJoiner::join)
-        .map(TranscriptProcessor::process)
-        .forEach(writer::writeValue);
+    genes.forEach(writer::writeValue);
+    log.info("Finished writing genes to {}", mongoUri);
+  }
 
-    log.info("Finished writing genes in {}", watch);
+  private static Function<? super ObjectNode, ? extends ObjectNode> joinEnsemble() {
+    log.info("Reading Ensembl...");
+    val ensemblReader = new EnsemblReader();
+    val ensembl = ensemblReader.read();
+    log.info("Finished reading Ensembl");
+
+    return new EnsemblJoiner(ensembl)::join;
+  }
+
+  private static Function<? super ObjectNode, ? extends ObjectNode> joinEntrez() {
+    log.info("Reading NCBI summaries...");
+    val asnReader = new ASNReader();
+    val summaryMap = asnReader.readSummary();
+    log.info("Finished reading {} NCBI summaries", formatCount(summaryMap.size()));
+
+    return new EntrezJoiner(summaryMap)::join;
   }
 
 }
