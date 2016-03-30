@@ -6,9 +6,11 @@ The Import project import reference data, which is used by the [DCC ETL](https:/
 
 ## Build
 
-From the command line:
+To compile, test and package the system, execute the following from the root of the repository:
 
-	mvn package
+```shell
+mvn
+```
 
 ## Modules
 
@@ -30,13 +32,18 @@ This is the main entry point of the application.
 
 These modules import various data sources.
 
-- [Diagram](dcc-import-diagram/README.md)
-- [Drug](dcc-import-drug/README.md)
-- [CGC](dcc-import-cgc/README.md)
+#### Gene Model
 - [Gene](dcc-import-gene/README.md)
+
+#### Gene Sets
 - [Gene Set](dcc-import-geneset/README.md)
+- [CGC](dcc-import-cgc/README.md)
 - [GO](dcc-import-go/README.md)
+- [Drug](dcc-import-drug/README.md)
 - [Pathway](dcc-import-pathway/README.md)
+
+#### Other
+- [Diagram](dcc-import-diagram/README.md)
 - [Project](dcc-import-project/README.md)
 
 ## Resources

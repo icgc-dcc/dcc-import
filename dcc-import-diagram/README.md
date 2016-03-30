@@ -1,13 +1,11 @@
-ICGC DCC - Import Diagram
-===
+# ICGC DCC - Import Drug
 
-Imports reactome diagram data.
+This is the diagram import module. It imports diagram information from Reactome.
 
+## Build
 
-Build
----
+To compile, test and package the module, execute the following from the root of the repository:
 
-In the repository's root execute from the command line:
-
-        mvn -am -pl dcc-import-diagram package
-
+```shell
+mvn -am -pl dcc-import/dcc-import-diagram
+```

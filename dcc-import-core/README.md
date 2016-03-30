@@ -1,13 +1,11 @@
-ICGC DCC - Import Core
-===
+# ICGC DCC - Import Core
 
-Core module.
+This is the common import module. It contains shared abstractions and utilities used in all source import modules.
 
+## Build
 
-Build
----
+To compile, test and package the module, execute the following from the root of the repository:
 
-In the repository's root execute from the command line:
-
-        mvn -am -pl dcc-import-core package
-
+```shell
+mvn -am -pl dcc-import/dcc-import-core
+```

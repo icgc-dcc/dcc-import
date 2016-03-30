@@ -1,13 +1,11 @@
-ICGC DCC - Import Drug
-===
+# ICGC DCC - Import Drug
 
-Imports drug data.
+This is the drug metadata import module. It imports compound information from the Zinc database.
 
+## Build
 
-Build
----
+To compile, test and package the module, execute the following from the root of the repository:
 
-In the repository's root execute from the command line:
-
-        mvn -am -pl dcc-import-drug package
-
+```shell
+mvn -am -pl dcc-import/dcc-import-drug
+```

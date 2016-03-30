@@ -1,13 +1,11 @@
-ICGC DCC - Import Pathway
-===
+# ICGC DCC - Import Pathway
 
-Imports pathway data.
+This is the pathway metadata import module. It imports pathway information from Reactome. 
 
+## Build
 
-Build
----
+To compile, test and package the module, execute the following from the root of the repository:
 
-In the repository's root execute from the command line:
-
-        mvn -am -pl dcc-import-pathway package
-
+```shell
+mvn -am -pl dcc-import/dcc-import-pathway
+```

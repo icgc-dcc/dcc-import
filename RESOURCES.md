@@ -1,5 +1,4 @@
-ICGC DCC - Import Resources
-===
+# ICGC DCC - Import Resources
 
 This details the creation of a jar file that contains several static resources used by the importer modules. Although the jar is named `dcc-heliotrope.jar` (poorly named), it has no relationship with the Heliotrope project.
 
@@ -12,7 +11,7 @@ This details the creation of a jar file that contains several static resources u
 ### 1. Updating Resources:
 
 #### 1.1. Prepare.
-Download and extract the latest heliotrope jar from [Artifactory.](https://seqwaremaven.oicr.on.ca/artifactory/simple/dcc-dependencies/org/icgc/dcc/dcc-heliotrope) Make a copy of the folder and update the version.
+Download and extract the latest resource jar from [Artifactory.](https://seqwaremaven.oicr.on.ca/artifactory/simple/dcc-dependencies/org/icgc/dcc/dcc-heliotrope) Make a copy of the folder and update the version.
 
 ```bash
 dcc_heliotrope_current_version='12'
@@ -134,8 +133,8 @@ Create a new feature branch and update the version in db-importer pom file in ``
 #### 4.2. Modify the reference to local artifact for testing
 Change the reference to central artifact to local in [Importers file](https://github.com/icgc-dcc/dcc-import/blob/develop/dcc-import-core/src/main/java/org/icgc/dcc/imports/core/util/Importers.java). Replace the value for `IMPORT_ARTIFACT_REMOTE_URL` with `file:/path/to/new/jar`, the path to your newly generated jar file. Careful not to commit this later on!
 
-#### 4.3. Run db-importer tests
-db-importer modules heavily depends on the heliotrope resource, so running the unit tests is the first step to catch issues with updates bundle. Run the tests and try to resolve the issues. You might get an error similar to following:
+#### 4.3. Run `dcc-import` tests
+`dcc-import` modules heavily depends on the jar resource, so running the unit tests is the first step to catch issues with updates bundle. Run the tests and try to resolve the issues. You might get an error similar to following:
 
 ```
 java.lang.NullPointerException: Cannot find reactome id for pathway segment with reactome name 'Infectious disease' and segment 'PathwaySegment(reactomeId=null, reactomeName=Infectious disease, diagrammed=true)'

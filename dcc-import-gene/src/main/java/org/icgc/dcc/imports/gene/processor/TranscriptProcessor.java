@@ -27,11 +27,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import lombok.NonNull;
 import lombok.val;
 
 public class TranscriptProcessor {
 
-  public static ObjectNode process(ObjectNode gene) {
+  public static ObjectNode process(@NonNull ObjectNode gene) {
     return processTranscripts(gene);
   }
 

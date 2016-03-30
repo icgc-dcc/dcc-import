@@ -1,13 +1,11 @@
-ICGC DCC - Import GO
-===
+# ICGC DCC - Import Pathway
 
-Imports Gene Ontology data.
+This is the Gene Ontology metadata import module. It imports pathway information from GO. 
 
+## Build
 
-Build
----
+To compile, test and package the module, execute the following from the root of the repository:
 
-In the repository's root execute from the command line:
-
-        mvn -am -pl dcc-import-go package
-
+```shell
+mvn -am -pl dcc-import/dcc-import-go
+```

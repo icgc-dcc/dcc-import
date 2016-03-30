@@ -1,26 +1,24 @@
-ICGC DCC - Import Client
-===
+# ICGC DCC - Import Client
 
 Imports collections of data from external sources into a MongoDB databases which is later imported into release databases during a release run.
 
+## Build
 
-Build
----
+To compile, test and package the module, execute the following from the root of the repository:
 
-In the repository's root execute from the command line:
+```shell
+mvn -am -pl dcc-import/dcc-import-core
+```
 
-        mvn -am -pl dcc-import-client package
-
-Run
----
+## Run
 
 	$ dcc-import-client.sh [options]
 E.g.
 
 	$ dcc-import-client.sh --imports.sources=GENES
 	
-Update
----
+## Update
+
 Use the `bin/install` script to update the client library.
 For example to update to the latest release run:
 

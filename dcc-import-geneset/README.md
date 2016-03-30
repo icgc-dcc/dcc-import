@@ -1,13 +1,13 @@
-ICGC DCC - Import Gene Set
-===
+# ICGC DCC - Import Gene Set
 
-Common Gene Set module.
+This is the common gene set metadata import module. It contains reusable components for all gene sets.
 
+## Build
 
-Build
----
+To compile, test and package the module, execute the following from the root of the repository:
 
-In the repository's root execute from the command line:
+```shell
+mvn -am -pl dcc-import/dcc-import-geneset
+```
 
-        mvn -am -pl dcc-import-geneset package
 
