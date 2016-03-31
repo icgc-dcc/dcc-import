@@ -30,6 +30,9 @@ import lombok.SneakyThrows;
 
 public class Reader {
   
+  public static final String BASE_URL =
+      "https://raw.githubusercontent.com/docking-org/OICR-ZINC/master/exports/";
+
   private final ObjectMapper MAPPER = new ObjectMapper();
   protected final JsonParser jp;
   
