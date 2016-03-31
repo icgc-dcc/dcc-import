@@ -35,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class TsvReader {
+public abstract class TsvReader {
 
   /**
    * Configuration

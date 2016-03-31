@@ -35,4 +35,5 @@ public class XrefMapping {
   Map<String, String> mimMap;
   Map<String, String> uniprotMap;
   Map<String, String> interproMap;
+
 }

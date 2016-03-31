@@ -38,15 +38,15 @@ public class EnsemblReader {
 
   public Ensembl read() {
     val transcriptMapping = new TranscriptReader(TRANSCRIPT_URI).read();
+    val translationMapping = new TranslationReader(TRANSLATION_URI, transcriptMapping).read();
+    val transJoiner = new TransJoiner(translationMapping, transcriptMapping);
+    val transMap = transJoiner.joinTrans();
+
     val interproDBId = new ExternalDatabaseReader(EXTERNAL_DB_URI).read();
     val analysisMap = new AnalysisReader(ANALYSIS_URI).read();
     val exonMap = new ExonReader(EXON_URI).read();
-    val geneMapping = new GeneReader(GENE_URI, transcriptMapping).read();
+    val geneMapping = new GeneMappingReader(GENE_URI, transcriptMapping).read();
     val synMap = new SynonymReader(EXTERNAL_SYN_URI, geneMapping.getXrefGeneMap()).read();
-    val translationMapping = new TranslationReader(TRANSLATION_URI, transcriptMapping).read();
-
-    val transJoiner = new TransJoiner(translationMapping, transcriptMapping);
-    val transMap = transJoiner.joinTrans();
 
     val xrefMapping = new XrefReader(XREF_URI, interproDBId).read();
 

@@ -31,4 +31,5 @@ public class TranscriptMapping {
 
   Map<String, String> transcriptMap;
   Map<String, String> transcriptToGene;
+
 }

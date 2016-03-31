@@ -37,6 +37,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EntrezReader {
 
+  /**
+   * Constants
+   */
   private static final String BASE_URI = "ftp://ftp.ncbi.nih.gov/toolbox/ncbi_tools/cmdline/";
 
   /**
@@ -46,24 +49,30 @@ public class EntrezReader {
    */
   @SneakyThrows
   public Map<String, String> readSummary() {
-    val summaryMap = new ConcurrentHashMap<String, String>();
     val executable = resolveExecutable();
+    val process = Runtime.getRuntime().exec(executable + " -b T");
 
+    // ASN1 -> XML
     @Cleanup
     val gzip = new GZIPInputStream(new URL(NCBI_URI).openStream());
-
-    val process = Runtime.getRuntime().exec(executable + " -b T");
-    val inThread = new Thread(new EntrezASNReader(gzip, process.getOutputStream()));
-    val outThread = new Thread(new EntrezXMLReader(process.getInputStream(), summaryMap));
+    val inThread = new Thread(new EntrezXMLWriter(gzip, process.getOutputStream()));
     inThread.start();
+
+    // XML -> Map
+    val summaryMap = new ConcurrentHashMap<String, String>();
+    val outThread = new Thread(new EntrezXMLReader(process.getInputStream(), summaryMap));
     outThread.start();
-    process.waitFor();
+
+    // TODO: checkState return code
+    val status = process.waitFor();
+    log.info("Finished executing gen2xml with return code: {}", status);
 
     return unmodifiableMap(summaryMap);
   }
 
   /**
    * Downloads Gene2Xml tool based on current platform.
+   * 
    * @return Path to runnable binary.
    */
   @SneakyThrows

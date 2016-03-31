@@ -44,7 +44,6 @@ public class TranslationReader extends TsvReader {
   }
 
   public TranslationMapping read() {
-
     val translationMap = readRecords()
         .collect(collectingAndThen(
             toMap(this::getTranscriptId, this::getTranslationId),
@@ -56,6 +55,7 @@ public class TranslationReader extends TsvReader {
       val geneId = transcriptToGene.get(entry.getKey());
       translationToGeneBuilder.put(translationId, geneId);
     }
+
     val translationToGene = translationToGeneBuilder.build();
 
     return TranslationMapping.builder()
