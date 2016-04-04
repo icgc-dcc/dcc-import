@@ -29,7 +29,7 @@ public class DrugImporterTester extends TestCase {
   @Test
   @Ignore
   public void testExecute() {
-    DrugImporter importer = new DrugImporter(getLocalMongoClientUri("dcc-genome"));
+    DrugImporter importer = new DrugImporter(getLocalMongoClientUri("dcc-import"));
     assertNotNull(importer);
     importer.execute();
   }

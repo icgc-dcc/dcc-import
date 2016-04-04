@@ -50,7 +50,7 @@ public class ImporterTest {
   /**
    * Test environment.
    */
-  private final MongoClientURI mongoUri = new MongoClientURI("mongodb://localhost/dcc-genome");
+  private final MongoClientURI mongoUri = new MongoClientURI("mongodb://localhost/dcc-import");
   private final Jongo jongo = createJongo(mongoUri);
 
   @Test

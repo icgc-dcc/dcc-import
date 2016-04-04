@@ -56,7 +56,7 @@ spring:
 # Imports
 imports:
   mail: false
-  mongoUri: mongodb://localhost/dcc-genome
+  mongoUri: mongodb://localhost/dcc-import
 
 # ICGC Client configuration
 icgc:
