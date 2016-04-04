@@ -28,7 +28,7 @@ public class GoImporterTest {
 
   @Test
   public void testExecute() {
-    new GoImporter(getLocalMongoClientUri("dcc-genome")).execute();
+    new GoImporter(getLocalMongoClientUri("dcc-import")).execute();
   }
 
 }

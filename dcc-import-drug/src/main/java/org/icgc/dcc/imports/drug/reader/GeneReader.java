@@ -63,7 +63,7 @@ public class GeneReader extends Reader {
   public Map<String, ObjectNode> getGeneMap() {
       
     log.info("Loading ICGC Gene Info");
-    val db = new MongoClient(mongoUri).getDB("dcc-genome");
+    val db = new MongoClient(mongoUri).getDB("dcc-import");
     Jongo jongo = new Jongo(db);
     val geneCollection = jongo.getCollection(ReleaseCollection.GENE_COLLECTION.getId());
     
