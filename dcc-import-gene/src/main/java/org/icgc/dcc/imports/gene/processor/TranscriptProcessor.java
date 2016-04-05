@@ -105,14 +105,15 @@ public class TranscriptProcessor {
     for (int i = startExon.asInt(); i <= endExon.asInt(); i++) {
       val exon = (ObjectNode) exons.get(i);
 
-      // Initiate the values by assuming the whole exon is coding first
-      exon.put("genomic_coding_start", asInt(exon, "start"));
-      exon.put("cdna_coding_start", asInt(exon, "cdna_start"));
-      exon.put("genomic_coding_end", asInt(exon, "end"));
-      exon.put("cdna_coding_end", asInt(exon, "cdna_end"));
-
       val cds = exon.path("cds");
+
       if (!cds.isMissingNode()) {
+        // Initiate the values by assuming the whole exon is coding first
+        exon.put("genomic_coding_start", asInt(exon, "start"));
+        exon.put("cdna_coding_start", asInt(exon, "cdna_start"));
+        exon.put("genomic_coding_end", asInt(exon, "end"));
+        exon.put("cdna_coding_end", asInt(exon, "cdna_end"));
+
         // Translation id is the protein id of the coding sequence.
         if (transcript.get("translation_id").isNull()) {
           transcript.put("translation_id", asText(cds, "protein_id"));
