@@ -43,16 +43,19 @@ public class TranscriptProcessorTest {
   private static final String KRAS = FIXTURES + "KRAS.gtf.gz";
   private static final String EXOSC = FIXTURES + "EXOSC10-008.gtf.gz";
   private static final String KLHL = FIXTURES + "KLHL21-003.gtf.gz";
+  private static final String SRRM = FIXTURES + "SRRM1-202.gtf.gz";
 
   private ObjectNode kras;
   private ObjectNode exosc;
   private ObjectNode klhl;
+  private ObjectNode srrm;
 
   @Before
   public void setupStream() {
     kras = loadTestData(KRAS, "ENST00000256078");
     exosc = loadTestData(EXOSC, "ENST00000376936");
     klhl = loadTestData(KLHL, "ENST00000328089");
+    srrm = loadTestData(SRRM, "");
   }
 
   @Test
@@ -141,7 +144,7 @@ public class TranscriptProcessorTest {
     assertThat(asInt(transcript, "cdna_coding_start")).isEqualTo(24);
     assertThat(asInt(transcript, "cdna_coding_end")).isEqualTo(395);
     assertThat(asInt(transcript, "seq_exon_start")).isEqualTo(24);
-    assertThat(asInt(transcript, "seq_exon_end")).isEqualTo(124);
+    assertThat(asInt(transcript, "seq_exon_end")).isEqualTo(0);
     assertThat(asInt(transcript, "length")).isEqualTo(622);
     assertThat(asInt(transcript, "length_cds")).isEqualTo(372);
     assertThat(asInt(transcript, "length_amino_acid")).isEqualTo(124);
@@ -203,7 +206,7 @@ public class TranscriptProcessorTest {
     assertThat(asInt(transcript, "cdna_coding_start")).isEqualTo(239);
     assertThat(asInt(transcript, "cdna_coding_end")).isEqualTo(637);
     assertThat(asInt(transcript, "seq_exon_start")).isEqualTo(81);
-    assertThat(asInt(transcript, "seq_exon_end")).isEqualTo(73);
+    assertThat(asInt(transcript, "seq_exon_end")).isEqualTo(0);
     assertThat(asInt(transcript, "length")).isEqualTo(667);
     assertThat(asInt(transcript, "length_cds")).isEqualTo(399);
     assertThat(asInt(transcript, "length_amino_acid")).isEqualTo(133);
@@ -240,6 +243,68 @@ public class TranscriptProcessorTest {
     assertThat(asInt(endExon, "end")).isEqualTo(6654170);
     assertThat(asInt(endExon, "cdna_start")).isEqualTo(638);
     assertThat(asInt(endExon, "cdna_end")).isEqualTo(667);
+    assertThat(asInt(endExon, "genomic_coding_start")).isEqualTo(0);
+    assertThat(asInt(endExon, "genomic_coding_end")).isEqualTo(0);
+    assertThat(asInt(endExon, "cdna_coding_start")).isEqualTo(0);
+    assertThat(asInt(endExon, "cdna_coding_end")).isEqualTo(0);
+  }
+
+  @Test
+  public void srrm_testPipeline() {
+    assertThat(asText(srrm, "symbol")).isEqualTo("SRRM1");
+    assertThat(asText(srrm, "biotype")).isEqualTo("protein_coding");
+
+    val transcripts = srrm.withArray("transcripts");
+    assertThat(transcripts.size()).isEqualTo(1);
+
+    val transcript = transcripts.get(0);
+    assertThat(asText(transcript, "id")).isEqualTo("ENST00000537199");
+    assertThat(asText(transcript, "name")).isEqualTo("SRRM1-202");
+    assertThat(asText(transcript, "biotype")).isEqualTo("protein_coding");
+    assertThat(asInt(transcript, "start")).isEqualTo(24975417);
+    assertThat(asInt(transcript, "end")).isEqualTo(24993388);
+    assertThat(asInt(transcript, "coding_region_start")).isEqualTo(24975419);
+    assertThat(asInt(transcript, "coding_region_end")).isEqualTo(24981614);
+    assertThat(asInt(transcript, "cdna_coding_start")).isEqualTo(3);
+    assertThat(asInt(transcript, "cdna_coding_end")).isEqualTo(956);
+    assertThat(asInt(transcript, "seq_exon_start")).isEqualTo(3);
+    assertThat(asInt(transcript, "seq_exon_end")).isEqualTo(0);
+    assertThat(asInt(transcript, "length")).isEqualTo(1394);
+    assertThat(asInt(transcript, "length_cds")).isEqualTo(954);
+    assertThat(asInt(transcript, "length_amino_acid")).isEqualTo(318);
+    assertThat(asInt(transcript, "start_exon")).isEqualTo(0);
+    assertThat(asInt(transcript, "end_exon")).isEqualTo(7);
+    assertThat(asInt(transcript, "number_of_exons")).isEqualTo(12);
+  }
+
+  @Test
+  public void srrm_testCanonicalCorrectness() {
+    val transcript = srrm.withArray("transcripts").get(0);
+    assertThat(transcript.get("is_canonical").asBoolean()).isEqualTo(false);
+  }
+
+  @Test
+  public void srrm_testStartExon() {
+    val startExon = srrm.withArray("transcripts").get(0).withArray("exons").get(0);
+
+    assertThat(asInt(startExon, "start")).isEqualTo(24975417);
+    assertThat(asInt(startExon, "end")).isEqualTo(24975520);
+    assertThat(asInt(startExon, "cdna_start")).isEqualTo(1);
+    assertThat(asInt(startExon, "cdna_end")).isEqualTo(104);
+    assertThat(asInt(startExon, "genomic_coding_start")).isEqualTo(24975419);
+    assertThat(asInt(startExon, "genomic_coding_end")).isEqualTo(24975520);
+    assertThat(asInt(startExon, "cdna_coding_start")).isEqualTo(3);
+    assertThat(asInt(startExon, "cdna_coding_end")).isEqualTo(104);
+  }
+
+  @Test
+  public void srrm_testEndExon() {
+    val endExon = srrm.withArray("transcripts").get(0).withArray("exons").get(7);
+
+    assertThat(asInt(endExon, "start")).isEqualTo(24987210);
+    assertThat(asInt(endExon, "end")).isEqualTo(24987290);
+    assertThat(asInt(endExon, "cdna_start")).isEqualTo(957);
+    assertThat(asInt(endExon, "cdna_end")).isEqualTo(1037);
     assertThat(asInt(endExon, "genomic_coding_start")).isEqualTo(0);
     assertThat(asInt(endExon, "genomic_coding_end")).isEqualTo(0);
     assertThat(asInt(endExon, "cdna_coding_start")).isEqualTo(0);
