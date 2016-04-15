@@ -18,10 +18,6 @@
 package org.icgc.dcc.imports.pathway;
 
 import static org.icgc.dcc.imports.core.util.Importers.getLocalMongoClientUri;
-import static org.icgc.dcc.imports.core.util.Importers.getRemoteGenesGtf;
-import static org.icgc.dcc.imports.core.util.Importers.getRemoteReactomeHierarchyUri;
-import static org.icgc.dcc.imports.core.util.Importers.getRemoteReactomeSummationUri;
-import static org.icgc.dcc.imports.core.util.Importers.getRemoteReactomeUniprotUri;
 
 import org.icgc.dcc.imports.gene.GeneImporter;
 import org.junit.Before;
@@ -35,20 +31,13 @@ public class PathwayImporterTest {
   @Before
   public void setUp() {
     // Create a fresh copy of the entire gene model
-    new GeneImporter(getRemoteGenesGtf(),
-        getLocalMongoClientUri("dcc-import-test"))
-        .execute();
+    new GeneImporter(getLocalMongoClientUri("dcc-import-test")).execute();
   }
 
   @Test
   @SneakyThrows
   public void testExecute() {
-    val pathwayImporter =
-        new PathwayImporter(
-            getRemoteReactomeUniprotUri(),
-            getRemoteReactomeSummationUri(),
-            getRemoteReactomeHierarchyUri(),
-            getLocalMongoClientUri("dcc-import"));
+    val pathwayImporter = new PathwayImporter(getLocalMongoClientUri("dcc-import"));
 
     pathwayImporter.execute();
   }

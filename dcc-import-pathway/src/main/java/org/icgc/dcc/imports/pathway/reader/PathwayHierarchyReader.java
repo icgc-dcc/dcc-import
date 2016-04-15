@@ -21,7 +21,7 @@ import static org.icgc.dcc.common.core.util.Formats.formatCount;
 import static org.icgc.dcc.imports.pathway.util.PathwaySegmentConverter.convertPathwayNode;
 
 import java.io.IOException;
-import java.net.URI;
+import java.net.URL;
 import java.util.List;
 import java.util.Stack;
 
@@ -49,7 +49,7 @@ public class PathwayHierarchyReader {
    * Parses the supplied Reactome pathway hierarchy {@code hierarchyFile} to produce a mapping from pathway names to a
    * set of {@link PathwaySegment} lists.
    */
-  public Multimap<String, List<PathwaySegment>> read(URI hierarchyFile) throws IOException {
+  public Multimap<String, List<PathwaySegment>> read(URL hierarchyFile) throws IOException {
     log.info("Reading pathway hierarchy from '{}'...", hierarchyFile);
     val document = readDocument(hierarchyFile);
     val root = document.getDocumentElement();
@@ -91,8 +91,8 @@ public class PathwayHierarchyReader {
         && currentNode.getNodeName().equals(REACTOME_PATHWAY_ELEMENT_NAME);
   }
 
-  private static Document readDocument(URI uri) throws IOException {
-    return Documents.parseDocument(uri);
+  private static Document readDocument(URL url) throws IOException {
+    return Documents.parseDocument(url);
   }
 
 }

@@ -20,24 +20,24 @@ package org.icgc.dcc.imports.core.util;
 import static lombok.AccessLevel.PRIVATE;
 
 import java.io.IOException;
-import java.net.URI;
+import java.net.URL;
 
 import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
 
 import lombok.Cleanup;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 
-import org.w3c.dom.Document;
-
 @NoArgsConstructor(access = PRIVATE)
 public final class Documents {
 
   @SneakyThrows
-  public static Document parseDocument(URI uri) throws IOException {
+  public static Document parseDocument(URL url) throws IOException {
     @Cleanup
-    val inputStream = uri.toURL().openStream();
+    val inputStream = url.openStream();
 
     return DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream);
   }

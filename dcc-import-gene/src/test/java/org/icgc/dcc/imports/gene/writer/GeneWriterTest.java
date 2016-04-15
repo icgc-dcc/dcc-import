@@ -66,7 +66,7 @@ public class GeneWriterTest {
 
     val mongoClientURI = getLocalMongoClientUri(embeddedMongo.getPort(), "dcc-genome-test");
 
-    val importer = new GeneImporter(Paths.get(KRAS).toUri(), mongoClientURI);
+    val importer = new GeneImporter(Paths.get(KRAS).toUri().toURL(), mongoClientURI);
     importer.execute();
 
     val gene = getGene(mongoClientURI);

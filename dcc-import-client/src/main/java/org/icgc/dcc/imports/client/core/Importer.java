@@ -20,8 +20,6 @@ package org.icgc.dcc.imports.client.core;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.base.Strings.repeat;
 import static com.google.common.collect.Maps.uniqueIndex;
-import static org.icgc.dcc.imports.core.util.Importers.getRemoteCgsUri;
-import static org.icgc.dcc.imports.core.util.Importers.getRemoteGenesGtf;
 
 import java.util.Collection;
 import java.util.List;
@@ -122,9 +120,9 @@ public class Importer {
   private Map<ImportSource, SourceImporter> createImporters(CGPClient cgpClient) {
     val importers = ImmutableList.<SourceImporter> of(
         new ProjectImporter(mongoUri, cgpClient),
-        new GeneImporter(getRemoteGenesGtf(), mongoUri),
+        new GeneImporter(mongoUri),
         new DrugImporter(mongoUri),
-        new CgcImporter(mongoUri, getRemoteCgsUri()),
+        new CgcImporter(mongoUri),
         new PathwayImporter(mongoUri),
         new GoImporter(mongoUri),
         new DiagramImporter(mongoUri));

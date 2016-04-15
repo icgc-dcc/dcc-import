@@ -22,7 +22,7 @@ import static org.icgc.dcc.common.core.util.Formats.formatCount;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
+import java.net.URL;
 import java.util.Map;
 
 import org.icgc.dcc.imports.core.util.AbstractTsvMapReader;
@@ -47,7 +47,7 @@ public class PathwaySummationReader extends AbstractTsvMapReader {
   };
 
   @SneakyThrows
-  public Iterable<PathwaySummation> read(URI summationFile) {
+  public Iterable<PathwaySummation> read(URL summationFile) {
     log.info("Reading summations from {}...", summationFile);
 
     val summations = ImmutableList.<PathwaySummation> builder();
@@ -81,8 +81,8 @@ public class PathwaySummationReader extends AbstractTsvMapReader {
     return unescapeHtml4(record.get(REACTOME_NAME));
   }
 
-  private Iterable<Map<String, String>> readRecords(URI summationFile) throws IOException, MalformedURLException {
-    return readRecords(FIELD_NAMES, summationFile.toURL().openStream());
+  private Iterable<Map<String, String>> readRecords(URL summationFile) throws IOException, MalformedURLException {
+    return readRecords(FIELD_NAMES, summationFile.openStream());
   }
 
 }

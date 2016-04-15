@@ -1,6 +1,6 @@
 # ICGC DCC - Import Resources
 
-This details the creation of a jar file that contains several static resources used by the importer modules. Although the jar is named `dcc-heliotrope.jar` (poorly named), it has no relationship with the Heliotrope project.
+This details the updating of static resources used by the importer modules. This is done offline because these files have been known to change schemas and break the import process. Doing it this way leads to greater runtime stability
 
 ### Last Updated:
 
@@ -9,43 +9,13 @@ This details the creation of a jar file that contains several static resources u
 - `uniprot_2_reactome.txt`: *Oct 9th, 2015*.
 - `pathway_2_summation.txt`: *Oct 9th, 2015*.
 
-### 1. Updating Resources:
-
-#### 1.1. Prepare.
-Download and extract the latest resource jar from [Artifactory.](https://seqwaremaven.oicr.on.ca/artifactory/simple/dcc-dependencies/org/icgc/dcc/dcc-heliotrope) Make a copy of the folder and update the version.
-
-```bash
-dcc_heliotrope_current_version='12'
-dcc_heliotrope_next_version='13'
-
-artifactory_dependency_url='https://seqwaremaven.oicr.on.ca/artifactory/dcc-dependencies/org/icgc/dcc/'
-dcc_heliotrope_name='dcc-heliotrope'
-
-dcc_heliotrope_current_dist_folder_name=${dcc_heliotrope_name}-${dcc_heliotrope_current_version}
-dcc_heliotrope_next_dist_folder_name=${dcc_heliotrope_name}-${dcc_heliotrope_next_version}
-
-dcc_heliotrope_current_dist_file_name=${dcc_heliotrope_current_dist_folder_name}.jar
-dcc_heliotrope_next_dist_file_name=${dcc_heliotrope_next_dist_folder_name}.jar
-
-mkdir /tmp/${dcc_heliotrope_current_dist_folder_name}
-cd /tmp/${dcc_heliotrope_current_dist_folder_name}
-wget ${artifactory_dependency_url}${dcc_heliotrope_name}/${dcc_heliotrope_current_version}/${dcc_heliotrope_current_dist_file_name}
-jar -xf ${dcc_heliotrope_current_dist_file_name}
-rm -f ${dcc_heliotrope_current_dist_file_name}
-
-cd ..
-mkdir /tmp/${dcc_heliotrope_next_dist_folder_name}
-cp -R ${dcc_heliotrope_current_dist_folder_name}/* ${dcc_heliotrope_next_dist_folder_name}
-cd /tmp/${dcc_heliotrope_next_dist_folder_name}
-```
-
 #### 2. Update the files.
 
 ##### 2.1. Reactome Pathway Resources
 
 Refer to this [wiki page](https://wiki.oicr.on.ca/display/DCCSOFT/Reactome+Pathway+Update+-+Nov+2014) for complete information.
 
-```bash
+```shell
 curl http://www.reactome.org/ReactomeRESTfulAPI/RESTfulWS/pathwayHierarchy/homo+sapiens > pathway_hierarchy.txt
 curl http://www.reactome.org/download/current/UniProt2Reactome.txt > uniprot_2_reactome.txt
 curl http://www.reactome.org/download/current/pathway2summation.txt > pathway_2_summation.txt
@@ -57,7 +27,7 @@ Download Cancer Gene Census file from [COSMIC](https://cancer.sanger.ac.uk/censu
 
 The file might be available on the `csv` format. It can be converted to the `tsv` one with command:
 
-```bash
+```shell
 tr ',' '\t' < cancer_gene_census.csv > cancer_gene_census.tsv
 ```
 
@@ -106,33 +76,11 @@ Currently, the following reactome names are inconsistent between the reactome da
   - REACT_1993
   - REACT_1156
 
-### 3. Create and publish the new bundle.
+### 3. Update the contents at the following paths
 
-You need to create the new bundle using new data and test that ETL is functioning properly with the new bundle.
+- [dcc-import-pathway/src/main/resources/](dcc-import-cgc/src/main/resources/)
+- [dcc-import-pathway/src/main/resources/](dcc-import-pathway/src/main/resources/)
 
-#### 3.1. Get and update the pom file
-```bash
-cd /tmp
-dcc_heliotrope_current_pom_file_name=${dcc_heliotrope_current_dist_folder_name}.pom
-dcc_heliotrope_next_pom_file_name=${dcc_heliotrope_next_dist_folder_name}.pom
-curl ${artifactory_dependency_url}${dcc_heliotrope_name}/${dcc_heliotrope_current_version}/${dcc_heliotrope_current_pom_file_name} > ${dcc_heliotrope_next_pom_file_name}
-sed -i "s/<version>${dcc_heliotrope_current_version}<\/version>/<version>${dcc_heliotrope_next_version}<\/version>/" ${dcc_heliotrope_next_pom_file_name}
-```
-
-#### 3.2. Create the new jar
-```bash
-cd /tmp/${dcc_heliotrope_next_dist_folder_name}
-jar cf ${dcc_heliotrope_next_dist_file_name} *
-mv ${dcc_heliotrope_next_dist_file_name} ..
-```
-
-### 4. Update and test ETL.
-
-#### 4.1. Update version references in source code
-Create a new feature branch and update the version in db-importer pom file in ```dcc-import/pom.xml``` and ```dcc-import-core/src/main/java/org/icgc/dcc/imports/core/util/Importers.java```.
-
-#### 4.2. Modify the reference to local artifact for testing
-Change the reference to central artifact to local in [Importers file](https://github.com/icgc-dcc/dcc-import/blob/develop/dcc-import-core/src/main/java/org/icgc/dcc/imports/core/util/Importers.java). Replace the value for `IMPORT_ARTIFACT_REMOTE_URL` with `file:/path/to/new/jar`, the path to your newly generated jar file. Careful not to commit this later on!
 
 #### 4.3. Run `dcc-import` tests
 `dcc-import` modules heavily depends on the jar resource, so running the unit tests is the first step to catch issues with updates bundle. Run the tests and try to resolve the issues. You might get an error similar to following:
@@ -143,20 +91,11 @@ java.lang.NullPointerException: Cannot find reactome id for pathway segment with
 In which case, you might need to go to [reactome website](http://www.reactome.org/) and search for the missing reactome name and finding the corresponding reactome id such as `REACT_355497` and add the combination to the buttom of `pathway_2_summation.txt`.
 
 
-After modifying the file, repeat step 3.2 to recreate the jar file.
-
-#### 4.4. Publish to Artifactory.
-Now that the artifact passes local testing it needs to be published to central artifactory. This is also needed because ETL integration test expects the resource in artifactory. Use the [deploy page](http://seqwaremaven.oicr.on.ca/artifactory/webapp/deployartifact.html) and upload the final jar file.
-
-
 #### 4.5. Run all Import tests
-```bash
+```shell
 cd dcc-import
 mvn clean package
 ```
-
-### 5. Publish new Import release.
-Push the changes to repository and wait for Continuous Integration to verify the build. Optionally, publish the complete Import release to Artifactory.
 
 ### 6. Update this document.
 Reflect the changes and their date.

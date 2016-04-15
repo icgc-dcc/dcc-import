@@ -18,12 +18,9 @@
 package org.icgc.dcc.imports.pathway;
 
 import static com.google.common.base.Stopwatch.createStarted;
-import static org.icgc.dcc.imports.core.util.Importers.getRemoteReactomeHierarchyUri;
-import static org.icgc.dcc.imports.core.util.Importers.getRemoteReactomeSummationUri;
-import static org.icgc.dcc.imports.core.util.Importers.getRemoteReactomeUniprotUri;
 
 import java.io.IOException;
-import java.net.URI;
+import java.net.URL;
 import java.net.UnknownHostException;
 
 import org.icgc.dcc.imports.core.SourceImporter;
@@ -32,6 +29,7 @@ import org.icgc.dcc.imports.pathway.core.PathwayModel;
 import org.icgc.dcc.imports.pathway.reader.PathwayModelReader;
 import org.icgc.dcc.imports.pathway.writer.PathwayWriter;
 
+import com.google.common.io.Resources;
 import com.mongodb.MongoClientURI;
 
 import lombok.Cleanup;
@@ -49,21 +47,29 @@ import lombok.extern.slf4j.Slf4j;
 public class PathwayImporter implements SourceImporter {
 
   /**
+   * Constants.
+   */
+  public static final URL DEFAULT_REACTOME_UNIPROT_URL = Resources.getResource("uniprot_2_reactome.txt");
+  public static final URL DEFAULT_REACTOME_PATHWAY_HIER_URL = Resources.getResource("pathway_hierarchy.txt");
+  public static final URL DEFAULT_REACTOME_PATHWAY_SUMMATION_URL = Resources.getResource("pathway_2_summation.txt");
+
+  /**
    * Configuration.
    */
   @NonNull
-  private final URI uniprotFile;
+  private final URL uniprotFile;
   @NonNull
-  private final URI summationFile;
+  private final URL summationFile;
   @NonNull
-  private final URI hierarchyFile;
+  private final URL hierarchyFile;
   @NonNull
   private final MongoClientURI mongoUri;
 
   public PathwayImporter(@NonNull MongoClientURI mongoUri) {
-    this.uniprotFile = getRemoteReactomeUniprotUri();
-    this.summationFile = getRemoteReactomeSummationUri();
-    this.hierarchyFile = getRemoteReactomeHierarchyUri();
+    this.uniprotFile = DEFAULT_REACTOME_UNIPROT_URL;
+    this.summationFile = DEFAULT_REACTOME_PATHWAY_SUMMATION_URL;
+    this.hierarchyFile = DEFAULT_REACTOME_PATHWAY_HIER_URL;
+
     this.mongoUri = mongoUri;
   }
 
@@ -86,7 +92,7 @@ public class PathwayImporter implements SourceImporter {
     log.info("Finished importing pathways in {}", watch);
   }
 
-  private PathwayModel readPathwayModel(URI uniprotFile, URI summationFile, URI hierarchyFile) throws IOException {
+  private PathwayModel readPathwayModel(URL uniprotFile, URL summationFile, URL hierarchyFile) throws IOException {
     return new PathwayModelReader().read(uniprotFile, summationFile, hierarchyFile);
   }
 
