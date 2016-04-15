@@ -42,7 +42,6 @@ public final class Importers {
   private static final String REACTOME_PATHWAY_HIER_FILENAME = "pathway_hierarchy.txt";
   private static final String REACTOME_PATHWAY_SUMMATION_FILENAME = "pathway_2_summation.txt";
   private static final String REACTOME_UNIPROT_FILENAME = "uniprot_2_reactome.txt";
-  private static final String REACTOME_GENES_BSON_FILENAME = "genes.bson";
   private static final String CGS_FILENAME = "cancer_gene_census.tsv";
 
   /**
@@ -89,10 +88,6 @@ public final class Importers {
 
   public static final URI getRemoteReactomeHierarchyUri() {
     return getRemoteImportFileUri(REACTOME_PATHWAY_HIER_FILENAME);
-  }
-
-  public static final URI getRemoteGenesBsonUri() {
-    return getRemoteImportFileUri(REACTOME_GENES_BSON_FILENAME);
   }
 
   @SneakyThrows
