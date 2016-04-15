@@ -21,8 +21,8 @@ import static com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_
 import static com.google.common.base.Objects.firstNonNull;
 import static com.google.common.base.Strings.padEnd;
 import static com.google.common.base.Strings.repeat;
+import static org.icgc.dcc.common.core.dcc.Versions.getScmInfo;
 import static org.icgc.dcc.common.core.util.Joiners.WHITESPACE;
-import static org.icgc.dcc.common.core.util.VersionUtils.getScmInfo;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;

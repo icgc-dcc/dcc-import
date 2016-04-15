@@ -174,7 +174,8 @@ public final class TranscriptProcessing {
     // If stop codon is first 3 base pairs of end exon, there will be no coding sequence region for that exon.
     if (cds.isMissingNode()) {
       transcript.put("cdna_coding_end", asInt(exons.get(i - 1), "cdna_coding_end"));
-      transcript.put("seq_exon_end", seqExonEnd(exons.get(i - 1)));
+      // Special case since no coding region in end exon the count into that exon is zero.
+      transcript.put("seq_exon_end", 0);
     } else {
       transcript.put("cdna_coding_end", asInt(exon, "cdna_coding_end"));
       transcript.put("seq_exon_end", seqExonEnd(exon));

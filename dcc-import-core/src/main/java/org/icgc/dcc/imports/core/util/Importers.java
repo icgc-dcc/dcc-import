@@ -59,7 +59,7 @@ public final class Importers {
    * Remote.
    */
   private static final String IMPORT_ARTIFACT_REMOTE_REPO =
-      "http://seqwaremaven.oicr.on.ca/artifactory/dcc-dependencies";
+      "https://seqwaremaven.oicr.on.ca/artifactory/dcc-dependencies";
   private static final String IMPORT_ARTIFACT_REMOTE_URL = IMPORT_ARTIFACT_REMOTE_REPO + "/" + IMPORT_ARTIFACT_PATH;
   private static final String GENES_GTF =
       "ftp://ftp.ensembl.org/pub/grch37/release-82/gtf/homo_sapiens/Homo_sapiens.GRCh37.82.gtf.gz";

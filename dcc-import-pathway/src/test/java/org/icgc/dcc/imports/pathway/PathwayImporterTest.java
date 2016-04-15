@@ -36,8 +36,8 @@ public class PathwayImporterTest {
   public void setUp() {
     // Create a fresh copy of the entire gene model
     new GeneImporter(getRemoteGenesGtf(),
-        getLocalMongoClientUri("dcc-genome-test"))
-            .execute();
+        getLocalMongoClientUri("dcc-import-test"))
+        .execute();
   }
 
   @Test
@@ -48,7 +48,7 @@ public class PathwayImporterTest {
             getRemoteReactomeUniprotUri(),
             getRemoteReactomeSummationUri(),
             getRemoteReactomeHierarchyUri(),
-            getLocalMongoClientUri("dcc-genome"));
+            getLocalMongoClientUri("dcc-import"));
 
     pathwayImporter.execute();
   }

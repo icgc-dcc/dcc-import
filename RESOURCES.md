@@ -3,10 +3,11 @@
 This details the creation of a jar file that contains several static resources used by the importer modules. Although the jar is named `dcc-heliotrope.jar` (poorly named), it has no relationship with the Heliotrope project.
 
 ### Last Updated:
-- `cancer_gene_census.tsv`: *May 28th, 2015*.
-- `pathway_hier.txt`: *November 28th, 2014, release 52*.
-- `uniprot_2_reactome.txt`: *May 28th, 2015*.
-- `pathway_2_summation.txt`: *May 28th, 2015*.
+
+- `cancer_gene_census.tsv`: *Oct 9th, 2015*.
+- `pathway_hier.txt`: *Oct 9th, 2015*.
+- `uniprot_2_reactome.txt`: *Oct 9th, 2015*.
+- `pathway_2_summation.txt`: *Oct 9th, 2015*.
 
 ### 1. Updating Resources:
 

@@ -31,7 +31,7 @@ public class CgcImporterTest {
 
   @Test
   public void testExecute() throws IOException {
-    val cgcImporter = new CgcImporter(getLocalMongoClientUri("dcc-genome"), getRemoteCgsUri());
+    val cgcImporter = new CgcImporter(getLocalMongoClientUri("dcc-import"), getRemoteCgsUri());
     cgcImporter.execute();
   }
 
