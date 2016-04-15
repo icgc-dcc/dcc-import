@@ -5,9 +5,9 @@ This details the creation of a jar file that contains several static resources u
 ### Last Updated:
 
 - `cancer_gene_census.tsv`: *Oct 9th, 2015*.
-- `pathway_hier.txt`: *Oct 9th*.
-- `uniprot_2_reactome.txt`: *Oct 9th*.
-- `pathway_2_summation.txt`: *Oct 9th*.
+- `pathway_hier.txt`: *Oct 9th, 2015*.
+- `uniprot_2_reactome.txt`: *Oct 9th, 2015*.
+- `pathway_2_summation.txt`: *Oct 9th, 2015*.
 
 ### 1. Updating Resources:
 
