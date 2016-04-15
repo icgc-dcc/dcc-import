@@ -1,8 +1,7 @@
-ICGC DCC - ETL - Change Log
-===
+# ICGC DCC - Import - Change Log
 
-Change log for the DCC ETL project.
+Change log for the DCC Import project.
 
-3.8.9.2
+4.0.0
 --
  - Initial open source release
