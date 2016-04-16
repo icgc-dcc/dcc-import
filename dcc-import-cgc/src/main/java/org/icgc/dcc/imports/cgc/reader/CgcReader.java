@@ -17,18 +17,18 @@
  */
 package org.icgc.dcc.imports.cgc.reader;
 
-import java.net.URI;
+import java.net.URL;
 import java.util.Map;
 
 import org.icgc.dcc.imports.core.util.AbstractTsvMapReader;
+
+import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-
-import com.google.common.collect.ImmutableList;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -38,7 +38,7 @@ public class CgcReader extends AbstractTsvMapReader {
    * State.
    */
   @NonNull
-  private final URI cgsUri;
+  private final URL cgsUri;
 
   public Iterable<Map<String, String>> read() {
     log.info("Reading CGC...");
@@ -54,7 +54,7 @@ public class CgcReader extends AbstractTsvMapReader {
 
   @SneakyThrows
   private Iterable<Map<String, String>> readCgsStream() {
-    return readRecords(cgsUri.toURL().openStream());
+    return readRecords(cgsUri.openStream());
   }
 
 }

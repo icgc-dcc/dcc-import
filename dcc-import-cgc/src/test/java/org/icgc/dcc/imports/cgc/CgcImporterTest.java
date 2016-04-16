@@ -18,20 +18,18 @@
 package org.icgc.dcc.imports.cgc;
 
 import static org.icgc.dcc.imports.core.util.Importers.getLocalMongoClientUri;
-import static org.icgc.dcc.imports.core.util.Importers.getRemoteCgsUri;
 
 import java.io.IOException;
 
-import lombok.val;
-
-import org.icgc.dcc.imports.cgc.CgcImporter;
 import org.junit.Test;
+
+import lombok.val;
 
 public class CgcImporterTest {
 
   @Test
   public void testExecute() throws IOException {
-    val cgcImporter = new CgcImporter(getLocalMongoClientUri("dcc-import"), getRemoteCgsUri());
+    val cgcImporter = new CgcImporter(getLocalMongoClientUri("dcc-import"));
     cgcImporter.execute();
   }
 

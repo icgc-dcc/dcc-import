@@ -21,7 +21,7 @@ import static com.google.common.base.Stopwatch.createStarted;
 import static org.icgc.dcc.common.core.util.Formats.formatCount;
 
 import java.io.IOException;
-import java.net.URI;
+import java.net.URL;
 
 import org.icgc.dcc.imports.pathway.core.PathwayModel;
 import org.icgc.dcc.imports.pathway.model.Pathway;
@@ -34,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PathwayModelReader {
 
-  public PathwayModel read(URI uniprotFile, URI summationFile, URI hierarchyFile) throws IOException {
+  public PathwayModel read(URL uniprotFile, URL summationFile, URL hierarchyFile) throws IOException {
     val watch = createStarted();
 
     log.info("Reading pathway summations...");

@@ -18,7 +18,6 @@
 package org.icgc.dcc.imports.pathway.reader;
 
 import static org.apache.commons.lang.StringUtils.repeat;
-import static org.icgc.dcc.imports.core.util.Importers.getRemoteReactomeHierarchyUri;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -26,12 +25,12 @@ import java.net.URISyntaxException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
-import org.icgc.dcc.imports.pathway.reader.PathwayHierarchyReader;
+import org.icgc.dcc.imports.pathway.PathwayImporter;
 import org.junit.Test;
 import org.xml.sax.SAXException;
+
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PathwayHierarchyReaderTest {
@@ -39,7 +38,7 @@ public class PathwayHierarchyReaderTest {
   @Test
   public void testRead() throws MalformedURLException, IOException, SAXException, ParserConfigurationException,
       URISyntaxException {
-    val hierarchyFile = getRemoteReactomeHierarchyUri();
+    val hierarchyFile = PathwayImporter.DEFAULT_REACTOME_PATHWAY_HIER_URL;
     log.info("Pathway URL {}", hierarchyFile);
 
     val parser = new PathwayHierarchyReader();

@@ -19,85 +19,16 @@ package org.icgc.dcc.imports.core.util;
 
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.common.core.util.URIs.getUri;
-
-import java.net.URI;
 
 import com.mongodb.MongoClientURI;
 
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.SneakyThrows;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class Importers {
 
   private static final int DEFAULT_MONGO_PORT = 27017;
   private static final String MONGO_URI_TEMPLATE = "mongodb://localhost:%d/%s";
-
-  /**
-   * Filenames.
-   */
-
-  private static final String REACTOME_PATHWAY_HIER_FILENAME = "pathway_hierarchy.txt";
-  private static final String REACTOME_PATHWAY_SUMMATION_FILENAME = "pathway_2_summation.txt";
-  private static final String REACTOME_UNIPROT_FILENAME = "uniprot_2_reactome.txt";
-  private static final String CGS_FILENAME = "cancer_gene_census.tsv";
-
-  /**
-   * Artifact Constants.
-   */
-  private static final String IMPORT_ARTIFACT_ID = "dcc-heliotrope";
-  private static final String IMPORT_ARTIFACT_GROUP_ID = "org/icgc/dcc";
-  private static final String IMPORT_ARTIFACT_VERSION = "15";
-  private static final String IMPORT_ARTIFACT_TYPE = "jar";
-  private static final String IMPORT_ARTIFACT_PATH = "" +
-      IMPORT_ARTIFACT_GROUP_ID + "/" + IMPORT_ARTIFACT_ID + "/" + IMPORT_ARTIFACT_VERSION + "/" +
-      IMPORT_ARTIFACT_ID + "-" + IMPORT_ARTIFACT_VERSION + "." + IMPORT_ARTIFACT_TYPE;
-
-  /**
-   * Remote.
-   */
-  private static final String IMPORT_ARTIFACT_REMOTE_REPO =
-      "https://seqwaremaven.oicr.on.ca/artifactory/dcc-dependencies";
-  private static final String IMPORT_ARTIFACT_REMOTE_URL = IMPORT_ARTIFACT_REMOTE_REPO + "/" + IMPORT_ARTIFACT_PATH;
-  private static final String GENES_GTF =
-      "ftp://ftp.ensembl.org/pub/grch37/release-82/gtf/homo_sapiens/Homo_sapiens.GRCh37.82.gtf.gz";
-
-  /**
-   * Helpers.
-   */
-  private static URI getRemoteImportFileUri(@NonNull String fileName) {
-    return getJarFileUri(IMPORT_ARTIFACT_REMOTE_URL, fileName);
-  }
-
-  private static URI getJarFileUri(String path, String fileName) {
-    return getUri("jar:" + path + "!" + "/" + fileName);
-  }
-
-  /**
-   * Remote resource URIs.
-   */
-  public static final URI getRemoteReactomeUniprotUri() {
-    return getRemoteImportFileUri(REACTOME_UNIPROT_FILENAME);
-  }
-
-  public static final URI getRemoteReactomeSummationUri() {
-    return getRemoteImportFileUri(REACTOME_PATHWAY_SUMMATION_FILENAME);
-  }
-
-  public static final URI getRemoteReactomeHierarchyUri() {
-    return getRemoteImportFileUri(REACTOME_PATHWAY_HIER_FILENAME);
-  }
-
-  @SneakyThrows
-  public static final URI getRemoteGenesGtf() {
-    return new URI(GENES_GTF);
-  }
-
-  public static final URI getRemoteCgsUri() {
-    return getRemoteImportFileUri(CGS_FILENAME);
-  }
 
   /**
    * Local MongoDB URIs.

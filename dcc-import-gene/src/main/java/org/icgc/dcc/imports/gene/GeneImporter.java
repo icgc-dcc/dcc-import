@@ -25,18 +25,19 @@ import static java.util.stream.StreamSupport.stream;
 import static org.icgc.dcc.common.core.util.Formats.formatCount;
 
 import java.io.IOException;
-import java.net.URI;
+import java.net.URL;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import org.icgc.dcc.common.core.util.URLs;
 import org.icgc.dcc.imports.core.SourceImporter;
 import org.icgc.dcc.imports.core.model.ImportSource;
 import org.icgc.dcc.imports.gene.core.GeneIterator;
 import org.icgc.dcc.imports.gene.joiner.EnsemblJoiner;
 import org.icgc.dcc.imports.gene.joiner.EntrezJoiner;
 import org.icgc.dcc.imports.gene.processor.TranscriptProcessor;
-import org.icgc.dcc.imports.gene.reader.EntrezReader;
 import org.icgc.dcc.imports.gene.reader.EnsemblReader;
+import org.icgc.dcc.imports.gene.reader.EntrezReader;
 import org.icgc.dcc.imports.gene.reader.GeneGtfReader;
 import org.icgc.dcc.imports.gene.writer.GeneWriter;
 
@@ -55,10 +56,16 @@ import lombok.extern.slf4j.Slf4j;
 public class GeneImporter implements SourceImporter {
 
   /**
+   * Constants.
+   */
+  public static final URL DEFAULT_GET_URL =
+      URLs.getUrl("ftp://ftp.ensembl.org/pub/grch37/release-82/gtf/homo_sapiens/Homo_sapiens.GRCh37.82.gtf.gz");
+
+  /**
    * Configuration.
    */
   @NonNull
-  private final URI gtfUri;
+  private final URL gtfUrl;
   @NonNull
   private final MongoClientURI mongoUri;
 
@@ -89,8 +96,12 @@ public class GeneImporter implements SourceImporter {
     log.info("Finished importing genes in {}", watch);
   }
 
+  public GeneImporter(MongoClientURI mongoUri) {
+    this(DEFAULT_GET_URL, mongoUri);
+  }
+
   private Stream<ObjectNode> readGenes() {
-    val gtfReader = new GeneGtfReader(gtfUri.toString());
+    val gtfReader = new GeneGtfReader(gtfUrl.toString());
     val gtfStream = gtfReader.read();
     val iterator = new GeneIterator(gtfStream.iterator());
 

@@ -21,7 +21,7 @@ import static com.google.common.base.Stopwatch.createStarted;
 import static org.icgc.dcc.common.core.util.Formats.formatCount;
 
 import java.io.IOException;
-import java.net.URI;
+import java.net.URL;
 import java.util.Map;
 
 import org.icgc.dcc.imports.cgc.reader.CgcReader;
@@ -29,6 +29,7 @@ import org.icgc.dcc.imports.cgc.writer.CgcWriter;
 import org.icgc.dcc.imports.core.SourceImporter;
 import org.icgc.dcc.imports.core.model.ImportSource;
 
+import com.google.common.io.Resources;
 import com.mongodb.MongoClientURI;
 
 import lombok.Cleanup;
@@ -46,16 +47,20 @@ import lombok.extern.slf4j.Slf4j;
 public class CgcImporter implements SourceImporter {
 
   /**
+   * Constants.
+   */
+  public static final URL DEFAULT_CGC_URL = Resources.getResource("cancer_gene_census.tsv");
+
+  /**
    * Configuration.
    */
   @NonNull
-  private final URI cgsUri;
+  private final URL cgsUri;
   @NonNull
   private final MongoClientURI mongoUri;
 
-  public CgcImporter(@NonNull MongoClientURI mongoUri, URI cgsUri) {
-    this.cgsUri = cgsUri;
-    this.mongoUri = mongoUri;
+  public CgcImporter(MongoClientURI mongoUri) {
+    this(DEFAULT_CGC_URL, mongoUri);
   }
 
   @Override

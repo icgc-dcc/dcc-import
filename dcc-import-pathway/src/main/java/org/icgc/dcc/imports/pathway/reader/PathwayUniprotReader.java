@@ -19,7 +19,7 @@ package org.icgc.dcc.imports.pathway.reader;
 
 import static org.icgc.dcc.common.core.util.Formats.formatCount;
 
-import java.net.URI;
+import java.net.URL;
 
 import org.icgc.dcc.common.core.model.FieldNames;
 import org.icgc.dcc.imports.core.util.AbstractTsvMapReader;
@@ -39,21 +39,17 @@ public class PathwayUniprotReader extends AbstractTsvMapReader {
    */
   private static final String HOMO_SAPIEN = "Homo sapiens";
   private static final String[] CSV_HEADER =
-      { FieldNames.PATHWAY_UNIPROT_ID,
-          FieldNames.PATHWAY_REACTOME_ID,
-          FieldNames.PATHWAY_URL, // Not used
-          FieldNames.PATHWAY_NAME,
-          FieldNames.PATHWAY_EVIDENCE_CODE,
-          FieldNames.PATHWAY_SPECIES
+      { FieldNames.PATHWAY_UNIPROT_ID, FieldNames.PATHWAY_REACTOME_ID, FieldNames.PATHWAY_URL, // Not used
+          FieldNames.PATHWAY_NAME, FieldNames.PATHWAY_EVIDENCE_CODE, FieldNames.PATHWAY_SPECIES
       };
 
   @SneakyThrows
-  public Iterable<PathwayUniprot> read(URI uniprotFile) {
+  public Iterable<PathwayUniprot> read(URL uniprotFile) {
     log.info("Reading pathway-uniprots from {}...", uniprotFile);
 
     val uniprots = ImmutableList.<PathwayUniprot> builder();
 
-    for (val record : readRecords(CSV_HEADER, uniprotFile.toURL().openStream())) {
+    for (val record : readRecords(CSV_HEADER, uniprotFile.openStream())) {
       val human = record.get(FieldNames.PATHWAY_SPECIES).equals(HOMO_SAPIEN);
       if (!human) {
         continue;
