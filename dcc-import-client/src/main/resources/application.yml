@@ -74,6 +74,11 @@ icgc:
   enableHttpLogging: false
   enableStrictSSL: false
   
+# Cosmic
+cosmic:
+  userName:
+  password:
+
 # Mail
 mail:
   enabled: false

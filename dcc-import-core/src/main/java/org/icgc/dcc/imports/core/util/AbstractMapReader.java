@@ -18,16 +18,14 @@
 package org.icgc.dcc.imports.core.util;
 
 import static com.google.common.base.Preconditions.checkState;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.val;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -36,15 +34,30 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
+
 @RequiredArgsConstructor
-public abstract class AbstractTsvMapReader {
+public abstract class AbstractMapReader {
 
   /**
    * Constants.
    */
-  private static final char FIELD_SEPARATOR = '\t';
+  protected static final char TAB_FIELD_SEPARATOR = '\t';
+  protected static final char COMMA_FIELD_SEPARATOR = ',';
   private static final TypeReference<Map<String, String>> RECORD_TYPE_REFERENCE =
       new TypeReference<Map<String, String>>() {};
+
+  /**
+   * Configuration
+   */
+  private final char fieldSeparator;
+
+  @SneakyThrows
+  protected Iterable<Map<String, String>> readRecords(String text) {
+    return readRecords(new ByteArrayInputStream(text.getBytes(UTF_8)));
+  }
 
   @SneakyThrows
   protected Iterable<Map<String, String>> readRecords(InputStream inputStream) {
@@ -81,7 +94,7 @@ public abstract class AbstractTsvMapReader {
         .reader(RECORD_TYPE_REFERENCE)
         .with(
             schema
-                .withColumnSeparator(FIELD_SEPARATOR));
+                .withColumnSeparator(fieldSeparator));
   }
 
   public static <T> Iterable<T> once(final Iterator<T> source) {

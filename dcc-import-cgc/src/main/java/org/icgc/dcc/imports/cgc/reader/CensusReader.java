@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.
+ * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,27 +15,48 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.cgc;
+package org.icgc.dcc.imports.cgc.reader;
 
-import static org.icgc.dcc.imports.core.util.Importers.getLocalMongoClientUri;
+import java.util.Map;
 
-import java.io.IOException;
+import org.icgc.dcc.imports.cgc.util.CosmicClient;
+import org.icgc.dcc.imports.core.util.AbstractMapReader;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import com.google.common.collect.ImmutableList;
 
+import lombok.SneakyThrows;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
-@Ignore("For development only")
-public class CgcImporterTest {
+@Slf4j
+public class CensusReader extends AbstractMapReader {
 
-  @Test
-  public void testExecute() throws IOException {
-    val userName = System.getProperty("cosmic.username");
-    val password = System.getProperty("cosmic.password");
+  /**
+   * Dependencies.
+   */
+  private final CosmicClient client;
 
-    val cgcImporter = new CgcImporter(getLocalMongoClientUri("dcc-import"), userName, password);
-    cgcImporter.execute();
+  public CensusReader(CosmicClient client) {
+    super(COMMA_FIELD_SEPARATOR);
+    this.client = client;
+  }
+
+  public Iterable<Map<String, String>> read() {
+    log.info("Reading CGC...");
+    val genes = ImmutableList.<Map<String, String>> builder();
+
+    val cgc = readCgsStream();
+    for (val cgcGene : cgc) {
+      genes.add(cgcGene);
+    }
+
+    return genes.build();
+  }
+
+  @SneakyThrows
+  private Iterable<Map<String, String>> readCgsStream() {
+    client.login();
+    return readRecords(client.getCensusCSV());
   }
 
 }

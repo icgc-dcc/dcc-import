@@ -42,6 +42,8 @@ public class ClientProperties {
   ICGCProperties icgc;
   @Valid
   MailProperties mail;
+  @Valid
+  CosmicProperties cosmic;
 
   @Data
   public static class ImportsProperties {
@@ -64,6 +66,14 @@ public class ClientProperties {
     boolean enabled;
     String smtpServer;
     String recipients;
+
+  }
+
+  @Data
+  public static class CosmicProperties {
+
+    String userName;
+    String password;
 
   }
 

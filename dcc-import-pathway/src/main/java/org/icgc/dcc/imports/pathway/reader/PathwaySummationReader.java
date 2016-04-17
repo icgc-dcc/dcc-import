@@ -25,7 +25,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 
-import org.icgc.dcc.imports.core.util.AbstractTsvMapReader;
+import org.icgc.dcc.imports.core.util.AbstractMapReader;
 import org.icgc.dcc.imports.pathway.model.PathwaySummation;
 
 import com.google.common.collect.ImmutableList;
@@ -35,7 +35,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class PathwaySummationReader extends AbstractTsvMapReader {
+public class PathwaySummationReader extends AbstractMapReader {
 
   /**
    * Constants.
@@ -45,6 +45,10 @@ public class PathwaySummationReader extends AbstractTsvMapReader {
   private static final String SUMMATION = "summation";
   private static final String[] FIELD_NAMES = { REACTOME_ID, REACTOME_NAME, SUMMATION
   };
+
+  public PathwaySummationReader() {
+    super(TAB_FIELD_SEPARATOR);
+  }
 
   @SneakyThrows
   public Iterable<PathwaySummation> read(URL summationFile) {

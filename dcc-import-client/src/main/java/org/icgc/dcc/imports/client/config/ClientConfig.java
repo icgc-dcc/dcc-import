@@ -44,7 +44,12 @@ public class ClientConfig {
   @Bean
   public Importer importer(ClientProperties properties, CGPClient cgpClient, Mailer mailer) {
     val mongoUri = properties.getImports().getMongoUri();
-    return new Importer(mongoUri, mailer, cgpClient);
+    return new Importer(
+        mongoUri,
+        mailer,
+        cgpClient,
+        properties.getCosmic().getUserName(),
+        properties.getCosmic().getPassword());
   }
 
   @Bean

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.
+ * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,27 +15,42 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.cgc;
+package org.icgc.dcc.imports.cgc.reader;
 
-import static org.icgc.dcc.imports.core.util.Importers.getLocalMongoClientUri;
-
-import java.io.IOException;
-
+import org.icgc.dcc.imports.cgc.util.CosmicClient;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Ignore("For development only")
-public class CgcImporterTest {
+public class CosmicReaderTest {
 
   @Test
-  public void testExecute() throws IOException {
+  public void testReadMultiple() {
+    for (int i = 0; i < 10; i++) {
+      testRead();
+    }
+  }
+
+  @Test
+  public void testRead() {
+    val client = createClient();
+    client.login();
+
+    val reader = new CensusReader(client);
+    for (val record : reader.read()) {
+      log.info("Record:\n{}", record);
+    }
+  }
+
+  private static CosmicClient createClient() {
     val userName = System.getProperty("cosmic.username");
     val password = System.getProperty("cosmic.password");
 
-    val cgcImporter = new CgcImporter(getLocalMongoClientUri("dcc-import"), userName, password);
-    cgcImporter.execute();
+    return new CosmicClient(userName, password);
   }
 
 }

@@ -20,25 +20,28 @@ package org.icgc.dcc.imports.cgc.reader;
 import java.net.URL;
 import java.util.Map;
 
-import org.icgc.dcc.imports.core.util.AbstractTsvMapReader;
+import org.icgc.dcc.imports.core.util.AbstractMapReader;
 
 import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RequiredArgsConstructor
-public class CgcReader extends AbstractTsvMapReader {
+public class CgcReader extends AbstractMapReader {
 
   /**
    * State.
    */
   @NonNull
   private final URL cgsUri;
+
+  public CgcReader(URL cgsUri) {
+    super(TAB_FIELD_SEPARATOR);
+    this.cgsUri = cgsUri;
+  }
 
   public Iterable<Map<String, String>> read() {
     log.info("Reading CGC...");

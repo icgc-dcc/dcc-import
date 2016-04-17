@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.common.core.model.ReleaseCollection.GENE_COLLECTION;
 import static org.icgc.dcc.common.core.model.ReleaseCollection.GENE_SET_COLLECTION;
 import static org.icgc.dcc.common.core.model.ReleaseCollection.PROJECT_COLLECTION;
+import static org.icgc.dcc.imports.core.util.Importers.getLocalMongoClientUri;
 import static org.icgc.dcc.imports.core.util.Jongos.createJongo;
 
 import org.icgc.dcc.common.client.api.cgp.CGPClient;
@@ -50,17 +51,24 @@ public class ImporterTest {
   /**
    * Test environment.
    */
-  private final MongoClientURI mongoUri = new MongoClientURI("mongodb://localhost/dcc-import");
+  private final MongoClientURI mongoUri = getLocalMongoClientUri("dcc-import");
   private final Jongo jongo = createJongo(mongoUri);
 
   @Test
   public void testExecute() {
-    val dbImporter = new Importer(mongoUri, createMailer(), cgpClient);
-    dbImporter.execute(ImportSource.PROJECTS);
+    val importer = createImporter();
+    importer.execute(ImportSource.PROJECTS);
 
     assertThat(getCollectionSize(PROJECT_COLLECTION.getId())).isGreaterThan(0);
     assertThat(getCollectionSize(GENE_COLLECTION.getId())).isGreaterThan(0);
     assertThat(getCollectionSize(GENE_SET_COLLECTION.getId())).isGreaterThan(0);
+  }
+
+  private Importer createImporter() {
+    val userName = System.getProperty("cosmic.username");
+    val password = System.getProperty("cosmic.password");
+
+    return new Importer(mongoUri, createMailer(), cgpClient, userName, password);
   }
 
   private Mailer createMailer() {

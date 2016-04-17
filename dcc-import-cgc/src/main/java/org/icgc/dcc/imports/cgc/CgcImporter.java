@@ -58,9 +58,13 @@ public class CgcImporter implements SourceImporter {
   private final URL cgsUri;
   @NonNull
   private final MongoClientURI mongoUri;
+  @NonNull
+  private final String cosmicUserName;
+  @NonNull
+  private final String cosmicPassword;
 
-  public CgcImporter(MongoClientURI mongoUri) {
-    this(DEFAULT_CGC_URL, mongoUri);
+  public CgcImporter(MongoClientURI mongoUri, String cosmicUserName, String cosmicPassword) {
+    this(DEFAULT_CGC_URL, mongoUri, cosmicUserName, cosmicPassword);
   }
 
   @Override

@@ -22,7 +22,7 @@ import static org.icgc.dcc.common.core.util.Formats.formatCount;
 import java.net.URL;
 
 import org.icgc.dcc.common.core.model.FieldNames;
-import org.icgc.dcc.imports.core.util.AbstractTsvMapReader;
+import org.icgc.dcc.imports.core.util.AbstractMapReader;
 import org.icgc.dcc.imports.pathway.model.PathwayUniprot;
 
 import com.google.common.collect.ImmutableList;
@@ -32,7 +32,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class PathwayUniprotReader extends AbstractTsvMapReader {
+public class PathwayUniprotReader extends AbstractMapReader {
 
   /**
    * Constants.
@@ -42,6 +42,10 @@ public class PathwayUniprotReader extends AbstractTsvMapReader {
       { FieldNames.PATHWAY_UNIPROT_ID, FieldNames.PATHWAY_REACTOME_ID, FieldNames.PATHWAY_URL, // Not used
           FieldNames.PATHWAY_NAME, FieldNames.PATHWAY_EVIDENCE_CODE, FieldNames.PATHWAY_SPECIES
       };
+
+  public PathwayUniprotReader() {
+    super(TAB_FIELD_SEPARATOR);
+  }
 
   @SneakyThrows
   public Iterable<PathwayUniprot> read(URL uniprotFile) {
