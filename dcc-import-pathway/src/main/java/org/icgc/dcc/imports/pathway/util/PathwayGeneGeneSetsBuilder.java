@@ -51,11 +51,15 @@ public class PathwayGeneGeneSetsBuilder {
 
     val inferredPathways = getInferredPathways(geneUniprotIds);
     for (val inferredPathway : inferredPathways) {
+      if (inferredPathway == null) {
+        getInferredPathways(geneUniprotIds);
+      }
+
       checkState(inferredPathway != null, "Inferred pathway is null for uniprot ids %s and associated gene: %s",
           geneUniprotIds, gene);
 
       val direct = isDirect(geneUniprotIds, inferredPathway);
-      log.debug("{} ", inferredPathway);
+      log.debug("inferredPathway: {} ", inferredPathway);
       val geneSet = GeneGeneSet.builder()
           .id(inferredPathway.getReactomeId())
           .name(inferredPathway.getReactomeName())
@@ -73,7 +77,8 @@ public class PathwayGeneGeneSetsBuilder {
     val uniqueInferredPathways = Sets.<Pathway> newHashSet();
 
     for (val geneUniprotId : geneUniprotIds) {
-      for (val uniprotPathway : model.getPathways(geneUniprotId)) {
+      val uniprotPathways = model.getPathways(geneUniprotId);
+      for (val uniprotPathway : uniprotPathways) {
         // Hierarchy doesn't include "self"
         uniqueInferredPathways.add(uniprotPathway);
 
@@ -82,6 +87,7 @@ public class PathwayGeneGeneSetsBuilder {
         for (val path : uniprotHierarchy) {
           for (val pathSegment : path) {
             val inferredPathway = model.getPathway(pathSegment.getReactomeId());
+            checkState(inferredPathway != null, "Inferred pathway is null for pathway segment: %s", pathSegment);
 
             uniqueInferredPathways.add(inferredPathway);
           }
