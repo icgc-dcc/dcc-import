@@ -19,12 +19,11 @@ package org.icgc.dcc.imports.pathway;
 
 import static org.icgc.dcc.imports.core.util.Importers.getLocalMongoClientUri;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import lombok.val;
 
-@Ignore("For development only")
+//@Ignore("For development only")
 public class PathwayImporterTest {
 
   @Test

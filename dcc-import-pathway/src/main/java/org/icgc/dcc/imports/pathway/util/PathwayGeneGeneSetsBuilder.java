@@ -51,7 +51,8 @@ public class PathwayGeneGeneSetsBuilder {
 
     val inferredPathways = getInferredPathways(geneUniprotIds);
     for (val inferredPathway : inferredPathways) {
-      checkState(inferredPathway != null, "Inferred pathway is null for gene: %s", gene);
+      checkState(inferredPathway != null, "Inferred pathway is null for uniprot ids %s and associated gene: %s",
+          geneUniprotIds, gene);
 
       val direct = isDirect(geneUniprotIds, inferredPathway);
       log.debug("{} ", inferredPathway);
