@@ -36,8 +36,6 @@ import org.icgc.dcc.imports.geneset.model.gene.GeneGeneSet;
 import org.icgc.dcc.imports.geneset.writer.AbstractGeneGeneSetWriter;
 import org.jongo.MongoCollection;
 
-import com.mongodb.WriteResult;
-
 import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -60,30 +58,29 @@ public class CgcGeneGeneSetWriter extends AbstractGeneGeneSetWriter {
     checkState(count > 0, "Did not update any CGC gene sets. Is the gene collection missing?");
   }
 
+  /**
+   * @see https://jira.oicr.on.ca/browse/DCC-4652
+   */
   private int updateGeneGeneSets(Iterable<Map<String, String>> cgc, MongoCollection geneCollection) {
     int count = 0;
     for (val cgcGene : cgc) {
-      int n = 0;
-      val geneId = resolveEnsembleId(cgcGene);
-      if (geneId != null) {
-        // First try by id
+      val geneSymbol = resolveGeneSymbol(cgcGene);
+
+      // First try symbol
+      int n = updateByGeneSymbol(geneCollection, geneSymbol);
+      if (n == 0) {
+        log.warn("Could not find with gene symbol {} to associate with CGC gene: {}", geneSymbol, cgcGene);
+
+        // Next try by id
+        val geneId = resolveEnsembleId(cgcGene);
+        if (geneId == null) {
+          log.warn("-> Can not resolve gene id to associate with CGC gene: {}", cgcGene);
+          continue;
+        }
+
         n = updateByGeneId(geneCollection, geneId);
         if (n == 0) {
           log.warn("-> Could not find with gene id {} to associate with CGC gene: {}", geneId, cgcGene);
-
-          // Fallback to symbol
-          val geneSymbol = resolveGeneSymbol(cgcGene);
-          n = updateByGeneSymbol(geneCollection, geneSymbol);
-          if (n == 0) {
-            log.warn("Could not find with gene symbol {} to associate with CGC gene: {}", geneSymbol, cgcGene);
-          }
-        }
-      } else {
-        // Fallback to symbol
-        val geneSymbol = resolveGeneSymbol(cgcGene);
-        n = updateByGeneSymbol(geneCollection, geneSymbol);
-        if (n == 0) {
-          log.warn("Could not find with gene symbol {} to associate with CGC gene: {}", geneSymbol, cgcGene);
         }
       }
 
@@ -93,23 +90,20 @@ public class CgcGeneGeneSetWriter extends AbstractGeneGeneSetWriter {
     return count;
   }
 
-  private int updateByGeneSymbol(MongoCollection geneCollection, final java.lang.String geneSymbol) {
-    WriteResult result;
-    int n;
-    result = geneCollection.update("{ " + GENE_SYMBOL + ": # }", geneSymbol)
+  private int updateByGeneSymbol(MongoCollection geneCollection, String geneSymbol) {
+    val result = geneCollection.update("{ " + GENE_SYMBOL + ": # }", geneSymbol)
         .multi()
         .with("{ $addToSet: { " + type.getFieldName() + ": # } }", createGeneGeneSet());
 
-    n = result.getN();
-    return n;
+    return result.getN();
   }
 
-  private int updateByGeneId(MongoCollection geneCollection, final java.lang.String geneId) {
-    WriteResult result = geneCollection.update("{ " + GENE_ID + ": # }", geneId)
+  private int updateByGeneId(MongoCollection geneCollection, String geneId) {
+    val result = geneCollection.update("{ " + GENE_ID + ": # }", geneId)
         .multi()
         .with("{ $addToSet: { " + type.getFieldName() + ": # } }", createGeneGeneSet());
-    int n = result.getN();
-    return n;
+
+    return result.getN();
   }
 
   private static String resolveEnsembleId(Map<String, String> cgcGene) {
