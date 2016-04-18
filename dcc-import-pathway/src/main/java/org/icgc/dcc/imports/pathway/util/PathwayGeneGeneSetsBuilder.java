@@ -46,27 +46,31 @@ public class PathwayGeneGeneSetsBuilder {
   private final PathwayModel model;
 
   public Set<GeneGeneSet> build(@NonNull ObjectNode gene) {
-    val geneSets = Sets.<GeneGeneSet> newHashSet();
-    val geneUniprotIds = getGeneUniprotIds(gene);
+    try {
+      val geneSets = Sets.<GeneGeneSet> newHashSet();
+      val geneUniprotIds = getGeneUniprotIds(gene);
 
-    val inferredPathways = getInferredPathways(geneUniprotIds);
-    for (val inferredPathway : inferredPathways) {
-      checkState(inferredPathway != null, "Inferred pathway is null for uniprot ids %s and associated gene: %s",
-          geneUniprotIds, gene);
+      val inferredPathways = getInferredPathways(geneUniprotIds);
+      for (val inferredPathway : inferredPathways) {
+        checkState(inferredPathway != null, "Inferred pathway is null for uniprot ids %s and associated gene: %s",
+            geneUniprotIds, gene);
 
-      val direct = isDirect(geneUniprotIds, inferredPathway);
-      log.debug("inferredPathway: {} ", inferredPathway);
-      val geneSet = GeneGeneSet.builder()
-          .id(inferredPathway.getReactomeId())
-          .name(inferredPathway.getReactomeName())
-          .type(PATHWAY)
-          .annotation(direct ? DIRECT : INFERRED)
-          .build();
+        val direct = isDirect(geneUniprotIds, inferredPathway);
+        log.debug("inferredPathway: {} ", inferredPathway);
+        val geneSet = GeneGeneSet.builder()
+            .id(inferredPathway.getReactomeId())
+            .name(inferredPathway.getReactomeName())
+            .type(PATHWAY)
+            .annotation(direct ? DIRECT : INFERRED)
+            .build();
 
-      geneSets.add(geneSet);
+        geneSets.add(geneSet);
+      }
+
+      return geneSets;
+    } catch (Exception e) {
+      throw new IllegalStateException("Error building pathway gene sets for gene: " + gene, e);
     }
-
-    return geneSets;
   }
 
   private Set<Pathway> getInferredPathways(Set<String> geneUniprotIds) {
