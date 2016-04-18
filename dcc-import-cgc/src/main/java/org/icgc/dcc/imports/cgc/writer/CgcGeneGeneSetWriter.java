@@ -19,7 +19,9 @@ package org.icgc.dcc.imports.cgc.writer;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.util.Collections.emptyList;
 import static org.icgc.dcc.common.core.model.FieldNames.GENE_ID;
+import static org.icgc.dcc.common.core.model.FieldNames.GENE_SYMBOL;
 import static org.icgc.dcc.common.core.util.Splitters.COMMA;
 import static org.icgc.dcc.imports.cgc.writer.CgcGeneSetWriter.CGS_GENE_SET_ID;
 import static org.icgc.dcc.imports.cgc.writer.CgcGeneSetWriter.CGS_GENE_SET_NAME;
@@ -33,6 +35,8 @@ import org.icgc.dcc.imports.cgc.model.CgcGene;
 import org.icgc.dcc.imports.geneset.model.gene.GeneGeneSet;
 import org.icgc.dcc.imports.geneset.writer.AbstractGeneGeneSetWriter;
 import org.jongo.MongoCollection;
+
+import com.mongodb.WriteResult;
 
 import lombok.NonNull;
 import lombok.val;
@@ -57,24 +61,55 @@ public class CgcGeneGeneSetWriter extends AbstractGeneGeneSetWriter {
   }
 
   private int updateGeneGeneSets(Iterable<Map<String, String>> cgc, MongoCollection geneCollection) {
-    val geneGeneSet = createGeneGeneSet();
     int count = 0;
     for (val cgcGene : cgc) {
+      int n = 0;
       val geneId = resolveEnsembleId(cgcGene);
-      checkState(geneId != null, "Could not find Ensemble id for CGC gene: %s", cgcGene);
+      if (geneId != null) {
+        // First try by id
+        n = updateByGeneId(geneCollection, geneId);
+        if (n == 0) {
+          log.warn("-> Could not find with gene id {} to associate with CGC gene: {}", geneId, cgcGene);
 
-      val result = geneCollection.update("{ " + GENE_ID + ": # }", geneId)
-          .multi()
-          .with("{ $addToSet: { " + type.getFieldName() + ": # } }", geneGeneSet);
-      val n = result.getN();
-      if (n == 0) {
-        log.warn("Could not find with gene id {} to associate with CGC gene: {}", geneId, cgcGene);
+          // Fallback to symbol
+          val geneSymbol = resolveGeneSymbol(cgcGene);
+          n = updateByGeneSymbol(geneCollection, geneSymbol);
+          if (n == 0) {
+            log.warn("Could not find with gene symbol {} to associate with CGC gene: {}", geneSymbol, cgcGene);
+          }
+        }
+      } else {
+        // Fallback to symbol
+        val geneSymbol = resolveGeneSymbol(cgcGene);
+        n = updateByGeneSymbol(geneCollection, geneSymbol);
+        if (n == 0) {
+          log.warn("Could not find with gene symbol {} to associate with CGC gene: {}", geneSymbol, cgcGene);
+        }
       }
 
       count += n;
     }
 
     return count;
+  }
+
+  private int updateByGeneSymbol(MongoCollection geneCollection, final java.lang.String geneSymbol) {
+    WriteResult result;
+    int n;
+    result = geneCollection.update("{ " + GENE_SYMBOL + ": # }", geneSymbol)
+        .multi()
+        .with("{ $addToSet: { " + type.getFieldName() + ": # } }", createGeneGeneSet());
+
+    n = result.getN();
+    return n;
+  }
+
+  private int updateByGeneId(MongoCollection geneCollection, final java.lang.String geneId) {
+    WriteResult result = geneCollection.update("{ " + GENE_ID + ": # }", geneId)
+        .multi()
+        .with("{ $addToSet: { " + type.getFieldName() + ": # } }", createGeneGeneSet());
+    int n = result.getN();
+    return n;
   }
 
   private static String resolveEnsembleId(Map<String, String> cgcGene) {
@@ -88,9 +123,18 @@ public class CgcGeneGeneSetWriter extends AbstractGeneGeneSetWriter {
     return null;
   }
 
+  private static String resolveGeneSymbol(Map<String, String> cgcGene) {
+    val value = cgcGene.get(CgcGene.CGC_GENE_SYMBOL_FIELD_NAME);
+    checkState(!isNullOrEmpty(value), "Gene symbol missing: %s, %s", value, cgcGene);
+
+    return value;
+  }
+
   private static List<String> resolveSynonyms(Map<String, String> cgcGene) {
     val value = cgcGene.get(CgcGene.CGC_SYNONYMS_FIELD_NAME);
-    checkState(!isNullOrEmpty(value), "Gene synonyms are missing: %s", value);
+    if (isNullOrEmpty(value)) {
+      return emptyList();
+    }
 
     return COMMA.splitToList(value);
   }
