@@ -27,13 +27,13 @@ import static org.icgc.dcc.imports.geneset.model.GeneSetType.CURATED_SET;
 
 import java.util.Map;
 
-import lombok.NonNull;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.imports.geneset.model.gene.GeneGeneSet;
 import org.icgc.dcc.imports.geneset.writer.AbstractGeneGeneSetWriter;
 import org.jongo.MongoCollection;
+
+import lombok.NonNull;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class CgcGeneGeneSetWriter extends AbstractGeneGeneSetWriter {
@@ -48,7 +48,11 @@ public class CgcGeneGeneSetWriter extends AbstractGeneGeneSetWriter {
 
     log.info("Updating gene CGC gene sets...");
     val count = updateGeneGeneSets(cgc, geneCollection);
-    log.info("Updated {} gene CGC gene sets...", count);
+    if (count == 0) {
+      log.warn("Did not update any CGC gene sets");
+    } else {
+      log.info("Updated {} gene CGC gene sets", count);
+    }
   }
 
   private int updateGeneGeneSets(Iterable<Map<String, String>> cgc, MongoCollection geneCollection) {

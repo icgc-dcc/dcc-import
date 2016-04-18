@@ -24,7 +24,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
 
-import org.icgc.dcc.imports.cgc.reader.CgcReader;
+import org.icgc.dcc.imports.cgc.reader.CensusReader;
+import org.icgc.dcc.imports.cgc.util.CosmicClient;
 import org.icgc.dcc.imports.cgc.writer.CgcWriter;
 import org.icgc.dcc.imports.core.SourceImporter;
 import org.icgc.dcc.imports.core.model.ImportSource;
@@ -87,7 +88,8 @@ public class CgcImporter implements SourceImporter {
   }
 
   public Iterable<Map<String, String>> readCgc() throws IOException {
-    return new CgcReader(cgsUri).read();
+    val reader = new CensusReader(new CosmicClient(cosmicUserName, cosmicPassword));
+    return reader.read();
   }
 
   private void writeCgc(Iterable<Map<String, String>> cgc) throws IOException {
