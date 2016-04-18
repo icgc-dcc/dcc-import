@@ -83,7 +83,8 @@ public class PathwayGeneGeneSetsBuilder {
         for (val path : uniprotHierarchy) {
           for (val pathSegment : path) {
             val inferredPathway = model.getPathway(pathSegment.getReactomeId());
-            checkState(inferredPathway != null, "Inferred pathway is null for pathway segment: %s", pathSegment);
+            checkState(inferredPathway != null, "Inferred pathway is missing for uniprot ids %s and pathway segment %s",
+                geneUniprotIds, pathSegment);
 
             uniqueInferredPathways.add(inferredPathway);
           }
