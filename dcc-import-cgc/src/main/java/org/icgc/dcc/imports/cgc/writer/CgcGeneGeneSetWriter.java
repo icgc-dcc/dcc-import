@@ -18,7 +18,7 @@
 package org.icgc.dcc.imports.cgc.writer;
 
 import static com.google.common.base.Preconditions.checkState;
-import static org.assertj.core.util.Strings.isNullOrEmpty;
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.icgc.dcc.common.core.model.FieldNames.GENE_ID;
 import static org.icgc.dcc.common.core.util.Splitters.COMMA;
 import static org.icgc.dcc.imports.cgc.writer.CgcGeneSetWriter.CGS_GENE_SET_ID;
