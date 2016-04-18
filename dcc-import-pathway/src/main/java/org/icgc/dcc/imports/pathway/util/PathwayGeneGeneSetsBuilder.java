@@ -51,10 +51,6 @@ public class PathwayGeneGeneSetsBuilder {
 
     val inferredPathways = getInferredPathways(geneUniprotIds);
     for (val inferredPathway : inferredPathways) {
-      if (inferredPathway == null) {
-        getInferredPathways(geneUniprotIds);
-      }
-
       checkState(inferredPathway != null, "Inferred pathway is null for uniprot ids %s and associated gene: %s",
           geneUniprotIds, gene);
 

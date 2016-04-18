@@ -40,7 +40,7 @@ public class PathwayGeneSetWriter extends AbstractGeneSetWriter {
     log.info("Clearing pathway gene set documents...");
     clearGeneSets(PATHWAY);
 
-    log.info("Creating gene GO gene sets builder...");
+    log.info("Creating gene pathway gene sets builder...");
     val geneSetBuilder = new PathwayGeneSetBuilder(model);
 
     log.info("Writing pathway gene set documents...");
