@@ -23,16 +23,6 @@ curl http://www.reactome.org/download/current/UniProt2Reactome.txt > uniprot_2_r
 curl http://www.reactome.org/download/current/pathway2summation.txt > pathway_2_summation.txt
 ```
 
-### Cancer Gene Census
-
-Download Cancer Gene Census file from [COSMIC](https://cancer.sanger.ac.uk/census). Save it as `cancer_gene_census.tsv`. You need to register and login to download the file.
-
-The file might be available on the `csv` format. It can be converted to the `tsv` one with command:
-
-```shell
-tr ',' '\t' < cancer_gene_census.csv > cancer_gene_census.tsv
-```
-
 ## Verify Resources.
 
 Unfortunately, the updated files are usually not in the right format or consistency. So some manual work is needed to make them compatible with ETL component. Based on previous experiences, these are some items to look out for:
@@ -80,7 +70,6 @@ The following reactome ids are present in `uniprot_2_reactome.txt` but missing f
 
 ## Update the contents at the following paths
 
-- [dcc-import-pathway/src/main/resources/](dcc-import-cgc/src/main/resources/)
 - [dcc-import-pathway/src/main/resources/](dcc-import-pathway/src/main/resources/)
 
 

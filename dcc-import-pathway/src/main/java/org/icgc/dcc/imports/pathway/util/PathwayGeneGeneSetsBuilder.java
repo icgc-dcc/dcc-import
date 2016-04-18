@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.imports.pathway.util;
 
+import static com.google.common.base.Preconditions.checkState;
 import static java.util.Collections.disjoint;
 import static org.icgc.dcc.imports.core.util.Genes.getGeneUniprotIds;
 import static org.icgc.dcc.imports.geneset.model.GeneSetAnnotation.DIRECT;
@@ -29,13 +30,13 @@ import org.icgc.dcc.imports.geneset.model.gene.GeneGeneSet;
 import org.icgc.dcc.imports.pathway.core.PathwayModel;
 import org.icgc.dcc.imports.pathway.model.Pathway;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Sets;
+
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Sets;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -50,6 +51,8 @@ public class PathwayGeneGeneSetsBuilder {
 
     val inferredPathways = getInferredPathways(geneUniprotIds);
     for (val inferredPathway : inferredPathways) {
+      checkState(inferredPathway != null, "Inferred pathway is null for gene: %s", gene);
+
       val direct = isDirect(geneUniprotIds, inferredPathway);
       log.debug("{} ", inferredPathway);
       val geneSet = GeneGeneSet.builder()
@@ -88,7 +91,7 @@ public class PathwayGeneGeneSetsBuilder {
     return uniqueInferredPathways;
   }
 
-  private static boolean isDirect(Set<String> geneUniprotIds, Pathway inferredPathway) {
+  private static boolean isDirect(@NonNull Set<String> geneUniprotIds, @NonNull Pathway inferredPathway) {
     return !disjoint(inferredPathway.getUniprots(), geneUniprotIds);
   }
 
