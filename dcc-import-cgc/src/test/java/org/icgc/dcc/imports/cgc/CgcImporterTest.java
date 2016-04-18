@@ -31,11 +31,16 @@ public class CgcImporterTest {
 
   @Test
   public void testExecute() throws IOException {
+    val importer = createImporter();
+
+    importer.execute();
+  }
+
+  private CgcImporter createImporter() {
     val userName = System.getProperty("cosmic.username");
     val password = System.getProperty("cosmic.password");
 
-    val cgcImporter = new CgcImporter(getLocalMongoClientUri("dcc-import"), userName, password);
-    cgcImporter.execute();
+    return new CgcImporter(getLocalMongoClientUri("dcc-import"), userName, password);
   }
 
 }

@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.imports.gene.reader;
 
+import static org.icgc.dcc.common.core.util.Formats.formatCount;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -116,10 +118,10 @@ public class EntrezXMLReader implements Runnable {
         isEnsembl = false;
         currentId = value;
         if (ids.size() % 10000 == 0) {
-          log.info("Reading {} from xml.", ids.size());
+          log.info("Read {} records from xml", formatCount(ids));
         }
       } else if (isDbName()) {
-        if (value.equals("Ensembl")) {
+        if (isEnsembl(value)) {
           isEnsembl = true;
         }
       } else if (isSummary()) {
@@ -149,6 +151,10 @@ public class EntrezXMLReader implements Runnable {
 
     private boolean isDbName() {
       return currentElement().equals("Dbtag_db");
+    }
+
+    private boolean isEnsembl(String value) {
+      return value.equals("Ensembl");
     }
 
   }

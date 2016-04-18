@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.imports.pathway.util;
 
+import static com.google.common.base.Preconditions.checkState;
 import static java.util.Collections.disjoint;
 import static org.icgc.dcc.imports.core.util.Genes.getGeneUniprotIds;
 import static org.icgc.dcc.imports.geneset.model.GeneSetAnnotation.DIRECT;
@@ -29,13 +30,13 @@ import org.icgc.dcc.imports.geneset.model.gene.GeneGeneSet;
 import org.icgc.dcc.imports.pathway.core.PathwayModel;
 import org.icgc.dcc.imports.pathway.model.Pathway;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Sets;
+
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Sets;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -50,8 +51,15 @@ public class PathwayGeneGeneSetsBuilder {
 
     val inferredPathways = getInferredPathways(geneUniprotIds);
     for (val inferredPathway : inferredPathways) {
+      if (inferredPathway == null) {
+        getInferredPathways(geneUniprotIds);
+      }
+
+      checkState(inferredPathway != null, "Inferred pathway is null for uniprot ids %s and associated gene: %s",
+          geneUniprotIds, gene);
+
       val direct = isDirect(geneUniprotIds, inferredPathway);
-      log.debug("{} ", inferredPathway);
+      log.debug("inferredPathway: {} ", inferredPathway);
       val geneSet = GeneGeneSet.builder()
           .id(inferredPathway.getReactomeId())
           .name(inferredPathway.getReactomeName())
@@ -69,7 +77,8 @@ public class PathwayGeneGeneSetsBuilder {
     val uniqueInferredPathways = Sets.<Pathway> newHashSet();
 
     for (val geneUniprotId : geneUniprotIds) {
-      for (val uniprotPathway : model.getPathways(geneUniprotId)) {
+      val uniprotPathways = model.getPathways(geneUniprotId);
+      for (val uniprotPathway : uniprotPathways) {
         // Hierarchy doesn't include "self"
         uniqueInferredPathways.add(uniprotPathway);
 
@@ -78,6 +87,7 @@ public class PathwayGeneGeneSetsBuilder {
         for (val path : uniprotHierarchy) {
           for (val pathSegment : path) {
             val inferredPathway = model.getPathway(pathSegment.getReactomeId());
+            checkState(inferredPathway != null, "Inferred pathway is null for pathway segment: %s", pathSegment);
 
             uniqueInferredPathways.add(inferredPathway);
           }
@@ -88,7 +98,7 @@ public class PathwayGeneGeneSetsBuilder {
     return uniqueInferredPathways;
   }
 
-  private static boolean isDirect(Set<String> geneUniprotIds, Pathway inferredPathway) {
+  private static boolean isDirect(@NonNull Set<String> geneUniprotIds, @NonNull Pathway inferredPathway) {
     return !disjoint(inferredPathway.getUniprots(), geneUniprotIds);
   }
 

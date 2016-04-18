@@ -17,31 +17,26 @@
  */
 package org.icgc.dcc.imports.gene;
 
+import static org.icgc.dcc.imports.core.util.Importers.getLocalMongoClientUri;
+
 import java.io.IOException;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
-import com.mongodb.MongoClientURI;
+import lombok.val;
 
+//@Ignore("For development only")
 public class GeneImporterTest {
 
-  /**
-   * Test configuration.
-   */
-  MongoClientURI releaseUri;
-
-  /**
-   * Class under test.
-   */
-  GeneImporter importer;
-
   @Test
-  @Ignore
   public void testExecute() throws IOException {
-    this.releaseUri = new MongoClientURI("mongodb://127.0.0.1:27017/dcc-genome-test");
-    this.importer = new GeneImporter(releaseUri);
+    val importer = createImporter();
+
     importer.execute();
+  }
+
+  private GeneImporter createImporter() {
+    return new GeneImporter(getLocalMongoClientUri("dcc-import"));
   }
 
 }

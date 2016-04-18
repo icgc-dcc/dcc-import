@@ -29,5 +29,6 @@ public class CgcGene extends LinkedHashMap<String, String> {
    * Constants.
    */
   public static final String CGC_GENE_SYMBOL_FIELD_NAME = "Gene Symbol";
+  public static final String CGC_SYNONYMS_FIELD_NAME = "Synonyms";
 
 }

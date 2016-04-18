@@ -17,16 +17,19 @@
  */
 package org.icgc.dcc.imports.cgc.writer;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static org.icgc.dcc.common.core.model.FieldNames.GENE_SYMBOL;
-import static org.icgc.dcc.imports.cgc.model.CgcGene.CGC_GENE_SYMBOL_FIELD_NAME;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static org.icgc.dcc.common.core.model.FieldNames.GENE_ID;
+import static org.icgc.dcc.common.core.util.Splitters.COMMA;
 import static org.icgc.dcc.imports.cgc.writer.CgcGeneSetWriter.CGS_GENE_SET_ID;
 import static org.icgc.dcc.imports.cgc.writer.CgcGeneSetWriter.CGS_GENE_SET_NAME;
 import static org.icgc.dcc.imports.geneset.model.GeneSetAnnotation.DIRECT;
 import static org.icgc.dcc.imports.geneset.model.GeneSetType.CURATED_SET;
 
+import java.util.List;
 import java.util.Map;
 
+import org.icgc.dcc.imports.cgc.model.CgcGene;
 import org.icgc.dcc.imports.geneset.model.gene.GeneGeneSet;
 import org.icgc.dcc.imports.geneset.writer.AbstractGeneGeneSetWriter;
 import org.jongo.MongoCollection;
@@ -48,26 +51,52 @@ public class CgcGeneGeneSetWriter extends AbstractGeneGeneSetWriter {
 
     log.info("Updating gene CGC gene sets...");
     val count = updateGeneGeneSets(cgc, geneCollection);
-    if (count == 0) {
-      log.warn("Did not update any CGC gene sets");
-    } else {
-      log.info("Updated {} gene CGC gene sets", count);
-    }
+    log.info("Updated {} gene CGC gene sets", count);
+
+    checkState(count > 0, "Did not update any CGC gene sets. Is the gene collection missing?");
   }
 
   private int updateGeneGeneSets(Iterable<Map<String, String>> cgc, MongoCollection geneCollection) {
     val geneGeneSet = createGeneGeneSet();
     int count = 0;
     for (val cgcGene : cgc) {
-      val geneSymbol = cgcGene.get(CGC_GENE_SYMBOL_FIELD_NAME);
-      checkNotNull(geneSymbol, "gene symbol is missing.");
-      val result = geneCollection.update("{ " + GENE_SYMBOL + ": # }", geneSymbol)
+      val geneId = resolveEnsembleId(cgcGene);
+      checkState(geneId != null, "Could not find Ensemble id for CGC gene: %s", cgcGene);
+
+      val result = geneCollection.update("{ " + GENE_ID + ": # }", geneId)
           .multi()
           .with("{ $addToSet: { " + type.getFieldName() + ": # } }", geneGeneSet);
-      count += result.getN();
+      val n = result.getN();
+      if (n == 0) {
+        log.warn("Could not find with gene id {} to associate with CGC gene: {}", geneId, cgcGene);
+      }
+
+      count += n;
     }
 
     return count;
+  }
+
+  private static String resolveEnsembleId(Map<String, String> cgcGene) {
+    val synonyms = resolveSynonyms(cgcGene);
+    for (val synonym : synonyms) {
+      if (isEnsemblId(synonym)) {
+        return synonym;
+      }
+    }
+
+    return null;
+  }
+
+  private static List<String> resolveSynonyms(Map<String, String> cgcGene) {
+    val value = cgcGene.get(CgcGene.CGC_SYNONYMS_FIELD_NAME);
+    checkState(!isNullOrEmpty(value), "Gene synonyms are missing: %s", value);
+
+    return COMMA.splitToList(value);
+  }
+
+  private static boolean isEnsemblId(String synonym) {
+    return synonym.startsWith("ENSG");
   }
 
   private static GeneGeneSet createGeneGeneSet() {

@@ -19,27 +19,23 @@ package org.icgc.dcc.imports.pathway;
 
 import static org.icgc.dcc.imports.core.util.Importers.getLocalMongoClientUri;
 
-import org.icgc.dcc.imports.gene.GeneImporter;
-import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import lombok.SneakyThrows;
 import lombok.val;
 
+@Ignore("For development only")
 public class PathwayImporterTest {
 
-  @Before
-  public void setUp() {
-    // Create a fresh copy of the entire gene model
-    new GeneImporter(getLocalMongoClientUri("dcc-import-test")).execute();
-  }
-
   @Test
-  @SneakyThrows
   public void testExecute() {
-    val pathwayImporter = new PathwayImporter(getLocalMongoClientUri("dcc-import"));
+    val pathwayImporter = createImporter();
 
     pathwayImporter.execute();
+  }
+
+  private PathwayImporter createImporter() {
+    return new PathwayImporter(getLocalMongoClientUri("dcc-import"));
   }
 
 }
