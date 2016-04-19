@@ -51,10 +51,10 @@ public class PathwayImporter implements SourceImporter {
    * Constants.
    */
 
-  public static final boolean REMOTE = false;
+  public static final boolean REMOTE = true;
 
   public static final URL REMOTE_REACTOME_UNIPROT_URL =
-      getUrl("http://www.reactome.org/download/current/UniProt2Reactome.txt");
+      getUrl("http://www.reactome.org/download/current/UniProt2Reactome_All_Levels.txt"); // DCC-4656
   public static final URL REMOTE_REACTOME_PATHWAY_SUMMATION_URL =
       getUrl("http://www.reactome.org/download/current/pathway2summation.txt");
   public static final URL REMOTE_REACTOME_PATHWAY_HIER_URL =
@@ -92,6 +92,8 @@ public class PathwayImporter implements SourceImporter {
         DEFAULT_REACTOME_PATHWAY_HIER_URL,
         DEFAULT_REACTOME_PATHWAY_SUMMATION_URL,
         mongoUri);
+
+    log.info("*** Using [{}] input resources", REMOTE ? "REMOTE" : "LOCAL");
   }
 
   @Override

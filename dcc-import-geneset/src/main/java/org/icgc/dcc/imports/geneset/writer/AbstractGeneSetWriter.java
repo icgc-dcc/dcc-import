@@ -17,12 +17,14 @@
  */
 package org.icgc.dcc.imports.geneset.writer;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import org.icgc.dcc.imports.geneset.model.GeneSet;
 import org.icgc.dcc.imports.geneset.model.GeneSetType;
 import org.jongo.MongoCollection;
+
+import com.mongodb.WriteResult;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public abstract class AbstractGeneSetWriter {
@@ -42,8 +44,8 @@ public abstract class AbstractGeneSetWriter {
     geneSetCollection.remove("{ " + GENE_SET_TYPE_FIELD_NAME + ": # }", type.toString().toLowerCase());
   }
 
-  protected void saveGeneSet(GeneSet geneSet) {
-    geneSetCollection.save(geneSet);
+  protected WriteResult saveGeneSet(GeneSet geneSet) {
+    return geneSetCollection.save(geneSet);
   }
 
 }

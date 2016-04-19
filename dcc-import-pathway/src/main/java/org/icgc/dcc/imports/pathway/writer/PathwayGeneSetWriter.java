@@ -56,6 +56,8 @@ public class PathwayGeneSetWriter extends AbstractGeneSetWriter {
         log.info("Saved {} pathway documents", formatCount(updatePathwayCount));
       }
     }
+
+    log.info("Finished writing {} pathway gene set documents", formatCount(updatePathwayCount));
   }
 
 }
