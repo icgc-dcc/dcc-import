@@ -37,11 +37,17 @@ public class PathwayUniprotReader extends AbstractMapReader {
   /**
    * Constants.
    */
+  // @formatter:off
   private static final String HOMO_SAPIEN = "Homo sapiens";
-  private static final String[] CSV_HEADER =
-      { FieldNames.PATHWAY_UNIPROT_ID, FieldNames.PATHWAY_REACTOME_ID, FieldNames.PATHWAY_URL, // Not used
-          FieldNames.PATHWAY_NAME, FieldNames.PATHWAY_EVIDENCE_CODE, FieldNames.PATHWAY_SPECIES
+  private static final String[] CSV_HEADER = { 
+          FieldNames.PATHWAY_UNIPROT_ID, 
+          FieldNames.PATHWAY_REACTOME_ID, 
+          FieldNames.PATHWAY_URL, // Not used
+          FieldNames.PATHWAY_NAME, 
+          FieldNames.PATHWAY_EVIDENCE_CODE, 
+          FieldNames.PATHWAY_SPECIES
       };
+  // @formatter:on
 
   public PathwayUniprotReader() {
     super(TAB_FIELD_SEPARATOR);
@@ -59,10 +65,10 @@ public class PathwayUniprotReader extends AbstractMapReader {
         continue;
       }
 
-      val uniprot = record.get(FieldNames.PATHWAY_UNIPROT_ID);
-      val reactomeId = record.get(FieldNames.PATHWAY_REACTOME_ID);
-      val evidenceCode = record.get(FieldNames.PATHWAY_EVIDENCE_CODE);
-      val name = record.get(FieldNames.PATHWAY_NAME);
+      val uniprot = record.get(FieldNames.PATHWAY_UNIPROT_ID).trim();
+      val reactomeId = record.get(FieldNames.PATHWAY_REACTOME_ID).trim();
+      val evidenceCode = record.get(FieldNames.PATHWAY_EVIDENCE_CODE).trim();
+      val name = record.get(FieldNames.PATHWAY_NAME).trim();
 
       val pathwyUniprot = PathwayUniprot.builder()
           .uniprot(uniprot)

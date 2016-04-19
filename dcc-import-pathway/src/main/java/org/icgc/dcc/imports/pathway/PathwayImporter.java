@@ -51,6 +51,8 @@ public class PathwayImporter implements SourceImporter {
    * Constants.
    */
 
+  public static final boolean REMOTE = false;
+
   public static final URL REMOTE_REACTOME_UNIPROT_URL =
       getUrl("http://www.reactome.org/download/current/UniProt2Reactome.txt");
   public static final URL REMOTE_REACTOME_PATHWAY_SUMMATION_URL =
@@ -65,9 +67,12 @@ public class PathwayImporter implements SourceImporter {
   public static final URL LOCAL_REACTOME_PATHWAY_HIER_URL =
       Resources.getResource("pathway_hierarchy.txt");
 
-  public static final URL DEFAULT_REACTOME_UNIPROT_URL = LOCAL_REACTOME_UNIPROT_URL;
-  public static final URL DEFAULT_REACTOME_PATHWAY_SUMMATION_URL = LOCAL_REACTOME_PATHWAY_SUMMATION_URL;
-  public static final URL DEFAULT_REACTOME_PATHWAY_HIER_URL = LOCAL_REACTOME_PATHWAY_HIER_URL;
+  public static final URL DEFAULT_REACTOME_UNIPROT_URL =
+      REMOTE ? REMOTE_REACTOME_UNIPROT_URL : LOCAL_REACTOME_UNIPROT_URL;
+  public static final URL DEFAULT_REACTOME_PATHWAY_SUMMATION_URL =
+      REMOTE ? REMOTE_REACTOME_PATHWAY_SUMMATION_URL : LOCAL_REACTOME_PATHWAY_SUMMATION_URL;
+  public static final URL DEFAULT_REACTOME_PATHWAY_HIER_URL =
+      REMOTE ? REMOTE_REACTOME_PATHWAY_HIER_URL : LOCAL_REACTOME_PATHWAY_HIER_URL;
 
   /**
    * Configuration.

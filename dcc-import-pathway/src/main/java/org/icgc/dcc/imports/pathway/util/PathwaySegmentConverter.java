@@ -43,13 +43,18 @@ public final class PathwaySegmentConverter {
 
   public static PathwaySegment convertPathwayNode(@NonNull Node pathwayNode) {
     return PathwaySegment.builder()
-        .reactomeId(getReactomeId(pathwayNode))
-        .reactomeName(getDisplayName(pathwayNode))
+        .reactomeId(getReactomeId(pathwayNode).trim())
+        .reactomeName(getDisplayName(pathwayNode).trim())
         .diagrammed(getHasDiagram(pathwayNode))
         .build();
   }
 
   private static String getReactomeId(Node pathwayNode) {
+    // From @jweiser:
+    // Everything in the RESTful results is human and should map without a problem by just appending the prefix
+    // For human data, we literally form the stable id by appending R-HSA- to our internal ids.
+
+    // Convert to stable id
     return REACTOME_PREFIX + getAttributeValue(pathwayNode, REACTOME_DB_ID);
   }
 

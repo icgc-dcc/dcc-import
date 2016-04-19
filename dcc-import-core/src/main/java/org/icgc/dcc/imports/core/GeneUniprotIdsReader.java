@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.
+ * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,54 +15,48 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.core.util;
+package org.icgc.dcc.imports.core;
 
-import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.common.core.model.FieldNames.GENE_ID;
-import static org.icgc.dcc.common.core.model.FieldNames.GENE_SYMBOL;
-import static org.icgc.dcc.common.core.model.FieldNames.GENE_UNIPROT_IDS;
+import static org.icgc.dcc.common.core.model.ReleaseCollection.GENE_COLLECTION;
+import static org.icgc.dcc.imports.core.util.Genes.getGeneSymbol;
+import static org.icgc.dcc.imports.core.util.Genes.getGeneUniprotIds;
 
-import java.util.Set;
+import org.icgc.dcc.imports.core.util.AbstractJongoComponent;
+import org.jongo.MongoCursor;
 
-import com.fasterxml.jackson.core.JsonPointer;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Sets;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.mongodb.MongoClientURI;
 
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.val;
 
-@NoArgsConstructor(access = PRIVATE)
-public final class Genes {
+public class GeneUniprotIdsReader extends AbstractJongoComponent {
 
-  /**
-   * Constants.
-   */
-  public static final JsonPointer GENE_UNIPROT_FIELD_POINTER = JsonPointer.compile("/"
-      + GENE_UNIPROT_IDS.replace('.', '/'));
-
-  public static String getGeneId(@NonNull ObjectNode gene) {
-    return gene.get(GENE_ID).textValue();
+  public GeneUniprotIdsReader(MongoClientURI mongoUri) {
+    super(mongoUri);
   }
 
-  public static String getGeneSymbol(@NonNull ObjectNode gene) {
-    return gene.get(GENE_SYMBOL).textValue();
+  @SneakyThrows
+  public Multimap<String, String> read() {
+    val geneUniprots = HashMultimap.<String, String> create();
+
+    for (val record : readRecords()) {
+      val symbol = getGeneSymbol(record);
+      val uniprotIds = getGeneUniprotIds(record);
+
+      geneUniprots.putAll(symbol, uniprotIds);
+    }
+
+    return geneUniprots;
   }
 
-  public static Set<String> getGeneUniprotIds(@NonNull ObjectNode gene) {
-    val uniprotIds = Sets.<String> newHashSet();
-
-    val geneUniprots = gene.at(GENE_UNIPROT_FIELD_POINTER);
-    if (geneUniprots.isMissingNode()) {
-      return uniprotIds;
-    }
-
-    for (val geneUniprot : (ArrayNode) geneUniprots) {
-      uniprotIds.add(geneUniprot.textValue());
-    }
-
-    return uniprotIds;
+  private MongoCursor<ObjectNode> readRecords() {
+    val collection = getCollection(GENE_COLLECTION);
+    return collection.find("{}")
+        .projection("{_id:0, symbol:1, external_db_ids.uniprotkb_swissprot:1}")
+        .as(ObjectNode.class);
   }
 
 }

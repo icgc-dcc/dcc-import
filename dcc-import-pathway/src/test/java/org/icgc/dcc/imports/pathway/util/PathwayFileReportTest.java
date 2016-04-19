@@ -15,54 +15,20 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.core.util;
+package org.icgc.dcc.imports.pathway.util;
 
-import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.common.core.model.FieldNames.GENE_ID;
-import static org.icgc.dcc.common.core.model.FieldNames.GENE_SYMBOL;
-import static org.icgc.dcc.common.core.model.FieldNames.GENE_UNIPROT_IDS;
+import java.io.IOException;
 
-import java.util.Set;
+import org.junit.Test;
 
-import com.fasterxml.jackson.core.JsonPointer;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Sets;
-
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import lombok.val;
 
-@NoArgsConstructor(access = PRIVATE)
-public final class Genes {
+public class PathwayFileReportTest {
 
-  /**
-   * Constants.
-   */
-  public static final JsonPointer GENE_UNIPROT_FIELD_POINTER = JsonPointer.compile("/"
-      + GENE_UNIPROT_IDS.replace('.', '/'));
-
-  public static String getGeneId(@NonNull ObjectNode gene) {
-    return gene.get(GENE_ID).textValue();
-  }
-
-  public static String getGeneSymbol(@NonNull ObjectNode gene) {
-    return gene.get(GENE_SYMBOL).textValue();
-  }
-
-  public static Set<String> getGeneUniprotIds(@NonNull ObjectNode gene) {
-    val uniprotIds = Sets.<String> newHashSet();
-
-    val geneUniprots = gene.at(GENE_UNIPROT_FIELD_POINTER);
-    if (geneUniprots.isMissingNode()) {
-      return uniprotIds;
-    }
-
-    for (val geneUniprot : (ArrayNode) geneUniprots) {
-      uniprotIds.add(geneUniprot.textValue());
-    }
-
-    return uniprotIds;
+  @Test
+  public void testRead() throws IOException {
+    val report = new PathwayFileReport();
+    report.report();
   }
 
 }

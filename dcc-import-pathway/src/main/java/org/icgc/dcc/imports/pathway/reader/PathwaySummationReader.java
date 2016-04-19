@@ -43,8 +43,7 @@ public class PathwaySummationReader extends AbstractMapReader {
   private static final String REACTOME_ID = "reactome_id";
   private static final String REACTOME_NAME = "reactome_name";
   private static final String SUMMATION = "summation";
-  private static final String[] FIELD_NAMES = { REACTOME_ID, REACTOME_NAME, SUMMATION
-  };
+  private static final String[] FIELD_NAMES = { REACTOME_ID, REACTOME_NAME, SUMMATION };
 
   public PathwaySummationReader() {
     super(TAB_FIELD_SEPARATOR);
@@ -74,15 +73,15 @@ public class PathwaySummationReader extends AbstractMapReader {
   }
 
   private static String getReactomeId(Map<String, String> record) {
-    return record.get(REACTOME_ID);
+    return record.get(REACTOME_ID).trim();
   }
 
   private static String getSummation(Map<String, String> record) {
-    return record.get(SUMMATION);
+    return record.get(SUMMATION).trim();
   }
 
   private static String getReactomeName(Map<String, String> record) {
-    return unescapeHtml4(record.get(REACTOME_NAME));
+    return unescapeHtml4(record.get(REACTOME_NAME)).trim();
   }
 
   private Iterable<Map<String, String>> readRecords(URL summationFile) throws IOException, MalformedURLException {
