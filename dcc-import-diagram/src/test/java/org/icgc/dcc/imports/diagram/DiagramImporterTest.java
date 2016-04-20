@@ -22,12 +22,12 @@ import static org.icgc.dcc.imports.core.util.Importers.getLocalMongoClientUri;
 import org.junit.Ignore;
 import org.junit.Test;
 
-@Ignore("This is being tested by the EtlIntegrationTest. Useful for debugging though.")
+@Ignore("For development only")
 public class DiagramImporterTest {
 
   @Test
   public void testExecute() {
-    new DiagramImporter(getLocalMongoClientUri("dcc-genome-test")).execute();
+    new DiagramImporter(getLocalMongoClientUri("dcc-import")).execute();
   }
 
 }

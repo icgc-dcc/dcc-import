@@ -33,11 +33,11 @@ import org.icgc.dcc.imports.diagram.model.Diagram;
 import org.icgc.dcc.imports.diagram.model.DiagramModel;
 import org.icgc.dcc.imports.diagram.model.Pathways;
 
+import com.google.common.collect.ImmutableSet;
+
 import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-
-import com.google.common.collect.ImmutableSet;
 
 @Slf4j
 public class DiagramReader {
@@ -45,8 +45,8 @@ public class DiagramReader {
   public final static String REACTOME_BASE_URL = "http://reactomews.oicr.on.ca:8080/ReactomeRESTfulAPI/RESTfulWS/";
   public final static List<String> NOT_HIGHLIGHTED = emptyList();
 
-  private final static int PATHWAY_ENDPOINT_DELAY_MILLISECONDS = 3000;
-  private final static int ID_ENDPOINT_DELAY_MILLISECONDS = 1000;
+  private final static int PATHWAY_ENDPOINT_DELAY_MILLISECONDS = 100;
+  private final static int ID_ENDPOINT_DELAY_MILLISECONDS = 100;
 
   private DiagramListReader listReader = new DiagramListReader();
 
@@ -128,8 +128,7 @@ public class DiagramReader {
 
     log.info(format("Estimated Time: %d min, %d sec",
         MILLISECONDS.toMinutes(totalTime),
-        MILLISECONDS.toSeconds(totalTime) - MINUTES.toSeconds(MILLISECONDS.toMinutes(totalTime))
-        ));
+        MILLISECONDS.toSeconds(totalTime) - MINUTES.toSeconds(MILLISECONDS.toMinutes(totalTime))));
   }
 
   private void printFailed() {
