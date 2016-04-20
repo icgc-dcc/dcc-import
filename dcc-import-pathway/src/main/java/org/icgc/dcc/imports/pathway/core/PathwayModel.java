@@ -131,9 +131,15 @@ public class PathwayModel {
         pathway = new Pathway();
       }
 
+      String summary = summation.getSummation();
+      if (pathway.getSummation() != null) {
+        // https://jira.oicr.on.ca/browse/DCC-4662
+        summary += pathway.getSummation() + "\n\n" + summary;
+      }
+
       pathway.setReactomeId(summation.getReactomeId());
       pathway.setReactomeName(summation.getReactomeName());
-      pathway.setSummation(summation.getSummation());
+      pathway.setSummation(summary);
 
       pathways.put(pathway.getReactomeId(), pathway);
     }
