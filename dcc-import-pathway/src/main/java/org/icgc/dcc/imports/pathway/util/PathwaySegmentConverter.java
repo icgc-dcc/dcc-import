@@ -20,6 +20,7 @@ package org.icgc.dcc.imports.pathway.util;
 import static com.google.common.base.Objects.firstNonNull;
 import static java.lang.Boolean.parseBoolean;
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.imports.pathway.util.Reactome.REACTOME_PREFIX;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.icgc.dcc.imports.geneset.model.pathway.PathwaySegment;
@@ -28,7 +29,9 @@ import org.w3c.dom.Node;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @NoArgsConstructor(access = PRIVATE)
 public final class PathwaySegmentConverter {
 
@@ -38,8 +41,6 @@ public final class PathwaySegmentConverter {
   private static final String REACTOME_DB_ID = "dbId";
   private static final String REACTOME_DISPLAY_NAME_ATTRIBUTE_NAME = "displayName";
   private static final String REACTOME_HAS_DIAGRAM_ATTRIBUTE_NAME = "hasDiagram";
-
-  private static final String REACTOME_PREFIX = "R-HSA-";
 
   public static PathwaySegment convertPathwayNode(@NonNull Node pathwayNode) {
     return PathwaySegment.builder()
@@ -55,7 +56,8 @@ public final class PathwaySegmentConverter {
     // For human data, we literally form the stable id by appending R-HSA- to our internal ids.
 
     // Convert to stable id
-    return REACTOME_PREFIX + getAttributeValue(pathwayNode, REACTOME_DB_ID);
+    val dbId = getAttributeValue(pathwayNode, REACTOME_DB_ID);
+    return REACTOME_PREFIX + dbId;
   }
 
   private static boolean getHasDiagram(Node pathwayNode) {
@@ -64,7 +66,12 @@ public final class PathwaySegmentConverter {
 
   private static String getDisplayName(Node pathwayNode) {
     val value = getAttributeValue(pathwayNode, REACTOME_DISPLAY_NAME_ATTRIBUTE_NAME);
-    return StringEscapeUtils.unescapeHtml4(value);
+    val escaped = StringEscapeUtils.unescapeHtml4(value);
+    if (!value.equals(escaped)) {
+      log.warn("Needed to escape: '{}' to '{}'", value, escaped);
+    }
+
+    return escaped;
   }
 
   private static String getAttributeValue(Node pathwayNode, String attributeName) {

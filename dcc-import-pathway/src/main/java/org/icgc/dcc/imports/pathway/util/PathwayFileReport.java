@@ -3,6 +3,7 @@ package org.icgc.dcc.imports.pathway.util;
 import static com.google.common.base.Strings.repeat;
 import static com.google.common.collect.Sets.difference;
 import static com.google.common.collect.Sets.newTreeSet;
+import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
 import static org.icgc.dcc.common.core.util.Formats.formatCount;
 import static org.icgc.dcc.common.core.util.Formats.formatPercent;
@@ -40,7 +41,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PathwayFileReport {
 
-  private static final boolean REMOTE = false;
+  /**
+   * Constants.
+   */
+  private static final boolean REMOTE = true;
 
   private static final URL REACTOME_UNIPROT_URL =
       REMOTE ? REMOTE_REACTOME_UNIPROT_URL : LOCAL_REACTOME_UNIPROT_URL;
@@ -52,41 +56,29 @@ public class PathwayFileReport {
   /**
    * Configuration.
    */
+  private final boolean reportSummations = true;
+  private final boolean reportIds = true;
   private final boolean reportUniprots = true;
   private final boolean reportNames = true;
-  private final boolean reportIds = true;
-  private final boolean reportSummaries = true;
+  private final boolean reportStats = true;
 
   public void report() throws IOException {
     val watch = Stopwatch.createStarted();
+
+    // Input
     val genes = readGenes();
     val summations = readSummations();
     val uniprots = readUniprots();
     val hierarchies = readHierarchies();
 
-    if (reportUniprots) {
-      val uniprots1 = genes.values().stream().collect(toSet());
-      val uniprots2 = stream(uniprots).map(s -> s.getUniprot()).collect(toSet());
-
+    // Summations
+    if (reportSummations) {
       log.info("");
-      banner("Uniprot Differences");
-      reportDifferences("uniprotId", "db.Genes", uniprots1, "uniprots2reactome", uniprots2);
+      banner("Summation Duplicates");
+      reportDuplicates(summations);
     }
 
-    if (reportNames) {
-      val namesHierarchies = hierarchies.keySet();
-      val namesUniprots = stream(uniprots).map(s -> s.getName()).collect(toSet());
-      val namesSummations = stream(summations).map(s -> s.getReactomeName()).collect(toSet());
-
-      log.info("");
-      banner("Name Differences");
-      reportDifferences("name", "hierarchies", namesHierarchies, "summations", namesSummations);
-      log.info("");
-      reportDifferences("name", "hierarchies", namesHierarchies, "uniprots2reactome", namesUniprots);
-      log.info("");
-      reportDifferences("name", "summations", namesSummations, "uniprots2reactome", namesUniprots);
-    }
-
+    // Ids
     if (reportIds) {
       val idsHierarchies =
           hierarchies.values().stream().flatMap(v -> v.stream()).map(s -> s.getReactomeId()).collect(toSet());
@@ -102,63 +94,69 @@ public class PathwayFileReport {
       reportDifferences("id", "summations", idsSummations, "uniprots2reactome", idsUniprots);
     }
 
-    if (reportSummaries) {
+    // Names
+    if (reportNames) {
+      val namesHierarchies =
+          hierarchies.values().stream().flatMap(l -> l.stream()).map(s -> s.getReactomeName()).collect(toSet());
+      val namesUniprots = stream(uniprots).map(s -> s.getName()).collect(toSet());
+      val namesSummations = stream(summations).map(s -> s.getReactomeName()).collect(toSet());
+
       log.info("");
-      banner("Summation Duplicates");
-      reportDuplicates(summations);
+      banner("Name Differences");
+      reportDifferences("name", "hierarchies", namesHierarchies, "summations", namesSummations);
+      log.info("");
+      reportDifferences("name", "hierarchies", namesHierarchies, "uniprots2reactome", namesUniprots);
+      log.info("");
+      reportDifferences("name", "summations", namesSummations, "uniprots2reactome", namesUniprots);
+    }
+
+    // Uniprots
+    if (reportUniprots) {
+      val uniprots1 = genes.values().stream().collect(toSet());
+      val uniprots2 = stream(uniprots).map(s -> s.getUniprot()).collect(toSet());
+
+      log.info("");
+      banner("Uniprot Differences");
+      reportDifferences("uniprotId", "db.Genes", uniprots1, "uniprots2reactome", uniprots2);
+    }
+
+    // Statistics
+    if (reportStats) {
+      val avgHierLength = hierarchies.values().stream().mapToInt(List::size).average().getAsDouble();
+
+      log.info("");
+      banner("Statistics");
+      log.info("Average hierarchy path length: {}", format("%.2f", avgHierLength));
     }
 
     log.info("");
     log.info("Finished report in {}", watch);
   }
 
-  private void reportDuplicates(Iterable<PathwaySummation> summations) {
-    {
-      val ids = Multimaps.index(summations, s -> s.getReactomeId());
-      int count = 0;
-      for (val id : ids.keySet()) {
-        val values = ids.get(id);
-        if (values.size() > 1) {
-          log.info("Duplicate {} entries for {} {}:", "summation", "id", id);
-          values.forEach(p -> log.info("   {}", p));
-          count++;
-        }
-      }
-      log.info("Duplicate count: {}, duplicate percent: {} %", formatCount(count),
-          formatPercent(100.0f * count / ids.keySet().size()));
-    }
-    log.info("");
-    {
-      val names = Multimaps.index(summations, s -> s.getReactomeName());
-      int count = 0;
-      for (val name : names.keySet()) {
-        val values = names.get(name);
-        if (values.size() > 1) {
-          log.info("Duplicate {} entries for {} {}:", "summation", "name", name);
-          values.forEach(p -> log.info("   {}", p));
-          count++;
-        }
-      }
-      log.info("Duplicate count: {}, duplicate percent: {} %", formatCount(count),
-          formatPercent(100.0f * count / names.keySet().size()));
-    }
-  }
-
   private void reportDifferences(String field, String name1, Set<String> values1, String name2, Set<String> values2) {
     {
       val diff12 = newTreeSet(difference(values1, values2));
-      log.info("The following {} values are in {} but are not in {}:", field, name1, name2);
+      log.info("The following {} ({} %) {} values are in {} but are not in {}:",
+          formatCount(diff12), formatPercent(100.0f * diff12.size() / values1.size()), field, name1, name2);
       log.info("   {}", diff12);
-      log.info("Difference count: {}, difference percent: {} %", formatCount(diff12),
-          formatPercent(100.0f * diff12.size() / values1.size()));
     }
     log.info("");
     {
       val diff21 = newTreeSet(difference(values2, values1));
-      log.info("The following {} values are in {} but are not in {}:", field, name2, name1);
+      log.info("The following {} ({} %) {} values are in {} but are not in {}:",
+          formatCount(diff21), formatPercent(100.0f * diff21.size() / values2.size()), field, name2, name1);
       log.info("   {}", diff21);
-      log.info("Difference count: {}, difference percent: {} %", formatCount(diff21),
-          formatPercent(100.0f * diff21.size() / values2.size()));
+    }
+  }
+
+  private void reportDuplicates(Iterable<PathwaySummation> summations) {
+    val ids = Multimaps.index(summations, s -> s.getReactomeId());
+    for (val id : ids.keySet()) {
+      val values = ids.get(id);
+      if (values.size() > 1) {
+        log.info("The following {} summation entries are duplicated in id {}:", values.size(), id);
+        values.forEach(p -> log.info("   {}", p));
+      }
     }
   }
 
