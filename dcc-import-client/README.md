@@ -22,4 +22,4 @@ E.g.
 Use the `bin/install` script to update the client library.
 For example to update to the latest release run:
 
-	$ install -l
+	$ install -l latest
