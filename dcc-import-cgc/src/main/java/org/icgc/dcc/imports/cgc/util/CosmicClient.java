@@ -93,8 +93,11 @@ public class CosmicClient {
   }
 
   public InputStream getCensusCSV() {
-    // Need to use csv because headers are always comma separated!
     return get("/census/all?export=csv");
+  }
+
+  public InputStream getCensusTSV() {
+    return get("/census/all?export=tsv");
   }
 
   @SneakyThrows

@@ -37,6 +37,8 @@ public class CensusReader extends AbstractMapReader {
   private final CosmicClient client;
 
   public CensusReader(CosmicClient client) {
+    // Need to use csv because headers are always comma separated!
+    // See https://rt.sanger.ac.uk/Ticket/Display.html?id=525552
     super(COMMA_FIELD_SEPARATOR);
     this.client = client;
   }
@@ -56,7 +58,12 @@ public class CensusReader extends AbstractMapReader {
   @SneakyThrows
   private Iterable<Map<String, String>> readCgsStream() {
     client.login();
-    return readRecords(client.getCensusCSV());
+
+    if (isCSV()) {
+      return readRecords(client.getCensusCSV());
+    } else {
+      return readRecords(client.getCensusTSV());
+    }
   }
 
 }

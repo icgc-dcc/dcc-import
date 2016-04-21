@@ -46,13 +46,21 @@ public abstract class AbstractMapReader {
    */
   protected static final char TAB_FIELD_SEPARATOR = '\t';
   protected static final char COMMA_FIELD_SEPARATOR = ',';
-  private static final TypeReference<Map<String, String>> RECORD_TYPE_REFERENCE =
+  protected static final TypeReference<Map<String, String>> RECORD_TYPE_REFERENCE =
       new TypeReference<Map<String, String>>() {};
 
   /**
    * Configuration
    */
   private final char fieldSeparator;
+
+  public boolean isTSV() {
+    return fieldSeparator == TAB_FIELD_SEPARATOR;
+  }
+
+  public boolean isCSV() {
+    return fieldSeparator == COMMA_FIELD_SEPARATOR;
+  }
 
   @SneakyThrows
   protected Iterable<Map<String, String>> readRecords(String text) {
