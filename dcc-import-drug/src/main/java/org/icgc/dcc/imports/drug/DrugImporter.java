@@ -29,6 +29,7 @@ import org.icgc.dcc.imports.drug.reader.GeneReader;
 import org.icgc.dcc.imports.drug.reader.TrialsReader;
 import org.icgc.dcc.imports.drug.writer.DrugWriter;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -208,7 +209,7 @@ public class DrugImporter implements SourceImporter {
 
     if (atcCodes != null) {
       atcCodes.forEach(atc -> {
-        for (val code : level5) {
+        for (JsonNode code : level5) {
           if (code.asText().indexOf(atc.get("code").asText()) >= 0) {
             ((ObjectNode) atc).put("atc_level5_codes", code.asText());
             break;
