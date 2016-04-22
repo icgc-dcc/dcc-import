@@ -17,7 +17,11 @@
  */
 package org.icgc.dcc.imports.drug;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static java.util.stream.Collectors.toList;
+
 import java.util.List;
+import java.util.Map;
 
 import org.icgc.dcc.imports.core.SourceImporter;
 import org.icgc.dcc.imports.core.model.ImportSource;
@@ -26,9 +30,9 @@ import org.icgc.dcc.imports.drug.reader.GeneReader;
 import org.icgc.dcc.imports.drug.reader.TrialsReader;
 import org.icgc.dcc.imports.drug.writer.DrugWriter;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.MongoClientURI;
 
@@ -37,16 +41,45 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 @Slf4j
 public class DrugImporter implements SourceImporter {
 
+  /**
+   * Constants
+   */
   private final static ObjectMapper MAPPER = new ObjectMapper();
-  private final static List<String> GENE_FIELDS_FOR_REMOVE = newArrayList("chembl", "description", "gene_name", "name");
+  private final static List<String> GENE_FIELDS_FOR_REMOVE = newArrayList(
+      "chembl",
+      "description",
+      "gene_name",
+      "name");
+  private final static List<String> ALLOWED_DRUG_FIELDS = newArrayList(
+      "inchikey",
+      "name",
+      "genes",
+      "trials",
+      "zinc_id",
+      "drug_class",
+      "drug_classes",
+      "external_references",
+      "synonyms",
+      "atc_codes",
+      "small_image_url",
+      "large_image_url",
+      "cancer_trial_count",
+      "_id");
 
+  /**
+   * Dependencies
+   */
   @NonNull
   private final MongoClientURI mongoUri;
+
+  /**
+   * State
+   */
+  private Map<String, ObjectNode> geneMap;
+  private Map<String, ObjectNode> trialMap;
 
   public DrugImporter(@NonNull MongoClientURI mongoUri) {
     this.mongoUri = mongoUri;
@@ -64,18 +97,18 @@ public class DrugImporter implements SourceImporter {
     val drugs = new DrugReader().getDrugs().readAll();
     log.info("Number of drugs to denormalize: {}", drugs.size());
 
-    writeDrugs(readAndJoin(drugs));
-  }
+    geneMap = new GeneReader(mongoUri).getGeneMap();
+    trialMap = new TrialsReader().getTrialsMap();
 
-  /**
-   * Calls all the helpers.
-   */
-  private List<ObjectNode> readAndJoin(List<ObjectNode> drugs) {
-    return joinTrials(
-        joinGenes(
-            expandImageUrls(
-                denormalizeAtcCodes(
-                    cleanSynonyms(drugs)))));
+    writeDrugs(
+        drugs.stream()
+            .map(this::expandImageUrls)
+            .map(this::joinGenes)
+            .map(this::joinTrials)
+            .map(this::denormalizeAtcCodes)
+            .map(this::cleanSynonyms)
+            .map(this::cleanDrug)
+            .collect(toList()));
   }
 
   @SneakyThrows
@@ -89,137 +122,121 @@ public class DrugImporter implements SourceImporter {
   /**
    * Creates nodes that contain URLs for the small and large versions of the molecule image
    */
-  private List<ObjectNode> expandImageUrls(List<ObjectNode> drugs) {
-    log.info("Creating image urls");
+  private ObjectNode expandImageUrls(ObjectNode drug) {
+    String imageUrl = drug.get("image_url").asText();
+    String largeImageUrl = imageUrl.replace(".png", "-large.png");
 
-    drugs.forEach(drug -> {
-      String imageUrl = drug.get("image_url").asText();
-      String largeImageUrl = imageUrl.replace(".png", "-large.png");
+    drug.put("small_image_url", imageUrl);
+    drug.put("large_image_url", largeImageUrl);
+    drug.remove("image_url");
 
-      drug.put("small_image_url", imageUrl);
-      drug.put("large_image_url", largeImageUrl);
-      drug.remove("image_url");
-    });
-
-    return drugs;
+    return drug;
   }
 
   /**
-   * Joins Genes to Drugs by gene name. We include ensembl ids as part of gene node.
+   * Joins Genes to Drug by gene name. We include ensembl ids as part of gene node.
    */
-  private List<ObjectNode> joinGenes(List<ObjectNode> drugs) {
-    log.info("Joining Genes to Drugs");
-    val geneMap = new GeneReader(mongoUri).getGeneMap();
+  private ObjectNode joinGenes(ObjectNode drug) {
+    JsonNode drugGenes = drug.get("genes");
+    ArrayNode geneArray = MAPPER.createArrayNode();
 
-    drugs.forEach(drug -> {
-      JsonNode drugGenes = drug.get("genes");
-      ArrayNode geneArray = MAPPER.createArrayNode();
-
-      if (drugGenes.isArray()) {
-        for (JsonNode geneName : drugGenes) {
-          if (geneMap.containsKey(geneName.asText())) {
-            ObjectNode cleanedMap = geneMap.get(geneName.asText()).remove(GENE_FIELDS_FOR_REMOVE);
-            geneArray.add(cleanedMap);
-          } else {
-            log.warn("Gene missing on join: {}", geneName.asText());
-          }
+    if (drugGenes.isArray()) {
+      for (JsonNode geneName : drugGenes) {
+        if (geneMap.containsKey(geneName.asText())) {
+          ObjectNode cleanedMap = geneMap.get(geneName.asText()).remove(GENE_FIELDS_FOR_REMOVE);
+          geneArray.add(cleanedMap);
+        } else {
+          log.warn("Gene missing on join: {}", geneName.asText());
         }
       }
+    }
 
-      drug.set("genes", geneArray);
-    });
+    drug.set("genes", geneArray);
 
-    return drugs;
+    return drug;
   }
 
   /**
    * Joins trials to Drugs by trial code. Trials will be already joined with conditions.
    */
-  private List<ObjectNode> joinTrials(List<ObjectNode> drugs) {
-    log.info("Joining Trials to Drugs");
-    val trialsMap = new TrialsReader().getTrialsMap();
+  private ObjectNode joinTrials(ObjectNode drug) {
+    JsonNode drugTrials = drug.get("trials");
+    ArrayNode trialsArray = MAPPER.createArrayNode();
 
-    drugs.forEach(drug -> {
-      JsonNode drugTrials = drug.get("trials");
-      ArrayNode trialsArray = MAPPER.createArrayNode();
-
-      if (drugTrials.isArray()) {
-        for (JsonNode trialCode : drugTrials) {
-          if (trialsMap.containsKey(trialCode.asText())) {
-            trialsArray.add(trialsMap.get(trialCode.asText()));
-          } else {
-            log.warn("Trail missing on join: {}", trialCode.asText());
-          }
+    if (drugTrials.isArray()) {
+      for (JsonNode trialCode : drugTrials) {
+        if (trialMap.containsKey(trialCode.asText())) {
+          trialsArray.add(trialMap.get(trialCode.asText()));
+        } else {
+          log.warn("Trail missing on join: {}", trialCode.asText());
         }
       }
+    }
 
-      drug.put("cancer_trial_count", trialsArray.size());
-      drug.set("trials", trialsArray);
-    });
+    drug.put("cancer_trial_count", trialsArray.size());
+    drug.set("trials", trialsArray);
 
-    return drugs;
+    return drug;
   }
-  
+
   /**
    * Removes synonyms that match drug name
    */
-  private List<ObjectNode> cleanSynonyms(List<ObjectNode> drugs) {
-    log.info("Cleaning Synonyms");
+  private ObjectNode cleanSynonyms(ObjectNode drug) {
+    ArrayNode synonyms = (ArrayNode) drug.get("synonyms");
+    ArrayNode cleaned = MAPPER.createArrayNode();
+    if (synonyms != null) {
+      synonyms.forEach(entry -> {
+        if (!entry.asText().equalsIgnoreCase(drug.get("name").asText())) {
+          cleaned.add(entry);
+        }
+      });
+      drug.remove("synonyms");
+      drug.put("synonyms", cleaned);
+    }
 
-    drugs.forEach(drug -> {
-      ArrayNode synonyms = (ArrayNode) drug.get("synonyms");
-      ArrayNode cleaned = MAPPER.createArrayNode();
-      if (synonyms != null) {
-        synonyms.forEach(entry -> {
-          if (!entry.asText().equalsIgnoreCase(drug.get("name").asText())) {
-            cleaned.add(entry);
-          }
-        });
-        drug.remove("synonyms");
-        drug.put("synonyms", cleaned);
-      }
-    });
-    
-    return drugs;
+    return drug;
   }
-  
+
   /**
    * Moves level5 ATC codes into the main ATC code JSON node.
    */
-  private List<ObjectNode> denormalizeAtcCodes(List<ObjectNode> drugs) {
-    log.info("Denormalizing ATC Codes");
+  private ObjectNode denormalizeAtcCodes(ObjectNode drug) {
+    ArrayNode atcCodes = (ArrayNode) drug.get("atc_codes");
+    ArrayNode level5 = (ArrayNode) drug.get("atc_level5_codes");
 
-    drugs.forEach(drug -> {
-      ArrayNode atcCodes = (ArrayNode) drug.get("atc_codes");
-      ArrayNode level5 = (ArrayNode) drug.get("atc_level5_codes");
-      if (atcCodes != null) {
-        atcCodes.forEach(atc -> {
-          for (JsonNode code : level5) {
-            if (code.asText().indexOf(atc.get("code").asText()) >= 0) {
-              ((ObjectNode) atc).put("atc_level5_codes", code.asText());
-              break;
-            }
+    if (atcCodes != null) {
+      atcCodes.forEach(atc -> {
+        for (JsonNode code : level5) {
+          if (code.asText().indexOf(atc.get("code").asText()) >= 0) {
+            ((ObjectNode) atc).put("atc_level5_codes", code.asText());
+            break;
           }
-        });
-        drug.remove("atc_level5_codes");
-      } else {
-        ArrayNode atcClasses = (ArrayNode) drug.get("atc_classifications");
-        if (atcClasses != null) {
-          ArrayNode newAtcCodes = MAPPER.createArrayNode();
-          atcClasses.forEach(atcClass -> {
-            ObjectNode newAtcEntry = MAPPER.createObjectNode();
-            newAtcEntry.put("code", atcClass.get("level4").asText());
-            newAtcEntry.put("atc_level5_codes", atcClass.get("level5").asText());
-            newAtcEntry.put("description", atcClass.get("level4_description").asText());
-            newAtcCodes.add(newAtcEntry);
-          });
-          drug.set("atc_codes", newAtcCodes);
-          drug.remove("atc_classifications");
         }
+      });
+      drug.remove("atc_level5_codes");
+    } else {
+      ArrayNode atcClasses = (ArrayNode) drug.get("atc_classifications");
+      if (atcClasses != null) {
+        ArrayNode newAtcCodes = MAPPER.createArrayNode();
+        atcClasses.forEach(atcClass -> {
+          ObjectNode newAtcEntry = MAPPER.createObjectNode();
+          newAtcEntry.put("code", atcClass.get("level4").asText());
+          newAtcEntry.put("atc_level5_codes", atcClass.get("level5").asText());
+          newAtcEntry.put("description", atcClass.get("level4_description").asText());
+          newAtcCodes.add(newAtcEntry);
+        });
+        drug.set("atc_codes", newAtcCodes);
+        drug.remove("atc_classifications");
       }
-    });
+    }
 
-    return drugs;
+    return drug;
+  }
+
+  private ObjectNode cleanDrug(ObjectNode drug) {
+    drug.retain(ALLOWED_DRUG_FIELDS);
+    return drug;
   }
 
 }
