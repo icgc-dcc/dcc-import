@@ -17,8 +17,7 @@
  */
 package org.icgc.dcc.imports.drug;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static java.util.stream.Collectors.toList;
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 
 import java.util.List;
 import java.util.Map;
@@ -30,10 +29,10 @@ import org.icgc.dcc.imports.drug.reader.GeneReader;
 import org.icgc.dcc.imports.drug.reader.TrialsReader;
 import org.icgc.dcc.imports.drug.writer.DrugWriter;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableList;
 import com.mongodb.MongoClientURI;
 
 import lombok.NonNull;
@@ -48,12 +47,12 @@ public class DrugImporter implements SourceImporter {
    * Constants
    */
   private final static ObjectMapper MAPPER = new ObjectMapper();
-  private final static List<String> GENE_FIELDS_FOR_REMOVE = newArrayList(
+  private final static List<String> EXCLUDED_GENE_FIELDS = ImmutableList.<String> of(
       "chembl",
       "description",
       "gene_name",
       "name");
-  private final static List<String> ALLOWED_DRUG_FIELDS = newArrayList(
+  private final static List<String> INCLUDED_DRUG_FIELDS = ImmutableList.<String> of(
       "inchikey",
       "name",
       "genes",
@@ -107,8 +106,8 @@ public class DrugImporter implements SourceImporter {
             .map(this::joinTrials)
             .map(this::denormalizeAtcCodes)
             .map(this::cleanSynonyms)
-            .map(this::cleanDrug)
-            .collect(toList()));
+            .map(DrugImporter::cleanDrug)
+            .collect(toImmutableList()));
   }
 
   @SneakyThrows
@@ -123,8 +122,8 @@ public class DrugImporter implements SourceImporter {
    * Creates nodes that contain URLs for the small and large versions of the molecule image
    */
   private ObjectNode expandImageUrls(ObjectNode drug) {
-    String imageUrl = drug.get("image_url").asText();
-    String largeImageUrl = imageUrl.replace(".png", "-large.png");
+    val imageUrl = drug.get("image_url").asText();
+    val largeImageUrl = imageUrl.replace(".png", "-large.png");
 
     drug.put("small_image_url", imageUrl);
     drug.put("large_image_url", largeImageUrl);
@@ -141,10 +140,10 @@ public class DrugImporter implements SourceImporter {
     val geneArray = MAPPER.createArrayNode();
 
     if (drugGenes.isArray()) {
-      for (JsonNode geneName : drugGenes) {
-        if (geneMap.containsKey(geneName.asText())) {
-          ObjectNode cleanedMap = geneMap.get(geneName.asText()).remove(GENE_FIELDS_FOR_REMOVE);
-          geneArray.add(cleanedMap);
+      for (val geneName : drugGenes) {
+        val gene = geneMap.get(geneName.asText());
+        if (gene != null) {
+          geneArray.add(gene.remove(EXCLUDED_GENE_FIELDS));
         } else {
           log.warn("Gene missing on join: {}", geneName.asText());
         }
@@ -164,9 +163,10 @@ public class DrugImporter implements SourceImporter {
     val trialsArray = MAPPER.createArrayNode();
 
     if (drugTrials.isArray()) {
-      for (JsonNode trialCode : drugTrials) {
-        if (trialMap.containsKey(trialCode.asText())) {
-          trialsArray.add(trialMap.get(trialCode.asText()));
+      for (val trialCode : drugTrials) {
+        val trial = trialMap.get(trialCode.asText());
+        if (trial != null) {
+          trialsArray.add(trial);
         } else {
           log.warn("Trail missing on join: {}", trialCode.asText());
         }
@@ -208,7 +208,7 @@ public class DrugImporter implements SourceImporter {
 
     if (atcCodes != null) {
       atcCodes.forEach(atc -> {
-        for (JsonNode code : level5) {
+        for (val code : level5) {
           if (code.asText().indexOf(atc.get("code").asText()) >= 0) {
             ((ObjectNode) atc).put("atc_level5_codes", code.asText());
             break;
@@ -235,8 +235,8 @@ public class DrugImporter implements SourceImporter {
     return drug;
   }
 
-  private ObjectNode cleanDrug(ObjectNode drug) {
-    drug.retain(ALLOWED_DRUG_FIELDS);
+  private static ObjectNode cleanDrug(ObjectNode drug) {
+    drug.retain(INCLUDED_DRUG_FIELDS);
     return drug;
   }
 
