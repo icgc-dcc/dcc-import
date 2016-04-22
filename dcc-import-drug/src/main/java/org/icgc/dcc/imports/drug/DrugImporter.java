@@ -137,8 +137,8 @@ public class DrugImporter implements SourceImporter {
    * Joins Genes to Drug by gene name. We include ensembl ids as part of gene node.
    */
   private ObjectNode joinGenes(ObjectNode drug) {
-    JsonNode drugGenes = drug.get("genes");
-    ArrayNode geneArray = MAPPER.createArrayNode();
+    val drugGenes = drug.get("genes");
+    val geneArray = MAPPER.createArrayNode();
 
     if (drugGenes.isArray()) {
       for (JsonNode geneName : drugGenes) {
@@ -160,8 +160,8 @@ public class DrugImporter implements SourceImporter {
    * Joins trials to Drugs by trial code. Trials will be already joined with conditions.
    */
   private ObjectNode joinTrials(ObjectNode drug) {
-    JsonNode drugTrials = drug.get("trials");
-    ArrayNode trialsArray = MAPPER.createArrayNode();
+    val drugTrials = drug.get("trials");
+    val trialsArray = MAPPER.createArrayNode();
 
     if (drugTrials.isArray()) {
       for (JsonNode trialCode : drugTrials) {
@@ -183,8 +183,9 @@ public class DrugImporter implements SourceImporter {
    * Removes synonyms that match drug name
    */
   private ObjectNode cleanSynonyms(ObjectNode drug) {
-    ArrayNode synonyms = (ArrayNode) drug.get("synonyms");
-    ArrayNode cleaned = MAPPER.createArrayNode();
+    val synonyms = (ArrayNode) drug.get("synonyms");
+    val cleaned = MAPPER.createArrayNode();
+
     if (synonyms != null) {
       synonyms.forEach(entry -> {
         if (!entry.asText().equalsIgnoreCase(drug.get("name").asText())) {
@@ -202,8 +203,8 @@ public class DrugImporter implements SourceImporter {
    * Moves level5 ATC codes into the main ATC code JSON node.
    */
   private ObjectNode denormalizeAtcCodes(ObjectNode drug) {
-    ArrayNode atcCodes = (ArrayNode) drug.get("atc_codes");
-    ArrayNode level5 = (ArrayNode) drug.get("atc_level5_codes");
+    val atcCodes = (ArrayNode) drug.get("atc_codes");
+    val level5 = (ArrayNode) drug.get("atc_level5_codes");
 
     if (atcCodes != null) {
       atcCodes.forEach(atc -> {
@@ -216,7 +217,7 @@ public class DrugImporter implements SourceImporter {
       });
       drug.remove("atc_level5_codes");
     } else {
-      ArrayNode atcClasses = (ArrayNode) drug.get("atc_classifications");
+      val atcClasses = (ArrayNode) drug.get("atc_classifications");
       if (atcClasses != null) {
         ArrayNode newAtcCodes = MAPPER.createArrayNode();
         atcClasses.forEach(atcClass -> {
