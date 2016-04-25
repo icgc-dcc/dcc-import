@@ -113,6 +113,7 @@ public class Importer {
 
       throw e;
     } finally {
+      log.info("Finished importing in {}", watch);
       report.addTimer(watch.stop());
       sendReport(report);
     }
