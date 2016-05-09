@@ -29,13 +29,13 @@ import static org.icgc.dcc.imports.geneset.model.GeneSetType.DRUG;
 import java.util.List;
 import java.util.Set;
 
-import org.elasticsearch.common.collect.Sets;
 import org.icgc.dcc.imports.geneset.model.GeneSetType;
 import org.icgc.dcc.imports.geneset.model.gene.GeneGeneSet;
 import org.icgc.dcc.imports.geneset.writer.AbstractGeneGeneSetWriter;
 import org.jongo.MongoCollection;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Sets;
 
 import lombok.NonNull;
 import lombok.val;
