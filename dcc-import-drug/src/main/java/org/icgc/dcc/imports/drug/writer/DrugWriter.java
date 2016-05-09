@@ -17,62 +17,79 @@
  */
 package org.icgc.dcc.imports.drug.writer;
 
+import static com.google.common.base.Stopwatch.createStarted;
+import static org.icgc.dcc.common.core.model.ReleaseCollection.DRUG_COLLECTION;
+import static org.icgc.dcc.common.core.model.ReleaseCollection.GENE_COLLECTION;
+import static org.icgc.dcc.imports.drug.util.Drugs.getZincId;
+
+import java.util.List;
+
+import org.icgc.dcc.imports.core.util.AbstractJongoWriter;
+import org.jongo.MongoCollection;
+
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.mongodb.MongoClientURI;
+
 import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
-
-import org.icgc.dcc.common.core.model.ReleaseCollection;
-import org.icgc.dcc.imports.core.util.AbstractJongoWriter;
-import org.jongo.MongoCollection;
-
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.mongodb.MongoClientURI;
-
 @Slf4j
 public class DrugWriter extends AbstractJongoWriter<List<ObjectNode>> {
-
-  private MongoCollection drugCollection;
 
   public DrugWriter(@NonNull MongoClientURI mongoUri) {
     super(mongoUri);
   }
 
   @Override
-  public void writeValue(@NonNull List<ObjectNode> values) {
-    drugCollection = getCollection(ReleaseCollection.DRUG_COLLECTION);
-    
+  public void writeValue(@NonNull List<ObjectNode> drugs) {
+    val watch = createStarted();
+
+    log.info("Writing drugs to {}...", mongoUri);
+    writeDrugs(drugs);
+
+    log.info("Writing gene gene sets to {}...", mongoUri);
+    writeGeneGeneSets(drugs);
+
+    log.info("Finished writing gene sets and gene gene sets in {}", watch);
+  }
+
+  private void writeDrugs(List<ObjectNode> drugs) {
     log.info("Dropping current Drug collection...");
     dropCollection();
 
     log.info("Saving new Drug collection...");
-    saveCollection(values);
+    saveCollection(drugs);
   }
 
+  private void writeGeneGeneSets(List<ObjectNode> drugs) {
+    new DrugGeneGeneSetWriter(getCollection(GENE_COLLECTION)).write(drugs);
+  }
+  
   private void dropCollection() {
-    drugCollection.drop();
+    getDrugsCollection().drop();
   }
 
   private void saveCollection(List<ObjectNode> drugs) {
     val total = drugs.size();
+    val drugsCollection = getDrugsCollection();
+    
     int current = 1;
-    log.info("Number to save: {}", total);
     for (val drug : drugs) {
-      drug.put("_id", drug.get("zinc_id").asText());
-      val genes = (ArrayNode) drug.get("genes");
-      val drugClass = drug.get("drug_class").asText();
-      if (genes.size() > 0 && (drugClass.equalsIgnoreCase("fda") || drugClass.equalsIgnoreCase("world"))) {
-        try {
-          log.info("Writing {}/{} with id: {}", current, total, drug.get("zinc_id").asText());
-          drugCollection.save(drug);
-        } catch (Exception e) {
-          log.warn(e.getMessage());
-        }
-        current++;
+      val zincId = getZincId(drug);
+      drug.put("_id", zincId);
+      try {
+        log.info("Writing {}/{} with id: {}", current, total, zincId);
+        drugsCollection.save(drug);
+      } catch (Exception e) {
+        log.warn(e.getMessage());
       }
+      current++;
     }
+  }
+
+  private MongoCollection getDrugsCollection() {
+    return getCollection(DRUG_COLLECTION);
   }
 
 }

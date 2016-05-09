@@ -17,7 +17,9 @@
  */
 package org.icgc.dcc.imports.drug.reader;
 
-import com.fasterxml.jackson.databind.MappingIterator;
+import java.io.IOException;
+import java.util.List;
+
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.val;
@@ -30,9 +32,9 @@ public class DrugReader extends Reader {
     super(DRUG_URL);
   }
   
-  public MappingIterator<ObjectNode> getDrugs() {
+  public List<ObjectNode> readDrugs() throws IOException {
     val drugs = getJson();
-    return drugs;
+    return drugs.readAll();
   }
   
 }

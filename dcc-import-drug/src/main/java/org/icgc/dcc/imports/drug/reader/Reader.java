@@ -46,4 +46,5 @@ public class Reader {
   protected MappingIterator<ObjectNode> getJson() {
     return MAPPER.readValues(jp, ObjectNode.class);
   }
+  
 }

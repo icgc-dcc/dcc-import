@@ -15,19 +15,22 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.geneset.model;
+package org.icgc.dcc.imports.drug;
 
-import static org.icgc.dcc.common.core.model.FieldNames.GENE_SETS;
+import static org.icgc.dcc.imports.core.util.Importers.getLocalMongoClientUri;
 
-public enum GeneSetType {
+import org.junit.Ignore;
+import org.junit.Test;
 
-  PATHWAY,
-  CURATED_SET,
-  GO_TERM,
-  DRUG;
+import lombok.val;
 
-  public String getFieldName() {
-    return GENE_SETS;
+@Ignore("For development purposes only")
+public class DrugImporterTest{
+
+  @Test
+  public void testExecute() {
+    val importer = new DrugImporter(getLocalMongoClientUri("dcc-import"));
+    importer.execute();
   }
-
+  
 }

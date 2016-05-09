@@ -17,19 +17,19 @@
  */
 package org.icgc.dcc.imports.drug.reader;
 
+import static org.icgc.dcc.common.core.model.FieldNames.GENE_UNIPROT_IDS;
+import static org.icgc.dcc.common.core.model.FieldNames.LoaderFieldNames.GENE_ID;
+import static org.icgc.dcc.imports.core.util.Jongos.createJongo;
+
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import static org.icgc.dcc.common.core.model.FieldNames.LoaderFieldNames.GENE_ID;
-
-import static org.icgc.dcc.common.core.model.FieldNames.GENE_UNIPROT_IDS;
 import org.icgc.dcc.common.core.model.ReleaseCollection;
-import org.jongo.Jongo;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 
 import lombok.NonNull;
@@ -54,17 +54,16 @@ public class GeneReader extends Reader {
     this.mongoUri = mongoUri;
   }
   
-  public MappingIterator<ObjectNode> getGenes() {
+  public List<ObjectNode> readGenes() throws IOException {
     val genes = getJson();
-    return genes;
+    return genes.readAll();
   }
   
   @SneakyThrows
-  public Map<String, ObjectNode> getGeneMap() {
-      
-    log.info("Loading ICGC Gene Info");
-    val db = new MongoClient(mongoUri).getDB("dcc-import");
-    Jongo jongo = new Jongo(db);
+  public Map<String, ObjectNode> readGeneMap() {
+    log.info("Reading genes...");
+    val jongo = createJongo(mongoUri);
+    
     val geneCollection = jongo.getCollection(ReleaseCollection.GENE_COLLECTION.getId());
     
     val geneMap = new HashMap<String, ObjectNode>();

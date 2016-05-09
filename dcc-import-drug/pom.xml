@@ -33,6 +33,10 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
       <groupId>${project.groupId}</groupId>
       <artifactId>dcc-import-core</artifactId>
     </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>dcc-import-geneset</artifactId>
+    </dependency>    
 
     <!-- Utilities -->
     <dependency>

@@ -15,23 +15,29 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.imports.drug;
+package org.icgc.dcc.imports.drug.core;
 
-import static org.icgc.dcc.imports.core.util.Importers.getLocalMongoClientUri;
+import static org.icgc.dcc.imports.drug.util.Drugs.getDrugClass;
+import static org.icgc.dcc.imports.drug.util.Drugs.getDrugGenes;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import junit.framework.TestCase;
+import lombok.val;
 
-public class DrugImporterTester extends TestCase {
+public class DrugFilter {
 
-  @Test
-  @Ignore
-  public void testExecute() {
-    DrugImporter importer = new DrugImporter(getLocalMongoClientUri("dcc-import"));
-    assertNotNull(importer);
-    importer.execute();
+  public static boolean filter(ObjectNode drug) {
+    return hasGenes(drug) && isRelevant(drug);
   }
-  
+
+  private static boolean hasGenes(ObjectNode drug) {
+    val genes = getDrugGenes(drug);
+    return genes.size() > 0;
+  }
+
+  private static boolean isRelevant(ObjectNode drug) {
+    val drugClass = getDrugClass(drug);
+    return drugClass.equalsIgnoreCase("fda") || drugClass.equalsIgnoreCase("world");
+  }
+
 }
