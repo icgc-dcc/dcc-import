@@ -21,7 +21,6 @@ import static com.google.common.base.Stopwatch.createStarted;
 import static org.icgc.dcc.common.core.util.Formats.formatCount;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.Map;
 
 import org.icgc.dcc.imports.cgc.reader.CensusReader;
@@ -30,7 +29,6 @@ import org.icgc.dcc.imports.cgc.writer.CgcWriter;
 import org.icgc.dcc.imports.core.SourceImporter;
 import org.icgc.dcc.imports.core.model.ImportSource;
 
-import com.google.common.io.Resources;
 import com.mongodb.MongoClientURI;
 
 import lombok.Cleanup;
@@ -48,25 +46,14 @@ import lombok.extern.slf4j.Slf4j;
 public class CgcImporter implements SourceImporter {
 
   /**
-   * Constants.
-   */
-  public static final URL DEFAULT_CGC_URL = Resources.getResource("cancer_gene_census.tsv");
-
-  /**
    * Configuration.
    */
-  @NonNull
-  private final URL cgsUri;
   @NonNull
   private final MongoClientURI mongoUri;
   @NonNull
   private final String cosmicUserName;
   @NonNull
   private final String cosmicPassword;
-
-  public CgcImporter(MongoClientURI mongoUri, String cosmicUserName, String cosmicPassword) {
-    this(DEFAULT_CGC_URL, mongoUri, cosmicUserName, cosmicPassword);
-  }
 
   @Override
   public ImportSource getSource() {
@@ -78,7 +65,7 @@ public class CgcImporter implements SourceImporter {
   public void execute() {
     val watch = createStarted();
 
-    log.info("Reading CGC from {}...", cgsUri);
+    log.info("Reading CGC from Sanger UK {}...");
     val cgc = readCgc();
 
     log.info("Writing CGC to... {}", mongoUri);
