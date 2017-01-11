@@ -24,19 +24,40 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = PRIVATE)
 public final class Sources {
 
-  private static final String BASE_URI = "ftp://ftp.ensembl.org/pub/grch37/release-83/mysql/homo_sapiens_core_83_37/";
-  public static final String GENE_URI = BASE_URI + "gene.txt.gz";
-  public static final String XREF_URI = BASE_URI + "xref.txt.gz";
-  public static final String EXTERNAL_DB_URI = BASE_URI + "external_db.txt.gz";
-  public static final String OBJECT_XREF_URI = BASE_URI + "object_xref.txt.gz";
-  public static final String EXTERNAL_SYN_URI = BASE_URI + "external_synonym.txt.gz";
-  public static final String TRANSCRIPT_URI = BASE_URI + "transcript.txt.gz";
-  public static final String TRANSLATION_URI = BASE_URI + "translation.txt.gz";
-  public static final String PROTEIN_FEATURE_URI = BASE_URI + "protein_feature.txt.gz";
-  public static final String INTERPRO_URI = BASE_URI + "interpro.txt.gz";
-  public static final String ANALYSIS_URI = BASE_URI + "analysis.txt.gz";
-  public static final String EXON_URI = BASE_URI + "exon.txt.gz";
+  /**
+   * Versions.
+   */
+  private static final int ASSEMBLY_VERSION = 37;
+  private static final int ENSEMBL_RELEASE = 82;
 
+  /**
+   * Ensembl files.
+   */
+  private static final String ENSEMBL_RELEASE_URI =
+      "ftp://ftp.ensembl.org/pub/grch" + ASSEMBLY_VERSION + "/release-" + ENSEMBL_RELEASE + "/";
+
+  public static final String GTF_URI =
+      ENSEMBL_RELEASE_URI + "gtf/homo_sapiens/Homo_sapiens.GRCh" + ASSEMBLY_VERSION + "." + ENSEMBL_RELEASE + ".gtf.gz";
+
+  private static final String ENSEMBL_MYSQL_URI =
+      ENSEMBL_RELEASE_URI + "mysql/homo_sapiens_core_" + ENSEMBL_RELEASE + "_" + ASSEMBLY_VERSION + "/";
+
+  public static final String GENE_URI = ENSEMBL_MYSQL_URI + "gene.txt.gz";
+  public static final String XREF_URI = ENSEMBL_MYSQL_URI + "xref.txt.gz";
+  public static final String EXTERNAL_DB_URI = ENSEMBL_MYSQL_URI + "external_db.txt.gz";
+  public static final String OBJECT_XREF_URI = ENSEMBL_MYSQL_URI + "object_xref.txt.gz";
+  public static final String EXTERNAL_SYN_URI = ENSEMBL_MYSQL_URI + "external_synonym.txt.gz";
+  public static final String TRANSCRIPT_URI = ENSEMBL_MYSQL_URI + "transcript.txt.gz";
+  public static final String TRANSLATION_URI = ENSEMBL_MYSQL_URI + "translation.txt.gz";
+  public static final String PROTEIN_FEATURE_URI = ENSEMBL_MYSQL_URI + "protein_feature.txt.gz";
+  public static final String INTERPRO_URI = ENSEMBL_MYSQL_URI + "interpro.txt.gz";
+  public static final String ANALYSIS_URI = ENSEMBL_MYSQL_URI + "analysis.txt.gz";
+  public static final String EXON_URI = ENSEMBL_MYSQL_URI + "exon.txt.gz";
+
+  /**
+   * NCBI files.
+   */
   public static final String NCBI_URI =
       "ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/ASN_BINARY/Mammalia/Homo_sapiens.ags.gz";
+
 }

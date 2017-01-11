@@ -23,13 +23,14 @@ import static java.util.Spliterator.NONNULL;
 import static java.util.Spliterators.spliteratorUnknownSize;
 import static java.util.stream.StreamSupport.stream;
 import static org.icgc.dcc.common.core.util.Formats.formatCount;
+import static org.icgc.dcc.common.core.util.URLs.getUrl;
+import static org.icgc.dcc.imports.gene.core.Sources.GTF_URI;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import org.icgc.dcc.common.core.util.URLs;
 import org.icgc.dcc.imports.core.SourceImporter;
 import org.icgc.dcc.imports.core.model.ImportSource;
 import org.icgc.dcc.imports.gene.core.GeneIterator;
@@ -56,13 +57,7 @@ import lombok.extern.slf4j.Slf4j;
 public class GeneImporter implements SourceImporter {
 
   /**
-   * Constants.
-   */
-  public static final URL DEFAULT_GET_URL =
-      URLs.getUrl("ftp://ftp.ensembl.org/pub/grch37/release-82/gtf/homo_sapiens/Homo_sapiens.GRCh37.82.gtf.gz");
-
-  /**
-   * Configuration.
+   * Configuration
    */
   @NonNull
   private final URL gtfUrl;
@@ -72,6 +67,10 @@ public class GeneImporter implements SourceImporter {
   @Override
   public ImportSource getSource() {
     return ImportSource.GENES;
+  }
+
+  public GeneImporter(MongoClientURI mongoUri) {
+    this(getUrl(GTF_URI), mongoUri);
   }
 
   /**
@@ -94,10 +93,6 @@ public class GeneImporter implements SourceImporter {
     writeGenes(transformed);
 
     log.info("Finished importing genes in {}", watch);
-  }
-
-  public GeneImporter(MongoClientURI mongoUri) {
-    this(DEFAULT_GET_URL, mongoUri);
   }
 
   private Stream<ObjectNode> readGenes() {

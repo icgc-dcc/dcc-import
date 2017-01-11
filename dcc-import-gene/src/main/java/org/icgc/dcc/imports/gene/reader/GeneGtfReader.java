@@ -51,7 +51,7 @@ public class GeneGtfReader extends TsvReader {
    */
   @SneakyThrows
   public Stream<ObjectNode> read() {
-    log.info("CONSUMING GENES");
+    log.info("Reading genes...");
     return readRecords().filter(this::isData).map(this::parseLine);
   }
 
