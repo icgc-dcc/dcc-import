@@ -46,6 +46,7 @@ public class GeneWriter extends AbstractJongoWriter<ObjectNode> {
     super(mongoUri);
     this.geneCollection = getCollection(ReleaseCollection.GENE_COLLECTION);
 
+    log.info("Dropping Gene collection...");
     geneCollection.drop();
   }
 
