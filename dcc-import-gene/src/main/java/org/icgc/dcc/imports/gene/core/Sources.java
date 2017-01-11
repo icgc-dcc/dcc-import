@@ -27,14 +27,14 @@ public final class Sources {
   /**
    * Versions.
    */
-  private static final int ASSEMBLY_VERSION = 37;
-  private static final int ENSEMBL_RELEASE = 82;
+  private static final int ASSEMBLY_VERSION = 38;
+  private static final int ENSEMBL_RELEASE = 80;
 
   /**
    * Ensembl files.
    */
   private static final String ENSEMBL_RELEASE_URI =
-      "ftp://ftp.ensembl.org/pub/grch" + ASSEMBLY_VERSION + "/release-" + ENSEMBL_RELEASE + "/";
+      "ftp://ftp.ensembl.org/pub/release-" + ENSEMBL_RELEASE + "/";
 
   public static final String GTF_URI =
       ENSEMBL_RELEASE_URI + "gtf/homo_sapiens/Homo_sapiens.GRCh" + ASSEMBLY_VERSION + "." + ENSEMBL_RELEASE + ".gtf.gz";
