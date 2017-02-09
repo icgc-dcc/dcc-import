@@ -43,7 +43,7 @@ public class AnalysisReader extends TsvReader {
   }
 
   private String getGffSource(List<String> record) {
-    return record.get(6);
+    return record.get(2);
   }
 
 }
