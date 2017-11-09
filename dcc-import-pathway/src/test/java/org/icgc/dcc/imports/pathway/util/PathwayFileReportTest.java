@@ -19,10 +19,12 @@ package org.icgc.dcc.imports.pathway.util;
 
 import java.io.IOException;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import lombok.val;
 
+@Ignore("LetsEncrypt certs break current jenkins JVM.")
 public class PathwayFileReportTest {
 
   @Test
