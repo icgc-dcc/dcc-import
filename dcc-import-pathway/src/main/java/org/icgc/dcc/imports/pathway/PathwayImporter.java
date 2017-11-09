@@ -54,11 +54,11 @@ public class PathwayImporter implements SourceImporter {
   public static final boolean REMOTE = true;
 
   public static final URL REMOTE_REACTOME_UNIPROT_URL =
-      getUrl("http://www.reactome.org/download/current/UniProt2Reactome_All_Levels.txt"); // DCC-4656
+      getUrl("https://www.reactome.org/download/current/UniProt2Reactome_All_Levels.txt"); // DCC-4656
   public static final URL REMOTE_REACTOME_PATHWAY_SUMMATION_URL =
-      getUrl("http://www.reactome.org/download/current/pathway2summation.txt");
+      getUrl("https://www.reactome.org/download/current/pathway2summation.txt");
   public static final URL REMOTE_REACTOME_PATHWAY_HIER_URL =
-      getUrl("http://www.reactome.org/ReactomeRESTfulAPI/RESTfulWS/pathwayHierarchy/homo+sapiens");
+      getUrl("https://www.reactome.org/ReactomeRESTfulAPI/RESTfulWS/pathwayHierarchy/homo+sapiens");
 
   public static final URL LOCAL_REACTOME_UNIPROT_URL =
       Resources.getResource("uniprot_2_reactome.txt");
