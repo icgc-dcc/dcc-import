@@ -45,6 +45,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 
     <module>dcc-import-core</module>
     <module>dcc-import-drug</module>
+      <module>dcc-import-variant</module>
   </modules>
 
   <repositories>

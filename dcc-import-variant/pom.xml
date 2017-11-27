@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>org.icgc.dcc</groupId>
+        <artifactId>dcc-import</artifactId>
+        <version>4.2.3-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>dcc-import-variant</artifactId>
+
+    <name>${project.artifactId}</name>
+    <description>${project.name}</description>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.icgc.dcc</groupId>
+            <artifactId>dcc-import-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.icgc.dcc</groupId>
+            <artifactId>dcc-common-core</artifactId>
+            <version>5.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.reactivex.rxjava2</groupId>
+            <artifactId>rxjava</artifactId>
+            <version>2.1.6</version>
+        </dependency>
+        <dependency>
+            <groupId>it.sauronsoftware</groupId>
+            <artifactId>ftp4j</artifactId>
+            <version>1.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-container-default</artifactId>
+            <version>1.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-archiver</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+    </dependencies>
+
+    <repositories>
+        <repository>
+            <id>novus</id>
+            <name>novus</name>
+            <url>http://repo.novus.com/releases/</url>
+        </repository>
+    </repositories>
+
+
+</project>

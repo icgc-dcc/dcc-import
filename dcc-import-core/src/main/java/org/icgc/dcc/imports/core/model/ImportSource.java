@@ -40,7 +40,8 @@ public enum ImportSource implements Identifiable {
   PATHWAYS("Pathways"),
   GENES("Genes"),
   DIAGRAMS("Diagrams"),
-  DRUGS("Drugs");
+  DRUGS("Drugs"),
+  VARIANT("Variant");
 
   @NonNull
   private final String id;

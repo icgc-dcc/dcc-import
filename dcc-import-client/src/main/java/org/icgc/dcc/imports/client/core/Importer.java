@@ -59,7 +59,8 @@ public class Importer {
       ImportSource.CGC,
       ImportSource.PATHWAYS,
       ImportSource.GO,
-      ImportSource.DIAGRAMS);
+      ImportSource.DIAGRAMS,
+      ImportSource.VARIANT);
 
   /**
    * Configuration
