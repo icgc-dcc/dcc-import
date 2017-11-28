@@ -1,6 +1,10 @@
 package org.icgc.dcc.imports.variant.processor.impl.civic;
 
-import org.icgc.dcc.imports.variant.processor.VariantDataProcessor;
+import io.reactivex.Observable;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.icgc.dcc.imports.variant.model.CivicClinicalEvidenceSummary;
+import org.icgc.dcc.imports.variant.processor.api.*;
 
 /**
  * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
@@ -20,9 +24,19 @@ import org.icgc.dcc.imports.variant.processor.VariantDataProcessor;
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+@RequiredArgsConstructor
 public class CivicClinicalEvidenceSummaryProcessor implements VariantDataProcessor{
+
+  @NonNull private Downloader downloader;
+  @NonNull private FileReader<CivicClinicalEvidenceSummary> reader;
+  @NonNull private ContentWriter<CivicClinicalEvidenceSummary> writer;
+
   @Override
   public void process() {
-
+    Observable
+        .defer(() -> downloader.download())
+        .compose(reader::extract)
+        .compose(writer::write)
+        .subscribe();
   }
 }

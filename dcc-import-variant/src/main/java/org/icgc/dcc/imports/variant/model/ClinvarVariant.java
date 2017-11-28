@@ -1,6 +1,7 @@
 package org.icgc.dcc.imports.variant.model;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 /**
@@ -55,4 +56,44 @@ public class ClinvarVariant {
   @NonNull private int variationID;
   @NonNull private String variationType;
   @NonNull private boolean interpreted;
+
+  public static class Builder {
+    public static ClinvarVariant build(ClinvarVariantSummary summary, ClinvarVariationAllele allele) {
+      return new ClinvarVariant(
+          summary.getAlleleID(),
+          summary.getVariantType(),
+          summary.getName(),
+          summary.getGeneID(),
+          summary.getGeneSymbol(),
+          summary.getHgncID(),
+          summary.getClinicalSignificance(),
+          summary.getClinSigSimple(),
+          summary.getLastEvaluated(),
+          summary.getRsNumber(),
+          summary.getNsvEsv(),
+          summary.getRcVaccession(),
+          summary.getPhenotypeIDS(),
+          summary.getPhenotypeList(),
+          summary.getOrigin(),
+          summary.getOriginSimple(),
+          summary.getAssembly(),
+          summary.getChromosomeAccession(),
+          summary.getChromosome(),
+          summary.getStart(),
+          summary.getStop(),
+          summary.getReferenceAllele(),
+          summary.getAlternateAllele(),
+          summary.getCytogenetic(),
+          summary.getReviewStatus(),
+          summary.getNumberSubmitters(),
+          summary.getGuidelines(),
+          summary.getTestedInGTR(),
+          summary.getOtherIDs(),
+          summary.getSubmitterCategories(),
+          allele.getVariationID(),
+          allele.getVariationType(),
+          allele.isInterpreted()
+      );
+    }
+  }
 }

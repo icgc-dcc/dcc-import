@@ -1,6 +1,14 @@
-package org.icgc.dcc.imports.variant.processor;
+package org.icgc.dcc.imports.variant.processor.impl.common;
 
 import io.reactivex.Observable;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.icgc.dcc.imports.variant.processor.api.Downloader;
+
+import java.io.File;
+import java.net.URL;
 
 /**
  * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
@@ -19,6 +27,26 @@ import io.reactivex.Observable;
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public interface ContentWriter<T> {
-  void write(Observable<T> instance);
+@RequiredArgsConstructor
+@Slf4j
+public class HttpDownloader implements Downloader{
+  @NonNull private String host;
+  @NonNull private String fileName;
+
+  @Override
+  public Observable<File> download() {
+
+    return
+      Observable.defer(() -> {
+        String systemDir = System.getProperty("java.io.tmpdir");
+        String tmpPath = (systemDir.endsWith("/")?systemDir.substring(0, systemDir.length()-1):systemDir) + "/dcc/import/variant/" + fileName;
+        log.info("Downloading the file at " + tmpPath);
+        File tmpFile = new File( tmpPath );
+        if(tmpFile.exists()) {
+          tmpFile.delete();
+        }
+        FileUtils.copyURLToFile(new URL(host + "/" + fileName), tmpFile);
+        return Observable.just(tmpFile);
+      });
+  }
 }

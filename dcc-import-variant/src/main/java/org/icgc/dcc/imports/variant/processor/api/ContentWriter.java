@@ -1,8 +1,6 @@
-package org.icgc.dcc.imports.variant.processor;
+package org.icgc.dcc.imports.variant.processor.api;
 
 import io.reactivex.Observable;
-
-import java.io.File;
 
 /**
  * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
@@ -21,6 +19,6 @@ import java.io.File;
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public interface Downloader {
-  Observable<File> download();
+public interface ContentWriter<T> {
+  Observable<Object> write(Observable<T> instance);
 }

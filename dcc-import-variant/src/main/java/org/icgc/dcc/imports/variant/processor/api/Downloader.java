@@ -1,4 +1,8 @@
-package org.icgc.dcc.imports.variant.processor;
+package org.icgc.dcc.imports.variant.processor.api;
+
+import io.reactivex.Observable;
+
+import java.io.File;
 
 /**
  * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
@@ -17,6 +21,6 @@ package org.icgc.dcc.imports.variant.processor;
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public interface VariantDataProcessor {
-  void process();
+public interface Downloader {
+  Observable<File> download();
 }

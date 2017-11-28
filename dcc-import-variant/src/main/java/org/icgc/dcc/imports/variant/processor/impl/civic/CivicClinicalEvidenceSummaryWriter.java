@@ -1,8 +1,14 @@
 package org.icgc.dcc.imports.variant.processor.impl.civic;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.reactivex.Observable;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.icgc.dcc.imports.variant.model.CivicClinicalEvidenceSummary;
-import org.icgc.dcc.imports.variant.processor.ContentWriter;
+import org.icgc.dcc.imports.variant.processor.api.ContentWriter;
+import org.jongo.Jongo;
+import org.jongo.MongoCollection;
 
 
 /**
@@ -23,10 +29,20 @@ import org.icgc.dcc.imports.variant.processor.ContentWriter;
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+@RequiredArgsConstructor
 public class CivicClinicalEvidenceSummaryWriter implements ContentWriter<CivicClinicalEvidenceSummary>{
 
-  @Override
-  public void write(Observable<CivicClinicalEvidenceSummary> instance) {
+  @NonNull private Jongo jongo;
+  @NonNull private String collectionName;
+  private ObjectMapper mapper = new ObjectMapper();
 
+  @Override
+  public Observable<Object> write(Observable<CivicClinicalEvidenceSummary> instance) {
+    MongoCollection collection = jongo.getCollection(collectionName);
+    collection.drop();
+    return
+      instance.map(item ->
+        collection.insert( mapper.convertValue(item, ObjectNode.class) )
+      );
   }
 }

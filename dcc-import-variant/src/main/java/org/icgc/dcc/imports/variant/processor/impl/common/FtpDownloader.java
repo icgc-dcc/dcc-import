@@ -5,7 +5,7 @@ import it.sauronsoftware.ftp4j.FTPClient;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.icgc.dcc.imports.variant.processor.Downloader;
+import org.icgc.dcc.imports.variant.processor.api.Downloader;
 
 import java.io.File;
 

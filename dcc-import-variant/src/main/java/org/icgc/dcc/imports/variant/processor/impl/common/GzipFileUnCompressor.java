@@ -3,11 +3,12 @@ package org.icgc.dcc.imports.variant.processor.impl.common;
 import io.reactivex.Observable;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.codehaus.plexus.archiver.tar.TarGZipUnArchiver;
-import org.codehaus.plexus.logging.console.ConsoleLoggerManager;
-import org.icgc.dcc.imports.variant.processor.UnCompressor;
+import org.icgc.dcc.imports.variant.processor.api.UnCompressor;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
@@ -38,16 +39,18 @@ public class GzipFileUnCompressor implements UnCompressor {
 
     return
       input.map(src -> {
-        TarGZipUnArchiver archiver = new TarGZipUnArchiver();
-        ConsoleLoggerManager manager = new ConsoleLoggerManager();
-        manager.initialize();
-        archiver.enableLogging(manager.getLoggerForComponent("Unzipping file: " + untarFilename));
-        archiver.setSourceFile(src);
-        archiver.setDestDirectory(src.getParentFile());
-        archiver.extract();
-        File untar = new File(src.getParentFile(), untarFilename);
+        File outputFile = new File(src.getParentFile(), untarFilename);
+        byte[] buffer = new byte[1024];
+        GZIPInputStream gzis = new GZIPInputStream(new FileInputStream(src));
+        FileOutputStream out = new FileOutputStream(outputFile);
+        int len;
+        while((len = gzis.read(buffer)) > 0){
+          out.write(buffer, 0, len);
+        }
+        gzis.close();
+        out.close();
         src.delete();
-        return untar;
+        return outputFile;
       });
 
   }

@@ -2,7 +2,7 @@ package org.icgc.dcc.imports.variant.processor.impl.clinvar;
 
 import io.reactivex.Observable;
 import org.icgc.dcc.imports.variant.model.ClinvarVariationAllele;
-import org.icgc.dcc.imports.variant.processor.FileReader;
+import org.icgc.dcc.imports.variant.processor.api.FileReader;
 
 import java.io.BufferedReader;
 import java.io.File;

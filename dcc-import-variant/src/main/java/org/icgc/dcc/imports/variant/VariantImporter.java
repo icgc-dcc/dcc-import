@@ -1,8 +1,31 @@
 package org.icgc.dcc.imports.variant;
 
+import com.mongodb.MongoClientURI;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.imports.core.SourceImporter;
 import org.icgc.dcc.imports.core.model.ImportSource;
+import org.icgc.dcc.imports.core.util.Jongos;
+import org.icgc.dcc.imports.variant.model.CivicClinicalEvidenceSummary;
+import org.icgc.dcc.imports.variant.model.ClinvarVariant;
+import org.icgc.dcc.imports.variant.model.ClinvarVariantSummary;
+import org.icgc.dcc.imports.variant.model.ClinvarVariationAllele;
+import org.icgc.dcc.imports.variant.processor.api.ContentWriter;
+import org.icgc.dcc.imports.variant.processor.api.Downloader;
+import org.icgc.dcc.imports.variant.processor.api.FileReader;
+import org.icgc.dcc.imports.variant.processor.api.UnCompressor;
+import org.icgc.dcc.imports.variant.processor.impl.civic.CivicClinicalEvidenceSummaryFileReader;
+import org.icgc.dcc.imports.variant.processor.impl.civic.CivicClinicalEvidenceSummaryProcessor;
+import org.icgc.dcc.imports.variant.processor.impl.civic.CivicClinicalEvidenceSummaryWriter;
+import org.icgc.dcc.imports.variant.processor.impl.clinvar.ClinvarVariantProcessor;
+import org.icgc.dcc.imports.variant.processor.impl.clinvar.ClinvarVariantSummaryFileReader;
+import org.icgc.dcc.imports.variant.processor.impl.clinvar.ClinvarVariationAlleleFileReader;
+import org.icgc.dcc.imports.variant.processor.impl.clinvar.ClinvarVariantWriter;
+import org.icgc.dcc.imports.variant.processor.impl.common.FtpDownloader;
+import org.icgc.dcc.imports.variant.processor.impl.common.GzipFileUnCompressor;
+import org.icgc.dcc.imports.variant.processor.impl.common.HttpDownloader;
+import org.jongo.Jongo;
 
 /**
  * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
@@ -23,7 +46,14 @@ import org.icgc.dcc.imports.core.model.ImportSource;
  */
 
 @Slf4j
+@RequiredArgsConstructor
 public class VariantImporter implements SourceImporter {
+
+  @NonNull
+  private MongoClientURI mongoUri;
+  private String civicCollectionName = "Civic";
+  private String clinvarCollectionName = "Clinvar";
+
   @Override
   public ImportSource getSource() {
     return ImportSource.VARIANT;
@@ -31,6 +61,27 @@ public class VariantImporter implements SourceImporter {
 
   @Override
   public void execute() {
+    // VariantImporter is playing an injector role
+
+    Jongo jongo = Jongos.createJongo(mongoUri);
+
+    Downloader civicDownloader = new HttpDownloader("https://civic.genome.wustl.edu/downloads/nightly", "nightly-ClinicalEvidenceSummaries.tsv");
+    FileReader<CivicClinicalEvidenceSummary> civicReader = new CivicClinicalEvidenceSummaryFileReader();
+    ContentWriter<CivicClinicalEvidenceSummary> civicWriter = new CivicClinicalEvidenceSummaryWriter(jongo, civicCollectionName);
+
+    Downloader clinvarSummaryDownloader = new FtpDownloader("ftp://ftp.ncbi.nlm.nih.gov", "/pub/clinvar/tab_delimited", "variant_summary.txt.gz");
+    UnCompressor clinvarSummaryUnzipper = new GzipFileUnCompressor("variant_summary.txt");
+    FileReader<ClinvarVariantSummary> clinvarSummaryReader = new ClinvarVariantSummaryFileReader();
+
+    Downloader clinvarAlleleDownloader = new FtpDownloader("ftp://ftp.ncbi.nlm.nih.gov", "/pub/clinvar/tab_delimited", "variation_allele.txt.gz");
+    UnCompressor clinvarAlleleUnzipper = new GzipFileUnCompressor("variation_allele.txt");
+    FileReader<ClinvarVariationAllele> clinvarAlleleReader = new ClinvarVariationAlleleFileReader();
+
+    ContentWriter<ClinvarVariant> clinvarWriter = new ClinvarVariantWriter(jongo, clinvarCollectionName);
+
+    new CivicClinicalEvidenceSummaryProcessor(civicDownloader, civicReader, civicWriter).process();
+
+    new ClinvarVariantProcessor(clinvarSummaryDownloader, clinvarSummaryUnzipper, clinvarSummaryReader, clinvarAlleleDownloader, clinvarAlleleUnzipper, clinvarAlleleReader, clinvarWriter).process();
 
   }
 }

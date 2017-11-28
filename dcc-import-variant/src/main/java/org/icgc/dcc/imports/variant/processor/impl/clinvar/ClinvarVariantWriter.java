@@ -1,8 +1,14 @@
 package org.icgc.dcc.imports.variant.processor.impl.clinvar;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.reactivex.Observable;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.icgc.dcc.imports.variant.model.ClinvarVariant;
-import org.icgc.dcc.imports.variant.processor.ContentWriter;
+import org.icgc.dcc.imports.variant.processor.api.ContentWriter;
+import org.jongo.Jongo;
+import org.jongo.MongoCollection;
 
 /**
  * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
@@ -21,11 +27,25 @@ import org.icgc.dcc.imports.variant.processor.ContentWriter;
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+@RequiredArgsConstructor
+public class ClinvarVariantWriter implements ContentWriter<ClinvarVariant>{
 
-public class ClivarVariantWriter implements ContentWriter<ClinvarVariant>{
+  @NonNull private Jongo jongo;
+  @NonNull private String collectionName;
+  private ObjectMapper mapper = new ObjectMapper();
+
+  public void cleanCollection(String collectionName) {
+    MongoCollection collection = jongo.getCollection(collectionName);
+    collection.drop();
+  }
+
 
   @Override
-  public void write(Observable<ClinvarVariant> instance) {
-
+  public Observable<Object> write(Observable<ClinvarVariant> instance) {
+    MongoCollection collection = jongo.getCollection(collectionName);
+    return
+    instance.map(item ->
+       collection.insert( mapper.convertValue(item, ObjectNode.class) )
+    );
   }
 }
