@@ -3,12 +3,9 @@ package org.icgc.dcc.imports.variant.processor.impl.common;
 import io.reactivex.Observable;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.icgc.dcc.imports.variant.processor.api.Downloader;
 
 import java.io.File;
-import java.net.URL;
 
 /**
  * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
@@ -28,22 +25,19 @@ import java.net.URL;
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 @RequiredArgsConstructor
-@Slf4j
-public class HttpDownloader implements Downloader{
-  @NonNull private String host;
-  @NonNull private String remoteFilename;
-  @NonNull private String localFullpath;
+public class ShellCommandDownloader implements Downloader{
+
+  @NonNull private String fileUrl;
+  @NonNull private String localDir;
+  @NonNull private String filename;
 
   @Override
   public Observable<File> download() {
-
     return
       Observable.defer(() -> {
-
-        log.info("Downloading the file at " + localFullpath);
-        File localFile = new File(localFullpath);
-        FileUtils.copyURLToFile(new URL(host + "/" + remoteFilename), localFile);
-        return Observable.just(localFile);
+        Process p = Runtime.getRuntime().exec("wget -N -P " + localDir + " " + fileUrl);
+        p.waitFor();
+        return Observable.just( new File(localDir + "/" + filename) );
       });
   }
 }

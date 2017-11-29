@@ -36,7 +36,9 @@ public class FtpDownloader implements Downloader {
   @NonNull
   private String path;
   @NonNull
-  private String fileName;
+  private String remoteFilename;
+  @NonNull
+  private String localFullpath;
 
   @Override
   public Observable<File> download() {
@@ -44,22 +46,15 @@ public class FtpDownloader implements Downloader {
     return
       Observable.just(new FTPClient()).map(ftp -> {
 
-        String systemDir = System.getProperty("java.io.tmpdir");
+        log.info("Downloading the file at " + localFullpath);
 
-        String tmpPath = (systemDir.endsWith("/")?systemDir.substring(0, systemDir.length()-1):systemDir) + "/dcc/import/variant/" + fileName;
-        log.info("Downloading the file at " + tmpPath);
-        File tmpFile = new File( tmpPath );
-        if(tmpFile.exists()) {
-          tmpFile.delete();
-        }
-
+        File localFile = new File(localFullpath);
         ftp.connect(host);
         ftp.changeDirectory(path);
         ftp.setType(FTPClient.TYPE_BINARY);
+        ftp.download(remoteFilename, localFile);
 
-        ftp.download(fileName, tmpFile);
-
-        return tmpFile;
+        return localFile;
 
       });
 

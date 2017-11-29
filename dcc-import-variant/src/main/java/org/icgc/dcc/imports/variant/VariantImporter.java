@@ -25,7 +25,10 @@ import org.icgc.dcc.imports.variant.processor.impl.clinvar.ClinvarVariantWriter;
 import org.icgc.dcc.imports.variant.processor.impl.common.FtpDownloader;
 import org.icgc.dcc.imports.variant.processor.impl.common.GzipFileUnCompressor;
 import org.icgc.dcc.imports.variant.processor.impl.common.HttpDownloader;
+import org.icgc.dcc.imports.variant.processor.impl.common.ShellCommandDownloader;
 import org.jongo.Jongo;
+
+import java.io.File;
 
 /**
  * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
@@ -62,18 +65,23 @@ public class VariantImporter implements SourceImporter {
   @Override
   public void execute() {
     // VariantImporter is playing an injector role
+    String systemDir = System.getProperty("java.io.tmpdir");
+    String tmpPath = (systemDir.endsWith("/")?systemDir.substring(0, systemDir.length()-1):systemDir) + "/dcc/import/variant";
 
     Jongo jongo = Jongos.createJongo(mongoUri);
 
-    Downloader civicDownloader = new HttpDownloader("https://civic.genome.wustl.edu/downloads/nightly", "nightly-ClinicalEvidenceSummaries.tsv");
+    String civicFilename = "nightly-ClinicalEvidenceSummaries.tsv";
+    Downloader civicDownloader = new ShellCommandDownloader("https://civic.genome.wustl.edu/downloads/nightly/" + civicFilename, tmpPath, civicFilename);
     FileReader<CivicClinicalEvidenceSummary> civicReader = new CivicClinicalEvidenceSummaryFileReader();
     ContentWriter<CivicClinicalEvidenceSummary> civicWriter = new CivicClinicalEvidenceSummaryWriter(jongo, civicCollectionName);
 
-    Downloader clinvarSummaryDownloader = new FtpDownloader("ftp://ftp.ncbi.nlm.nih.gov", "/pub/clinvar/tab_delimited", "variant_summary.txt.gz");
+    String clinvarSummaryFilename = "variant_summary.txt.gz";
+    Downloader clinvarSummaryDownloader = new ShellCommandDownloader("ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/" + clinvarSummaryFilename, tmpPath, clinvarSummaryFilename);
     UnCompressor clinvarSummaryUnzipper = new GzipFileUnCompressor("variant_summary.txt");
     FileReader<ClinvarVariantSummary> clinvarSummaryReader = new ClinvarVariantSummaryFileReader();
 
-    Downloader clinvarAlleleDownloader = new FtpDownloader("ftp://ftp.ncbi.nlm.nih.gov", "/pub/clinvar/tab_delimited", "variation_allele.txt.gz");
+    String clinvarAlleleFilename = "variation_allele.txt.gz";
+    Downloader clinvarAlleleDownloader = new ShellCommandDownloader("ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimite/" + clinvarAlleleFilename, tmpPath, clinvarAlleleFilename);
     UnCompressor clinvarAlleleUnzipper = new GzipFileUnCompressor("variation_allele.txt");
     FileReader<ClinvarVariationAllele> clinvarAlleleReader = new ClinvarVariationAlleleFileReader();
 

@@ -51,8 +51,8 @@ public class CivicClinicalEvidenceSummary {
   @NonNull private String variantBases;
   @NonNull private String representativeTranscript;
   @NonNull private String chromosome2;
-  @NonNull private long start2;
-  @NonNull private long stop2;
+  @NonNull private String start2;
+  @NonNull private String stop2;
   @NonNull private String representativeTranscript2;
   @NonNull private String ensemblVersion;
   @NonNull private String referenceBuild;
@@ -60,6 +60,7 @@ public class CivicClinicalEvidenceSummary {
   @NonNull private String variantOrigin;
   @NonNull private String lastViewDate;
   @NonNull private String evidenceCivicUrl;
+  @NonNull private String variantCivicUrl;
   @NonNull private String geneCivicUrl;
 
   public static class Builder implements VariantModelBuilder<CivicClinicalEvidenceSummary>{
@@ -93,8 +94,8 @@ public class CivicClinicalEvidenceSummary {
           items.get(22),
           items.get(23),
           items.get(24),
-          Long.parseLong(items.get(25)),
-          Long.parseLong(items.get(26)),
+          items.get(25),
+          items.get(26),
           items.get(27),
           items.get(28),
           items.get(29),
@@ -102,7 +103,8 @@ public class CivicClinicalEvidenceSummary {
           items.get(31),
           items.get(32),
           items.get(33),
-          items.get(34)
+          items.get(34),
+          items.get(35)
       );
     }
   }

@@ -63,7 +63,7 @@ public class ClinvarVariantProcessor implements VariantDataProcessor {
             .createDataset(tuple.getKey(), Encoders.bean(ClinvarVariantSummary.class))
             .joinWith(
                 session.createDataset(tuple.getValue(), Encoders.bean(ClinvarVariationAllele.class)),
-                col("alleleID")
+                col("alleleID").and(col("assembly"))
             ).map(
                 new MapFunction<Tuple2<ClinvarVariantSummary,ClinvarVariationAllele>, ClinvarVariant>() {
                   @Override
