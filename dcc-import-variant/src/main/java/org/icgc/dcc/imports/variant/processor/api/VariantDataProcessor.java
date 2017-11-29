@@ -1,5 +1,6 @@
 package org.icgc.dcc.imports.variant.processor.api;
 
+
 /**
  * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
  * <p>
@@ -17,6 +18,6 @@ package org.icgc.dcc.imports.variant.processor.api;
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public interface VariantDataProcessor {
+public interface VariantDataProcessor{
   void process();
 }

@@ -1,7 +1,6 @@
 package org.icgc.dcc.imports.variant.model;
 
-import lombok.Data;
-import lombok.NonNull;
+import lombok.*;
 
 import java.util.List;
 
@@ -24,38 +23,39 @@ import static org.icgc.dcc.common.core.util.Splitters.TAB;
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-@Data
+@RequiredArgsConstructor
+@NoArgsConstructor
 public class ClinvarVariantSummary {
-  @NonNull private int alleleID;
-  @NonNull private String variantType;
-  @NonNull private String name;
-  @NonNull private String geneID;
-  @NonNull private String geneSymbol;
-  @NonNull private String hgncID;
-  @NonNull private String clinicalSignificance;
-  @NonNull private String clinSigSimple;
-  @NonNull private String lastEvaluated;
-  @NonNull private String rsNumber;
-  @NonNull private String nsvEsv;
-  @NonNull private String rcVaccession;
-  @NonNull private String phenotypeIDS;
-  @NonNull private String phenotypeList;
-  @NonNull private String origin;
-  @NonNull private String originSimple;
-  @NonNull private String assembly;
-  @NonNull private String chromosomeAccession;
-  @NonNull private String chromosome;
-  @NonNull private long start;
-  @NonNull private long stop;
-  @NonNull private String referenceAllele;
-  @NonNull private String alternateAllele;
-  @NonNull private String cytogenetic;
-  @NonNull private String reviewStatus;
-  @NonNull private int numberSubmitters;
-  @NonNull private String guidelines;
-  @NonNull private String testedInGTR;
-  @NonNull private String otherIDs;
-  @NonNull private String submitterCategories;
+  @NonNull @Getter @Setter private int alleleID;
+  @NonNull @Getter @Setter private String variantType;
+  @NonNull @Getter @Setter private String name;
+  @NonNull @Getter @Setter private String geneID;
+  @NonNull @Getter @Setter private String geneSymbol;
+  @NonNull @Getter @Setter private String hgncID;
+  @NonNull @Getter @Setter private String clinicalSignificance;
+  @NonNull @Getter @Setter private String clinSigSimple;
+  @NonNull @Getter @Setter private String lastEvaluated;
+  @NonNull @Getter @Setter private String rsNumber;
+  @NonNull @Getter @Setter private String nsvEsv;
+  @NonNull @Getter @Setter private String rcVaccession;
+  @NonNull @Getter @Setter private String phenotypeIDS;
+  @NonNull @Getter @Setter private String phenotypeList;
+  @NonNull @Getter @Setter private String origin;
+  @NonNull @Getter @Setter private String originSimple;
+  @NonNull @Getter @Setter private String assembly;
+  @NonNull @Getter @Setter private String chromosomeAccession;
+  @NonNull @Getter @Setter private String chromosome;
+  @NonNull @Getter @Setter private long start;
+  @NonNull @Getter @Setter private long stop;
+  @NonNull @Getter @Setter private String referenceAllele;
+  @NonNull @Getter @Setter private String alternateAllele;
+  @NonNull @Getter @Setter private String cytogenetic;
+  @NonNull @Getter @Setter private String reviewStatus;
+  @NonNull @Getter @Setter private int numberSubmitters;
+  @NonNull @Getter @Setter private String guidelines;
+  @NonNull @Getter @Setter private String testedInGTR;
+  @NonNull @Getter @Setter private String otherIDs;
+  @NonNull @Getter @Setter private String submitterCategories;
 
   public static class Builder implements VariantModelBuilder<ClinvarVariantSummary> {
 

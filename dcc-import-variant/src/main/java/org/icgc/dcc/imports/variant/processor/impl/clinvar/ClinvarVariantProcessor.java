@@ -1,24 +1,22 @@
 package org.icgc.dcc.imports.variant.processor.impl.clinvar;
 
+import com.mongodb.MongoClientURI;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.spark.api.java.function.ForeachFunction;
 import org.apache.spark.api.java.function.ForeachPartitionFunction;
 import org.apache.spark.api.java.function.MapFunction;
+import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.SparkSession;
+import org.icgc.dcc.imports.core.util.Jongos;
 import org.icgc.dcc.imports.variant.model.ClinvarVariant;
 import org.icgc.dcc.imports.variant.model.ClinvarVariantSummary;
 import org.icgc.dcc.imports.variant.model.ClinvarVariationAllele;
 import org.icgc.dcc.imports.variant.processor.api.*;
 import scala.Tuple2;
-
-import java.util.Iterator;
-
-import static org.apache.spark.sql.functions.*;
 
 
 /**
@@ -39,7 +37,7 @@ import static org.apache.spark.sql.functions.*;
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 @RequiredArgsConstructor
-public class ClinvarVariantProcessor implements VariantDataProcessor {
+public class ClinvarVariantProcessor implements VariantDataProcessor, java.io.Serializable {
 
   @NonNull private Downloader summaryDownloader;
   @NonNull private UnCompressor summaryUnzipper;
@@ -47,8 +45,8 @@ public class ClinvarVariantProcessor implements VariantDataProcessor {
   @NonNull private Downloader alleleDownloader;
   @NonNull private UnCompressor alleleUnzipper;
   @NonNull private FileReader<ClinvarVariationAllele> alleleReader;
-
-  @NonNull private ContentWriter<ClinvarVariant> writer;
+  @NonNull private String mongoUrl;
+  @NonNull private String collectionName;
 
   @Override
   public void process() {
@@ -58,26 +56,30 @@ public class ClinvarVariantProcessor implements VariantDataProcessor {
         summaryDownloader.download().compose(summaryUnzipper::unzip).compose(summaryReader::extract).toList(),
         alleleDownloader.download().compose(alleleUnzipper::unzip).compose(alleleReader::extract).toList(),
         (summary, allele) -> Pair.of(summary, allele)
-    ).map(tuple ->
-        session
-            .createDataset(tuple.getKey(), Encoders.bean(ClinvarVariantSummary.class))
-            .joinWith(
-                session.createDataset(tuple.getValue(), Encoders.bean(ClinvarVariationAllele.class)),
-                col("alleleID").and(col("assembly"))
-            ).map(
-                new MapFunction<Tuple2<ClinvarVariantSummary,ClinvarVariationAllele>, ClinvarVariant>() {
-                  @Override
-                  public ClinvarVariant call(Tuple2<ClinvarVariantSummary, ClinvarVariationAllele> pair) throws Exception {
-                    return ClinvarVariant.Builder.build(pair._1(), pair._2());
-                  }
-                },
-                Encoders.bean(ClinvarVariant.class)
-            )
-    ).subscribe(ds ->
-      ds.foreachPartition((ForeachPartitionFunction<ClinvarVariant>) iterator ->
-        Observable.fromIterable(() -> iterator).compose(writer::write).subscribe()
-      )
-    );
+    ).subscribe(tuple -> {
+
+      Dataset<ClinvarVariantSummary> dsSummary = session.createDataset(tuple.getKey(), Encoders.bean(ClinvarVariantSummary.class));
+      Dataset<ClinvarVariationAllele> dsAllele = session.createDataset(tuple.getValue(), Encoders.bean(ClinvarVariationAllele.class));
+
+      dsSummary.joinWith(dsAllele, dsSummary.col("alleleID").equalTo(dsAllele.col("alleleID")))
+          .map(
+              new MapFunction<Tuple2<ClinvarVariantSummary,ClinvarVariationAllele>, ClinvarVariant>() {
+                @Override
+                public ClinvarVariant call(Tuple2<ClinvarVariantSummary, ClinvarVariationAllele> pair) throws Exception {
+                  return ClinvarVariant.Builder.build(pair._1(), pair._2());
+                }
+              },
+              Encoders.bean(ClinvarVariant.class)
+          ).foreachPartition(
+            (ForeachPartitionFunction<ClinvarVariant>) iterator -> {
+              ContentWriter<ClinvarVariant> writer = new ClinvarVariantWriter(
+                  Jongos.createJongo(new MongoClientURI(mongoUrl)),
+                  collectionName
+              );
+              writer.write(Observable.fromIterable(() -> iterator)).subscribe();
+            }
+          );
+    });
 
     session.close();
   }

@@ -1,7 +1,8 @@
 package org.icgc.dcc.imports.variant.model;
 
-import lombok.Data;
-import lombok.NonNull;
+import lombok.*;
+
+import java.io.Serializable;
 import java.util.List;
 
 import static org.icgc.dcc.common.core.util.Splitters.TAB;
@@ -24,15 +25,16 @@ import static org.icgc.dcc.common.core.util.Splitters.TAB;
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@Data
-public class ClinvarVariationAllele {
-  @NonNull
+@RequiredArgsConstructor
+@NoArgsConstructor
+public class ClinvarVariationAllele implements Serializable {
+  @NonNull @Getter @Setter
   private int variationID;
-  @NonNull
+  @NonNull @Getter @Setter
   private String variationType;
-  @NonNull
+  @NonNull @Getter @Setter
   private int alleleID;
-  @NonNull
+  @NonNull @Getter @Setter
   private boolean interpreted;
 
   public static class Builder implements VariantModelBuilder<ClinvarVariationAllele> {

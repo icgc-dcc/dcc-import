@@ -8,7 +8,6 @@ import org.icgc.dcc.imports.core.SourceImporter;
 import org.icgc.dcc.imports.core.model.ImportSource;
 import org.icgc.dcc.imports.core.util.Jongos;
 import org.icgc.dcc.imports.variant.model.CivicClinicalEvidenceSummary;
-import org.icgc.dcc.imports.variant.model.ClinvarVariant;
 import org.icgc.dcc.imports.variant.model.ClinvarVariantSummary;
 import org.icgc.dcc.imports.variant.model.ClinvarVariationAllele;
 import org.icgc.dcc.imports.variant.processor.api.ContentWriter;
@@ -22,13 +21,10 @@ import org.icgc.dcc.imports.variant.processor.impl.clinvar.ClinvarVariantProcess
 import org.icgc.dcc.imports.variant.processor.impl.clinvar.ClinvarVariantSummaryFileReader;
 import org.icgc.dcc.imports.variant.processor.impl.clinvar.ClinvarVariationAlleleFileReader;
 import org.icgc.dcc.imports.variant.processor.impl.clinvar.ClinvarVariantWriter;
-import org.icgc.dcc.imports.variant.processor.impl.common.FtpDownloader;
 import org.icgc.dcc.imports.variant.processor.impl.common.GzipFileUnCompressor;
-import org.icgc.dcc.imports.variant.processor.impl.common.HttpDownloader;
 import org.icgc.dcc.imports.variant.processor.impl.common.ShellCommandDownloader;
 import org.jongo.Jongo;
 
-import java.io.File;
 
 /**
  * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
@@ -85,11 +81,13 @@ public class VariantImporter implements SourceImporter {
     UnCompressor clinvarAlleleUnzipper = new GzipFileUnCompressor("variation_allele.txt");
     FileReader<ClinvarVariationAllele> clinvarAlleleReader = new ClinvarVariationAlleleFileReader();
 
-    ContentWriter<ClinvarVariant> clinvarWriter = new ClinvarVariantWriter(jongo, clinvarCollectionName);
+    ClinvarVariantWriter clinvarWriter = new ClinvarVariantWriter(jongo, clinvarCollectionName);
+    clinvarWriter.cleanCollection();
 
     new CivicClinicalEvidenceSummaryProcessor(civicDownloader, civicReader, civicWriter).process();
 
-    new ClinvarVariantProcessor(clinvarSummaryDownloader, clinvarSummaryUnzipper, clinvarSummaryReader, clinvarAlleleDownloader, clinvarAlleleUnzipper, clinvarAlleleReader, clinvarWriter).process();
+    new ClinvarVariantProcessor(clinvarSummaryDownloader, clinvarSummaryUnzipper, clinvarSummaryReader, clinvarAlleleDownloader, clinvarAlleleUnzipper, clinvarAlleleReader, mongoUri.getURI(), clinvarCollectionName).process();
+
 
   }
 }

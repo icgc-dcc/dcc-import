@@ -1,8 +1,9 @@
 package org.icgc.dcc.imports.variant.model;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
+
+import java.io.Serializable;
 
 /**
  * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
@@ -22,7 +23,7 @@ import lombok.NonNull;
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 @Data
-public class ClinvarVariant {
+public class ClinvarVariant implements Serializable{
   @NonNull private int alleleID;
   @NonNull private String variantType;
   @NonNull private String name;
@@ -57,7 +58,7 @@ public class ClinvarVariant {
   @NonNull private String variationType;
   @NonNull private boolean interpreted;
 
-  public static class Builder {
+  public static class Builder implements Serializable{
     public static ClinvarVariant build(ClinvarVariantSummary summary, ClinvarVariationAllele allele) {
       return new ClinvarVariant(
           summary.getAlleleID(),

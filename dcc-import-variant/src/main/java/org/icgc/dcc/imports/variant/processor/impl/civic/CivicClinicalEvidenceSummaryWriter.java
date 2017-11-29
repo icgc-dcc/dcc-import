@@ -36,10 +36,14 @@ public class CivicClinicalEvidenceSummaryWriter implements ContentWriter<CivicCl
   @NonNull private String collectionName;
   private ObjectMapper mapper = new ObjectMapper();
 
+  public void cleanCollection() {
+    jongo.getCollection(collectionName).drop();
+  }
+
   @Override
   public Observable<Object> write(Observable<CivicClinicalEvidenceSummary> instance) {
+    this.cleanCollection();
     MongoCollection collection = jongo.getCollection(collectionName);
-    collection.drop();
     return
       instance.map(item ->
         collection.insert( mapper.convertValue(item, ObjectNode.class) )

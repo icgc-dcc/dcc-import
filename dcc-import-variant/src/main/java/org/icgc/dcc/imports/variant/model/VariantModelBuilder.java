@@ -1,5 +1,7 @@
 package org.icgc.dcc.imports.variant.model;
 
+import java.io.Serializable;
+
 /**
  * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
  * <p>
@@ -17,6 +19,6 @@ package org.icgc.dcc.imports.variant.model;
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public interface VariantModelBuilder<E> {
+public interface VariantModelBuilder<E> extends Serializable {
   E build(String line);
 }

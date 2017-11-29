@@ -34,9 +34,8 @@ public class ClinvarVariantWriter implements ContentWriter<ClinvarVariant>{
   @NonNull private String collectionName;
   private ObjectMapper mapper = new ObjectMapper();
 
-  public void cleanCollection(String collectionName) {
-    MongoCollection collection = jongo.getCollection(collectionName);
-    collection.drop();
+  public void cleanCollection() {
+    jongo.getCollection(collectionName).drop();
   }
 
 
