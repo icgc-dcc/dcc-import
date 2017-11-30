@@ -43,13 +43,13 @@ public class ClinvarVariant implements Serializable{
   @NonNull private String assembly;
   @NonNull private String chromosomeAccession;
   @NonNull private String chromosome;
-  @NonNull private long start;
-  @NonNull private long stop;
+  @NonNull private String start;
+  @NonNull private String stop;
   @NonNull private String referenceAllele;
   @NonNull private String alternateAllele;
   @NonNull private String cytogenetic;
   @NonNull private String reviewStatus;
-  @NonNull private int numberSubmitters;
+  @NonNull private String numberSubmitters;
   @NonNull private String guidelines;
   @NonNull private String testedInGTR;
   @NonNull private String otherIDs;

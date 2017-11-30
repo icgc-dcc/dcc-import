@@ -3,6 +3,7 @@ package org.icgc.dcc.imports.variant.processor.impl.common;
 import io.reactivex.Observable;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.imports.variant.processor.api.Downloader;
 
 import java.io.File;
@@ -25,6 +26,7 @@ import java.io.File;
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 @RequiredArgsConstructor
+@Slf4j
 public class ShellCommandDownloader implements Downloader{
 
   @NonNull private String fileUrl;
@@ -35,7 +37,9 @@ public class ShellCommandDownloader implements Downloader{
   public Observable<File> download() {
     return
       Observable.defer(() -> {
-        Process p = Runtime.getRuntime().exec("wget -N -P " + localDir + " " + fileUrl);
+        String cmd = "wget -N -P " + localDir + " " + fileUrl;
+        log.info("running the downloading command: " + cmd);
+        Process p = Runtime.getRuntime().exec(cmd);
         p.waitFor();
         return Observable.just( new File(localDir + "/" + filename) );
       });

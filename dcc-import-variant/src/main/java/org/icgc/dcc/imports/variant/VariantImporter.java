@@ -17,13 +17,12 @@ import org.icgc.dcc.imports.variant.processor.api.UnCompressor;
 import org.icgc.dcc.imports.variant.processor.impl.civic.CivicClinicalEvidenceSummaryFileReader;
 import org.icgc.dcc.imports.variant.processor.impl.civic.CivicClinicalEvidenceSummaryProcessor;
 import org.icgc.dcc.imports.variant.processor.impl.civic.CivicClinicalEvidenceSummaryWriter;
-import org.icgc.dcc.imports.variant.processor.impl.clinvar.ClinvarVariantProcessor;
-import org.icgc.dcc.imports.variant.processor.impl.clinvar.ClinvarVariantSummaryFileReader;
-import org.icgc.dcc.imports.variant.processor.impl.clinvar.ClinvarVariationAlleleFileReader;
-import org.icgc.dcc.imports.variant.processor.impl.clinvar.ClinvarVariantWriter;
+import org.icgc.dcc.imports.variant.processor.impl.clinvar.*;
 import org.icgc.dcc.imports.variant.processor.impl.common.GzipFileUnCompressor;
 import org.icgc.dcc.imports.variant.processor.impl.common.ShellCommandDownloader;
 import org.jongo.Jongo;
+
+import java.io.File;
 
 
 /**
@@ -64,6 +63,9 @@ public class VariantImporter implements SourceImporter {
     String systemDir = System.getProperty("java.io.tmpdir");
     String tmpPath = (systemDir.endsWith("/")?systemDir.substring(0, systemDir.length()-1):systemDir) + "/dcc/import/variant";
 
+    File targetDir = new File(tmpPath);
+    if(targetDir.exists()) targetDir.delete();
+
     Jongo jongo = Jongos.createJongo(mongoUri);
 
     String civicFilename = "nightly-ClinicalEvidenceSummaries.tsv";
@@ -77,7 +79,7 @@ public class VariantImporter implements SourceImporter {
     FileReader<ClinvarVariantSummary> clinvarSummaryReader = new ClinvarVariantSummaryFileReader();
 
     String clinvarAlleleFilename = "variation_allele.txt.gz";
-    Downloader clinvarAlleleDownloader = new ShellCommandDownloader("ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimite/" + clinvarAlleleFilename, tmpPath, clinvarAlleleFilename);
+    Downloader clinvarAlleleDownloader = new ShellCommandDownloader("ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/" + clinvarAlleleFilename, tmpPath, clinvarAlleleFilename);
     UnCompressor clinvarAlleleUnzipper = new GzipFileUnCompressor("variation_allele.txt");
     FileReader<ClinvarVariationAllele> clinvarAlleleReader = new ClinvarVariationAlleleFileReader();
 
@@ -86,8 +88,9 @@ public class VariantImporter implements SourceImporter {
 
     new CivicClinicalEvidenceSummaryProcessor(civicDownloader, civicReader, civicWriter).process();
 
-    new ClinvarVariantProcessor(clinvarSummaryDownloader, clinvarSummaryUnzipper, clinvarSummaryReader, clinvarAlleleDownloader, clinvarAlleleUnzipper, clinvarAlleleReader, mongoUri.getURI(), clinvarCollectionName).process();
+    new ClinvarVariantProcessor(clinvarSummaryDownloader, clinvarSummaryUnzipper, clinvarSummaryReader, clinvarAlleleDownloader, clinvarAlleleUnzipper, clinvarAlleleReader, clinvarWriter).process();
 
 
   }
+  
 }

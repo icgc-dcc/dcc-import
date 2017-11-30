@@ -25,16 +25,15 @@ import static org.icgc.dcc.common.core.util.Splitters.TAB;
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@RequiredArgsConstructor
-@NoArgsConstructor
+@Data
 public class ClinvarVariationAllele implements Serializable {
-  @NonNull @Getter @Setter
+  @NonNull
   private int variationID;
-  @NonNull @Getter @Setter
+  @NonNull
   private String variationType;
-  @NonNull @Getter @Setter
+  @NonNull
   private int alleleID;
-  @NonNull @Getter @Setter
+  @NonNull
   private boolean interpreted;
 
   public static class Builder implements VariantModelBuilder<ClinvarVariationAllele> {

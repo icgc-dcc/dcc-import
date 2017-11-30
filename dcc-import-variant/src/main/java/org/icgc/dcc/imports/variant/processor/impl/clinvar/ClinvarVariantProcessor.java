@@ -1,23 +1,19 @@
 package org.icgc.dcc.imports.variant.processor.impl.clinvar;
 
-import com.mongodb.MongoClientURI;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.spark.api.java.function.ForeachPartitionFunction;
-import org.apache.spark.api.java.function.MapFunction;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Encoders;
-import org.apache.spark.sql.SparkSession;
-import org.icgc.dcc.imports.core.util.Jongos;
 import org.icgc.dcc.imports.variant.model.ClinvarVariant;
 import org.icgc.dcc.imports.variant.model.ClinvarVariantSummary;
 import org.icgc.dcc.imports.variant.model.ClinvarVariationAllele;
-import org.icgc.dcc.imports.variant.processor.api.*;
-import scala.Tuple2;
+import org.icgc.dcc.imports.variant.processor.api.Downloader;
+import org.icgc.dcc.imports.variant.processor.api.FileReader;
+import org.icgc.dcc.imports.variant.processor.api.UnCompressor;
+import org.icgc.dcc.imports.variant.processor.api.VariantDataProcessor;
 
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
@@ -37,50 +33,46 @@ import scala.Tuple2;
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 @RequiredArgsConstructor
-public class ClinvarVariantProcessor implements VariantDataProcessor, java.io.Serializable {
+public class ClinvarVariantProcessor implements VariantDataProcessor {
 
-  @NonNull private Downloader summaryDownloader;
+  @NonNull
+  private Downloader summaryDownloader;
   @NonNull private UnCompressor summaryUnzipper;
   @NonNull private FileReader<ClinvarVariantSummary> summaryReader;
   @NonNull private Downloader alleleDownloader;
   @NonNull private UnCompressor alleleUnzipper;
   @NonNull private FileReader<ClinvarVariationAllele> alleleReader;
-  @NonNull private String mongoUrl;
-  @NonNull private String collectionName;
+  @NonNull private ClinvarVariantWriter writer;
 
   @Override
   public void process() {
-    SparkSession session = SparkSession.builder().appName("ClinvarVariantProcessor").master("local[*]").getOrCreate();
 
-    Single.zip(
-        summaryDownloader.download().compose(summaryUnzipper::unzip).compose(summaryReader::extract).toList(),
+      Single.zip(
+        summaryDownloader.download().compose(summaryUnzipper::unzip).compose(summaryReader::extract).toMultimap(summary -> summary.getAlleleID()),
         alleleDownloader.download().compose(alleleUnzipper::unzip).compose(alleleReader::extract).toList(),
-        (summary, allele) -> Pair.of(summary, allele)
-    ).subscribe(tuple -> {
+        (summaries, alleles) -> {
 
-      Dataset<ClinvarVariantSummary> dsSummary = session.createDataset(tuple.getKey(), Encoders.bean(ClinvarVariantSummary.class));
-      Dataset<ClinvarVariationAllele> dsAllele = session.createDataset(tuple.getValue(), Encoders.bean(ClinvarVariationAllele.class));
-
-      dsSummary.joinWith(dsAllele, dsSummary.col("alleleID").equalTo(dsAllele.col("alleleID")))
-          .map(
-              new MapFunction<Tuple2<ClinvarVariantSummary,ClinvarVariationAllele>, ClinvarVariant>() {
-                @Override
-                public ClinvarVariant call(Tuple2<ClinvarVariantSummary, ClinvarVariationAllele> pair) throws Exception {
-                  return ClinvarVariant.Builder.build(pair._1(), pair._2());
+          return
+            alleles.stream().<List<ClinvarVariant>>reduce(
+                new ArrayList<ClinvarVariant>(),
+                (list, allele) -> {
+                  Iterable<ClinvarVariantSummary> iter = summaries.get(allele.getAlleleID());
+                  if(iter != null) {
+                    for(ClinvarVariantSummary summary: iter){
+                      list.add(ClinvarVariant.Builder.build(summary, allele));
+                    }
+                  }
+                  return list;
+                },
+                (list1, list2) -> {
+                  List<ClinvarVariant> newList = new ArrayList<>();
+                  newList.addAll(list1);
+                  newList.addAll(list2);
+                  return newList;
                 }
-              },
-              Encoders.bean(ClinvarVariant.class)
-          ).foreachPartition(
-            (ForeachPartitionFunction<ClinvarVariant>) iterator -> {
-              ContentWriter<ClinvarVariant> writer = new ClinvarVariantWriter(
-                  Jongos.createJongo(new MongoClientURI(mongoUrl)),
-                  collectionName
-              );
-              writer.write(Observable.fromIterable(() -> iterator)).subscribe();
-            }
-          );
-    });
+            );
+        }
+      ).toObservable().flatMap(list -> Observable.<ClinvarVariant>fromIterable(list)).compose(writer::write).subscribe();
 
-    session.close();
   }
 }

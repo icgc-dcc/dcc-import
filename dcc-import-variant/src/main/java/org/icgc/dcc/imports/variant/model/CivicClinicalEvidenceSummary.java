@@ -45,8 +45,8 @@ public class CivicClinicalEvidenceSummary {
   @NonNull private String variantID;
   @NonNull private String geneID;
   @NonNull private String chromosome;
-  @NonNull private long start;
-  @NonNull private long stop;
+  @NonNull private String start;
+  @NonNull private String stop;
   @NonNull private String referenceBases;
   @NonNull private String variantBases;
   @NonNull private String representativeTranscript;
@@ -88,8 +88,8 @@ public class CivicClinicalEvidenceSummary {
           items.get(16),
           items.get(17),
           items.get(18),
-          Long.parseLong(items.get(19)),
-          Long.parseLong(items.get(20)),
+          items.get(19),
+          items.get(20),
           items.get(21),
           items.get(22),
           items.get(23),

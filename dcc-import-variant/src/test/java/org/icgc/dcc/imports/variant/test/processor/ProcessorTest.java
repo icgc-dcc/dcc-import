@@ -9,9 +9,7 @@ import org.icgc.dcc.imports.variant.processor.api.UnCompressor;
 import org.icgc.dcc.imports.variant.processor.impl.civic.CivicClinicalEvidenceSummaryFileReader;
 import org.icgc.dcc.imports.variant.processor.impl.civic.CivicClinicalEvidenceSummaryProcessor;
 import org.icgc.dcc.imports.variant.processor.impl.civic.CivicClinicalEvidenceSummaryWriter;
-import org.icgc.dcc.imports.variant.processor.impl.clinvar.ClinvarVariantProcessor;
-import org.icgc.dcc.imports.variant.processor.impl.clinvar.ClinvarVariantSummaryFileReader;
-import org.icgc.dcc.imports.variant.processor.impl.clinvar.ClinvarVariationAlleleFileReader;
+import org.icgc.dcc.imports.variant.processor.impl.clinvar.*;
 import org.jongo.Jongo;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -99,15 +97,13 @@ public class ProcessorTest extends FileOperation implements Serializable {
           }
         },
         new ClinvarVariationAlleleFileReader(),
-        mongoClientURI.getURI(),
-        "Clinvar"
+        new ClinvarVariantWriter(jongo, "Clinvar")
     );
     processor.process();
 
     Assert.assertEquals(
-      jongo.getCollection("Clinvar").count(), 9
+        jongo.getCollection("Clinvar").count(), 9
     );
-
   }
 
   private Jongo getJongo(EmbeddedMongo mongodb, MongoClientURI mongoUri) {
