@@ -1,15 +1,7 @@
 package org.icgc.dcc.imports.variant.processor.impl.clinvar;
 
-import io.reactivex.Observable;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.icgc.dcc.imports.variant.model.ClinvarVariantSummary;
 import org.icgc.dcc.imports.variant.processor.api.ClinvarFilter;
-import org.icgc.dcc.imports.variant.processor.api.FileReader;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.util.stream.Collectors;
 
 /**
  * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
@@ -28,24 +20,10 @@ import java.util.stream.Collectors;
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-@RequiredArgsConstructor
-public class ClinvarVariantSummaryFileReader implements FileReader<ClinvarVariantSummary>{
 
-  @NonNull
-  private ClinvarFilter filter;
-  private ClinvarVariantSummary.Builder builder = new ClinvarVariantSummary.Builder();
-
+public class ClinvarSummaryFilter implements ClinvarFilter {
   @Override
-  public Observable<ClinvarVariantSummary> extract(Observable<File> input) {
-
-    return
-      input.flatMap(file -> {
-        BufferedReader reader = new BufferedReader(new java.io.FileReader(file));
-        return
-            Observable.fromIterable(
-                reader.lines().skip(1).collect(Collectors.toList())
-            ).map(builder::build);
-      }).filter(filter::predicate);
-
+  public boolean predicate(ClinvarVariantSummary summary) {
+    return !(summary.getOriginSimple().equals("germline") || !summary.getAssembly().equals("GRCh37"));
   }
 }

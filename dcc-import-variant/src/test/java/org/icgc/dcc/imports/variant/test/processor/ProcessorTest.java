@@ -83,7 +83,7 @@ public class ProcessorTest extends FileOperation implements Serializable {
             return input;
           }
         },
-        new ClinvarVariantSummaryFileReader(),
+        new ClinvarVariantSummaryFileReader(new ClinvarSummaryFilter()),
         new Downloader() {
           @Override
           public Observable<File> download() {
@@ -102,7 +102,7 @@ public class ProcessorTest extends FileOperation implements Serializable {
     processor.process();
 
     Assert.assertEquals(
-        jongo.getCollection("Clinvar").count(), 9
+        jongo.getCollection("Clinvar").count(), 1
     );
   }
 

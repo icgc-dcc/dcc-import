@@ -76,7 +76,7 @@ public class VariantImporter implements SourceImporter {
     String clinvarSummaryFilename = "variant_summary.txt.gz";
     Downloader clinvarSummaryDownloader = new ShellCommandDownloader("ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/" + clinvarSummaryFilename, tmpPath, clinvarSummaryFilename);
     UnCompressor clinvarSummaryUnzipper = new GzipFileUnCompressor("variant_summary.txt");
-    FileReader<ClinvarVariantSummary> clinvarSummaryReader = new ClinvarVariantSummaryFileReader();
+    FileReader<ClinvarVariantSummary> clinvarSummaryReader = new ClinvarVariantSummaryFileReader(new ClinvarSummaryFilter());
 
     String clinvarAlleleFilename = "variation_allele.txt.gz";
     Downloader clinvarAlleleDownloader = new ShellCommandDownloader("ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/" + clinvarAlleleFilename, tmpPath, clinvarAlleleFilename);
@@ -92,5 +92,9 @@ public class VariantImporter implements SourceImporter {
 
 
   }
-  
+
+  public static void main(String[] args) {
+    (new VariantImporter(new MongoClientURI("mongodb://localhost:27017/dcc-import"))).execute();
+  }
+
 }

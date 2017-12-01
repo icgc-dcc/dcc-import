@@ -5,6 +5,7 @@ import org.icgc.dcc.imports.variant.model.CivicClinicalEvidenceSummary;
 import org.icgc.dcc.imports.variant.model.ClinvarVariantSummary;
 import org.icgc.dcc.imports.variant.model.ClinvarVariationAllele;
 import org.icgc.dcc.imports.variant.processor.impl.civic.CivicClinicalEvidenceSummaryFileReader;
+import org.icgc.dcc.imports.variant.processor.impl.clinvar.ClinvarSummaryFilter;
 import org.icgc.dcc.imports.variant.processor.impl.clinvar.ClinvarVariantSummaryFileReader;
 import org.icgc.dcc.imports.variant.processor.impl.clinvar.ClinvarVariationAlleleFileReader;
 import org.junit.Assert;
@@ -44,7 +45,7 @@ public class FileReaderTest extends FileOperation{
 
   @Test
   public void clinvarSummaryFileReaderTest() {
-    ClinvarVariantSummaryFileReader reader = new ClinvarVariantSummaryFileReader();
+    ClinvarVariantSummaryFileReader reader = new ClinvarVariantSummaryFileReader(new ClinvarSummaryFilter());
     Observable<ClinvarVariantSummary> summaries = reader.extract(Observable.just(files[2]));
     Stream<ClinvarVariantSummary> stream = StreamSupport.stream(summaries.blockingIterable().spliterator(), false);
     Assert.assertEquals(
