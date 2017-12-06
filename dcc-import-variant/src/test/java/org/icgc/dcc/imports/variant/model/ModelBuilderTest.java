@@ -1,4 +1,4 @@
-package org.icgc.dcc.imports.variant.test.model;
+package org.icgc.dcc.imports.variant.model;
 
 import org.icgc.dcc.imports.variant.model.CivicClinicalEvidenceSummary;
 import org.icgc.dcc.imports.variant.model.ClinvarVariantSummary;
