@@ -1,0 +1,20 @@
+##Mapping of ClinVar's VariationID (used to build the URL on the web site) and the AlleleIDs assigned to each variant.
+##When the canonical identifier is generated from NCBI's allele registry, those values will be added to this report.
+##Explanation of the columns in this report
+#VariationID:              the identifier assigned by ClinVar and used to build the URL, namely https://ncbi.nlm.nih.gov/clinvar/VariationID
+#Type:                     Types of VariationID include Variant (simple variant), Haplotype, CompoundHeterozygote, Complex, Phase unknown, Distinct chromosomes
+#AlleleID:                 the integer identifier assigned by ClinVar to each simple allele
+#Interpreted:              _yes_ indicates an intepretation was submitted about the VariationID specifically, _no_ indicates that information about the VariationID was submitted as a component of a different record.
+#VariationID	Type	AlleleID	Interpreted
+2	Variant	15041	yes
+3	Variant	15042	yes
+4	Variant	15043	yes
+5	Variant	15044	yes
+6	Variant	15045	yes
+7	Haplotype	15046	yes
+7	Haplotype	59458	yes
+8	Variant	15047	yes
+9	Variant	15048	yes
+10	Variant	15049	yes
+11	Variant	15050	yes
+12	Variant	15051	yes

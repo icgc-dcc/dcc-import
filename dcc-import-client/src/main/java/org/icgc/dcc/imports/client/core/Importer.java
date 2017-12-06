@@ -45,6 +45,7 @@ import com.mongodb.MongoClientURI;
 import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
+import org.icgc.dcc.imports.variant.VariantImporter;
 
 @Slf4j
 public class Importer {
@@ -59,7 +60,8 @@ public class Importer {
       ImportSource.CGC,
       ImportSource.PATHWAYS,
       ImportSource.GO,
-      ImportSource.DIAGRAMS);
+      ImportSource.DIAGRAMS,
+      ImportSource.VARIANT);
 
   /**
    * Configuration
@@ -121,14 +123,16 @@ public class Importer {
 
   private Map<ImportSource, SourceImporter> createImporters(CGPClient cgpClient, String cosmicUserName,
       String cosmicPassword) {
-    val importers = ImmutableList.<SourceImporter> of(
+    ImmutableList<SourceImporter> importers = ImmutableList.<SourceImporter> of(
         new ProjectImporter(mongoUri, cgpClient),
         new GeneImporter(mongoUri),
         new DrugImporter(mongoUri),
         new CgcImporter(mongoUri, cosmicUserName, cosmicPassword),
         new PathwayImporter(mongoUri),
         new GoImporter(mongoUri),
-        new DiagramImporter(mongoUri));
+        new DiagramImporter(mongoUri),
+        new VariantImporter(mongoUri)
+    );
 
     return uniqueIndex(importers, (SourceImporter importer) -> importer.getSource());
   }
