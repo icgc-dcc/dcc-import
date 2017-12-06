@@ -1,4 +1,4 @@
-package org.icgc.dcc.imports.variant.test.processor;
+package org.icgc.dcc.imports.variant.processor;
 
 import io.reactivex.Observable;
 import org.icgc.dcc.imports.variant.model.CivicClinicalEvidenceSummary;

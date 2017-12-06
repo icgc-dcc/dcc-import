@@ -89,12 +89,5 @@ public class VariantImporter implements SourceImporter {
     new CivicClinicalEvidenceSummaryProcessor(civicDownloader, civicReader, civicWriter).process();
 
     new ClinvarVariantProcessor(clinvarSummaryDownloader, clinvarSummaryUnzipper, clinvarSummaryReader, clinvarAlleleDownloader, clinvarAlleleUnzipper, clinvarAlleleReader, clinvarWriter).process();
-
-
   }
-
-  public static void main(String[] args) {
-    (new VariantImporter(new MongoClientURI("mongodb://localhost:27017/dcc-import"))).execute();
-  }
-
 }

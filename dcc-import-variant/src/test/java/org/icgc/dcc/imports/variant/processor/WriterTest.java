@@ -1,4 +1,4 @@
-package org.icgc.dcc.imports.variant.test.processor;
+package org.icgc.dcc.imports.variant.processor;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.MongoClientURI;

@@ -1,4 +1,4 @@
-package org.icgc.dcc.imports.variant.test.processor;
+package org.icgc.dcc.imports.variant.processor;
 
 import com.mongodb.MongoClientURI;
 import io.reactivex.Observable;
