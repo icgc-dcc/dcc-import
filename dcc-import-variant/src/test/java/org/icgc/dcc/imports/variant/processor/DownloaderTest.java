@@ -1,11 +1,9 @@
-package org.icgc.dcc.imports.variant.test.processor;
+package org.icgc.dcc.imports.variant.processor;
 
 import org.icgc.dcc.imports.variant.processor.api.Downloader;
-import org.icgc.dcc.imports.variant.processor.impl.common.GzipFileUnCompressor;
 import org.icgc.dcc.imports.variant.processor.impl.common.ShellCommandDownloader;
 import org.junit.Assert;
 import org.junit.Test;
-
 import java.io.File;
 
 /**
@@ -26,20 +24,29 @@ import java.io.File;
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public class GzipFileUnCompressorTest {
+public class DownloaderTest {
+
   @Test
-  public void testUnzip() {
+  public void shellCommandDownloaderTest() {
     String systemDir = System.getProperty("java.io.tmpdir");
     String tmpPath = (systemDir.endsWith("/")?systemDir.substring(0, systemDir.length()-1):systemDir) + "/dcc/import/variant";
+
+    String civicFilename = "nightly-ClinicalEvidenceSummaries.tsv";
+    Downloader civicDownloader = new ShellCommandDownloader("https://civic.genome.wustl.edu/downloads/nightly/" + civicFilename, tmpPath, civicFilename);
+
+    civicDownloader.download().subscribe();
+
+    File downloaded = new File(tmpPath + "/" + civicFilename);
+    Assert.assertEquals(downloaded.exists(), true);
+    downloaded.delete();
+
     String clinvarSummaryFilename = "variant_summary.txt.gz";
     Downloader clinvarSummaryDownloader = new ShellCommandDownloader("ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/" + clinvarSummaryFilename, tmpPath, clinvarSummaryFilename);
-    GzipFileUnCompressor unzipper = new GzipFileUnCompressor("variant_summary.txt");
-    clinvarSummaryDownloader
-        .download().compose(unzipper::unzip)
-        .subscribe();
-    String clinvarSummaryUnzippedFilename = "variant_summary.txt";
-    File unzippedFile = new File(tmpPath + "/" + clinvarSummaryUnzippedFilename);
-    Assert.assertEquals(unzippedFile.exists(), true);
-    unzippedFile.delete();
+    clinvarSummaryDownloader.download().subscribe();
+
+    downloaded = new File(tmpPath + "/" + clinvarSummaryFilename);
+    Assert.assertEquals(downloaded.exists(), true);
+    downloaded.delete();
   }
+
 }
