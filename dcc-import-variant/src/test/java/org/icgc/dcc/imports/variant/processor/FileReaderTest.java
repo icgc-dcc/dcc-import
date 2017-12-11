@@ -1,4 +1,4 @@
-package org.icgc.dcc.imports.variant.test.processor;
+package org.icgc.dcc.imports.variant.processor;
 
 import io.reactivex.Observable;
 import org.icgc.dcc.imports.variant.model.CivicClinicalEvidenceSummary;
@@ -40,7 +40,7 @@ public class FileReaderTest extends FileOperation{
     Observable<CivicClinicalEvidenceSummary> civic_data =  reader.extract(Observable.just(files[0]));
     Stream<CivicClinicalEvidenceSummary> stream = StreamSupport.stream(civic_data.blockingIterable().spliterator(), false);
     Assert.assertEquals(
-    stream.filter(summary -> summary.getGene().equals("JAK2") && summary.getOdID().equals("10747")).findFirst().get().getGeneCivicUrl(), "https://civic.genome.wustl.edu/links/genes/28");
+    stream.filter(summary -> summary.getGene().equals("JAK2") && summary.getDoid().equals("10747")).findFirst().get().getGeneCivicUrl(), "https://civic.genome.wustl.edu/links/genes/28");
   }
 
   @Test

@@ -30,25 +30,24 @@ public class CivicClinicalEvidenceSummary {
   @NonNull private String entrezID;
   @NonNull private String variant;
   @NonNull private String disease;
-  @NonNull private String odID;
+  @NonNull private String doid;
   @NonNull private String drugs;
   @NonNull private String evidenceType;
   @NonNull private String evidenceDirection;
   @NonNull private String evidenceLevel;
-  @NonNull private String clinicalSignificance;
+  @NonNull private String clinicalImpact;
   @NonNull private String evidenceStatement;
   @NonNull private String pubmedID;
   @NonNull private String citation;
   @NonNull private String rating;
   @NonNull private String evidenceStatus;
   @NonNull private String evidenceID;
-  @NonNull private String variantID;
+  @NonNull private String civicID;
   @NonNull private String geneID;
   @NonNull private String chromosome;
-  @NonNull private String start;
-  @NonNull private String stop;
-  @NonNull private String referenceBases;
-  @NonNull private String variantBases;
+  @NonNull private String chromosomeStart;
+  @NonNull private String chromosomeEnd;
+  @NonNull private String mutation;
   @NonNull private String representativeTranscript;
   @NonNull private String chromosome2;
   @NonNull private String start2;
@@ -90,8 +89,7 @@ public class CivicClinicalEvidenceSummary {
           items.get(18),
           items.get(19),
           items.get(20),
-          items.get(21),
-          items.get(22),
+          String.format("%s>%s", items.get(21), items.get(22)),
           items.get(23),
           items.get(24),
           items.get(25),
