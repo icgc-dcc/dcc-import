@@ -89,7 +89,7 @@ public class CivicClinicalEvidenceSummary {
           items.get(18),
           items.get(19),
           items.get(20),
-          (items.get(21) + ">" + items.get(22)),
+          String.format("%s>%s", items.get(21), items.get(22)),
           items.get(23),
           items.get(24),
           items.get(25),

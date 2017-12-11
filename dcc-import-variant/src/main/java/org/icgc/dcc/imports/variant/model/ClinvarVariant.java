@@ -43,10 +43,11 @@ public class ClinvarVariant implements Serializable{
   @NonNull private String assembly;
   @NonNull private String chromosomeAccession;
   @NonNull private String chromosome;
-  @NonNull private String start;
-  @NonNull private String stop;
+  @NonNull private String chromosomeStart;
+  @NonNull private String chromosomeEnd;
   @NonNull private String referenceAllele;
   @NonNull private String alternateAllele;
+  @NonNull private String mutation;
   @NonNull private String cytogenetic;
   @NonNull private String reviewStatus;
   @NonNull private String numberSubmitters;
@@ -54,7 +55,7 @@ public class ClinvarVariant implements Serializable{
   @NonNull private String testedInGTR;
   @NonNull private String otherIDs;
   @NonNull private String submitterCategories;
-  @NonNull private int variationID;
+  @NonNull private int clinvarID;
   @NonNull private String variationType;
   @NonNull private boolean interpreted;
 
@@ -84,6 +85,7 @@ public class ClinvarVariant implements Serializable{
           summary.getStop(),
           summary.getReferenceAllele(),
           summary.getAlternateAllele(),
+          String.format("%s>%s", summary.getReferenceAllele(), summary.getAlternateAllele()),
           summary.getCytogenetic(),
           summary.getReviewStatus(),
           summary.getNumberSubmitters(),
