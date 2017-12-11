@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import lombok.val;
 
-//@Ignore("For development only")
+@Ignore("For development only")
 public class VariantImporterTest {
     @Test
     public void testExecute() throws IOException {
