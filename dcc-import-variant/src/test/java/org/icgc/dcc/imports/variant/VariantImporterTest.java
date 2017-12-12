@@ -13,7 +13,7 @@ import lombok.val;
 public class VariantImporterTest {
     @Test
     public void testExecute() throws IOException {
-        val importer = createImporter();;
+        val importer = createImporter();
 
         importer.execute();
     }
