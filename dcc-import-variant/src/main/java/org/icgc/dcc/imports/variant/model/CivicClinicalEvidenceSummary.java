@@ -76,7 +76,7 @@ public class CivicClinicalEvidenceSummary {
           items.get(5),
           items.get(6),
           items.get(7),
-          items.get(8),
+          EvidenceLevelTransform(items.get(8)),
           items.get(9),
           items.get(10),
           items.get(11),
@@ -107,4 +107,20 @@ public class CivicClinicalEvidenceSummary {
     }
   }
 
+  private static String EvidenceLevelTransform(String evidenceLevel) {
+    switch (evidenceLevel) {
+      case "A":
+        return "A - Validated";
+      case "B":
+        return "B - Clinical";
+      case "C":
+        return "C - Case";
+      case "D":
+        return "D - Preclinical";
+      case "E":
+        return "E - Inferential";
+      default:
+        return evidenceLevel;
+    }
+  }
 }
