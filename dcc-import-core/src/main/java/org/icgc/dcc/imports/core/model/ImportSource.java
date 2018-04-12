@@ -41,7 +41,8 @@ public enum ImportSource implements Identifiable {
   GENES("Genes"),
   DIAGRAMS("Diagrams"),
   DRUGS("Drugs"),
-  VARIANT("Variant");
+  VARIANT("Variant"),
+  GDCLEGACY("GDCLegacy");
 
   @NonNull
   private final String id;

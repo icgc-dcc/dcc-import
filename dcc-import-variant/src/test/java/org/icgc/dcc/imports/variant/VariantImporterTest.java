@@ -10,7 +10,7 @@ import org.junit.Test;
 import lombok.val;
 
 @Ignore("For development only")
-public class VariantImporterTest {
+public class  VariantImporterTest {
     @Test
     public void testExecute() throws IOException {
         val importer = createImporter();
