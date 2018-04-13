@@ -11,11 +11,12 @@ import lombok.val;
 
 @Ignore("For development only")
 public class GDCLegacyImporterTest {
+
     @Test
     public void testExecute() throws IOException {
-        val importer = createImporter();
-
-        importer.execute();
+//        val importer = createImporter();
+//
+//        importer.execute();
     }
 
     private GDCLegacyImporter createImporter() {

@@ -9,14 +9,14 @@ import lombok.val;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.icgc.dcc.imports.core.SourceImporter;
 import org.icgc.dcc.imports.core.model.ImportSource;
-import org.icgc.dcc.imports.core.util.Jongos;
 import org.icgc.dcc.imports.gdclegacy.model.CGHubSequenceRepo;
 import org.icgc.dcc.imports.gdclegacy.reader.CGHubDonorsReader;
 import org.icgc.dcc.imports.gdclegacy.reader.GDCLegacyPortalIdsReader;
-import org.jongo.Jongo;
+import org.icgc.dcc.imports.gdclegacy.writer.CGHubSequenceRepoWriter;
+import org.springframework.beans.factory.annotation.*;
 
-import java.io.File;
 import java.net.URL;
+import java.util.List;
 
 import static org.icgc.dcc.common.core.util.URLs.getUrl;
 
@@ -45,13 +45,14 @@ public class GDCLegacyImporter implements SourceImporter {
     @NonNull
     private MongoClientURI mongoUri;
 
-    @NonNull
-    private URL esURL;
-
-    @NonNull
+    @Value("${gdcLegacy.gdcLegacyURL}")
     private URL gdcLegacyURL;
 
-    private String sequenceReposCollectionName = "sequenceRepos";
+    @Value("${gdcLegacy.esURL}")
+    private String esURL;
+
+    @Value("${gdcLegacy.esIndex}")
+    private String esIndex;
 
     @Override
     public ImportSource getSource() {
@@ -60,26 +61,25 @@ public class GDCLegacyImporter implements SourceImporter {
 
     @Override
     public void execute() {
-        // GDCLegacyImporter is playing an injector role
-        String systemDir = System.getProperty("java.io.tmpdir");
-        String tmpPath = (systemDir.endsWith("/")?systemDir.substring(0, systemDir.length()-1):systemDir) + "/dcc/import/gdcLegacy";
-
-        File targetDir = new File(tmpPath);
-        if(targetDir.exists()) targetDir.delete();
-
-        Jongo jongo = Jongos.createJongo(mongoUri);
-
         // Get CGHub Donors
-        val donorIds = CGHubDonorsReader.read(esURL);
+        val donorIds = CGHubDonorsReader.read(esURL, esIndex);
 
         // Process donors through GDC legacy reader
         val gdcIds = GDCLegacyPortalIdsReader.read(gdcLegacyURL, donorIds);
 
         // Construct data for insert into Mongo
         val data = Lists.transform(gdcIds, this::makeRepoItem);
+
+        // Write to mongo
+        writeMongo(data);
     }
 
-    public CGHubSequenceRepo makeRepoItem(ImmutablePair itemIds) {
+    private void writeMongo(List<CGHubSequenceRepo> data) {
+        val mongoWriter = new CGHubSequenceRepoWriter(mongoUri, "CGHubSequenceRepos");
+        mongoWriter.writeValue(data);
+    }
+
+    private CGHubSequenceRepo makeRepoItem(ImmutablePair itemIds) {
         val donorId = itemIds.getLeft().toString();
         val gdcId = itemIds.getRight().toString();
         val gdcLegacyUrl = formatGDCLegacyURL(gdcId);
@@ -92,7 +92,7 @@ public class GDCLegacyImporter implements SourceImporter {
                 .build();
     }
 
-    public URL formatGDCLegacyURL(String gdcId) {
+    private URL formatGDCLegacyURL(String gdcId) {
         return getUrl("http://google.ca");
     }
 }

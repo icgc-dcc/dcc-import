@@ -81,3 +81,9 @@ cosmic:
 # Mail
 mail:
   enabled: false
+
+# GDC Legacy
+gdcLegacy:
+  esUrl: ""
+  esIndex: ""
+  portalUrl: ""

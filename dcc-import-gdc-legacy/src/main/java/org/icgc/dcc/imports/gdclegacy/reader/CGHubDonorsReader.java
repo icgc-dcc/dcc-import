@@ -1,9 +1,19 @@
 package org.icgc.dcc.imports.gdclegacy.reader;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.MatchQueryBuilder;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
 
-import java.net.URL;
+import java.net.InetAddress;
 import java.util.ArrayList;
 
 /**
@@ -30,19 +40,54 @@ import java.util.ArrayList;
 @Slf4j
 public class CGHubDonorsReader {
 
-    public static ArrayList<String> read(URL esURL) {
+    public static ArrayList<String> read(String esURL, String esIndex) {
         // Fetch matching donors from ES
-        val response = queryES(esURL);
+        val response = queryES(esURL, esIndex);
 
         // Filter id's and return
         return filterIds(response);
     }
 
-    private static String queryES(URL esURL) {
+    @SneakyThrows
+    static String queryES(String esURL, String esIndex) {
+
+        // Build ES transport client
+        TransportClient client = new PreBuiltTransportClient(Settings.EMPTY)
+                .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(esURL), 9300));
+
+        // Construct Match Queries
+        MatchQueryBuilder typeQueryBuilder = new MatchQueryBuilder("_type", "donor");
+        MatchQueryBuilder repoQueryBuilder = new MatchQueryBuilder("_summary.repository", "CGHub");
+
+        // Compose bool query using match queries
+        BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+        boolQueryBuilder
+            .must(typeQueryBuilder)
+            .must(repoQueryBuilder);
+
+        // Build complete search query/request
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+        String[] includeFields = new String[] {"specimen.specimen_id"};
+        sourceBuilder
+            .query(boolQueryBuilder)
+            .fetchSource(includeFields, null)
+            .size(10); // temp size for testing
+
+        // Restrict search to esIndex provided in config
+        SearchRequest searchRequest = new SearchRequest(esIndex);
+        searchRequest.source(sourceBuilder);
+
+        // Execute search on index and then close the client
+        SearchResponse searchResponse = client.search(searchRequest).get();
+
+        client.close();
+
+        val hits = searchResponse.getHits();
+
         return "";
     }
 
-    private static ArrayList<String> filterIds(String esQueryResponse) {
+    static ArrayList<String> filterIds(String esQueryResponse) {
         return new ArrayList<String>();
     }
 }
