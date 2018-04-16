@@ -40,6 +40,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 
     <module>dcc-import-geneset</module>
     <module>dcc-import-cgc</module>
+    <module>dcc-import-gdc-legacy</module>
     <module>dcc-import-go</module>
     <module>dcc-import-pathway</module>
 
@@ -67,6 +68,11 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
       <dependency>
         <groupId>${project.groupId}</groupId>
         <artifactId>dcc-import-cgc</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>dcc-import-gdc-legacy</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
