@@ -32,7 +32,7 @@ public class CGHubSequenceRepo {
     ObjectId _id;
 
     // Properties
-    String donorId;
+    String specimenId;
     String gdcId;
     URL gdcLegacyUrl;
 }

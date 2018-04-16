@@ -46,7 +46,7 @@ public class CGHubSequenceRepoWriter extends AbstractJongoWriter<Iterable<CGHubS
         clearCGHubSequenceRepos(repoCollection);
 
         for (val repo : repos) {
-            log.info("Writing GCHub Sequence Repo with Donor Id: {} ...", repo.getDonorId());
+            log.info("Writing GCHub Sequence Repo with specimen Id: {} ...", repo.getSpecimenId());
             repoCollection.save(repo);
         }
     }

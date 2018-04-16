@@ -34,11 +34,11 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GDCLegacyPortalIdsReader {
 
-    public static List<ImmutablePair> read(@NonNull URL portalURL, @NonNull ArrayList<String> donorIds) {
+    public static List<ImmutablePair> read(@NonNull URL portalURL, @NonNull List<String> donorIds) {
        return getGDCLegacyIds(portalURL, donorIds);
     }
 
-    private static List<ImmutablePair> getGDCLegacyIds(URL portalURL, ArrayList<String> donorIds) {
+    private static List<ImmutablePair> getGDCLegacyIds(URL portalURL, List<String> donorIds) {
         // Process id's and return
         return Streams.zip(donorIds.stream(), donorIds.stream(), ImmutablePair::new).collect(Collectors.toList());
     }

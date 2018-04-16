@@ -61,14 +61,14 @@ public class GDCLegacyImporter implements SourceImporter {
 
     @Override
     public void execute() {
-        // Get CGHub Donors
-        val donorIds = CGHubDonorsReader.read(esURL, esIndex);
+        // Get CGHub Donor Specimen Id's
+        val specimenIds = CGHubDonorsReader.read(esURL, esIndex);
 
         // Process donors through GDC legacy reader
-        val gdcIds = GDCLegacyPortalIdsReader.read(gdcLegacyURL, donorIds);
+        val gdcIds = GDCLegacyPortalIdsReader.read(gdcLegacyURL, specimenIds);
 
         // Construct data for insert into Mongo
-        val data = Lists.transform(gdcIds, this::makeRepoItem);
+        val data = Lists.transform(gdcIds, GDCLegacyImporter::makeRepoItem);
 
         // Write to mongo
         writeMongo(data);
@@ -79,20 +79,20 @@ public class GDCLegacyImporter implements SourceImporter {
         mongoWriter.writeValue(data);
     }
 
-    private CGHubSequenceRepo makeRepoItem(ImmutablePair itemIds) {
-        val donorId = itemIds.getLeft().toString();
+    static CGHubSequenceRepo makeRepoItem(ImmutablePair itemIds) {
+        val specimenId = itemIds.getLeft().toString();
         val gdcId = itemIds.getRight().toString();
         val gdcLegacyUrl = formatGDCLegacyURL(gdcId);
 
         return CGHubSequenceRepo
                 .builder()
-                .donorId(donorId)
+                .specimenId(specimenId)
                 .gdcId(gdcId)
                 .gdcLegacyUrl(gdcLegacyUrl)
                 .build();
     }
 
-    private URL formatGDCLegacyURL(String gdcId) {
+    static URL formatGDCLegacyURL(String gdcId) {
         return getUrl("http://google.ca");
     }
 }

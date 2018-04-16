@@ -1,5 +1,7 @@
 package org.icgc.dcc.imports.gdclegacy.reader;
 
+import com.google.common.collect.Lists;
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -10,11 +12,19 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MatchQueryBuilder;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
+import org.springframework.util.StreamUtils;
 
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 
 /**
  * Copyright (c) 2018 The Ontario Institute for Cancer Research. All rights reserved.
@@ -40,54 +50,109 @@ import java.util.ArrayList;
 @Slf4j
 public class CGHubDonorsReader {
 
-    public static ArrayList<String> read(String esURL, String esIndex) {
-        // Fetch matching donors from ES
-        val response = queryES(esURL, esIndex);
+    public static List<String> read(String esURL, String esIndex) {
+        return read(esURL, esIndex, empty());
+    }
 
-        // Filter id's and return
-        return filterIds(response);
+    public static List<String> read(String esURL, String esIndex, int limit) {
+        return read(esURL, esIndex, of(limit));
     }
 
     @SneakyThrows
-    static String queryES(String esURL, String esIndex) {
+    private static List<String> read(String esURL, String esIndex, Optional<Integer> limit) {
 
         // Build ES transport client
         TransportClient client = new PreBuiltTransportClient(Settings.EMPTY)
                 .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(esURL), 9300));
 
+        // Fetch matching donors from ES
+        val response = limit.isPresent() ? queryES(client, esIndex, limit.get()) : queryES(client, esIndex);
+
+        // Filter id's and return
+        val filteredIds = filterIds(response);
+
+        // Close the client
+        client.close();
+
+        // Return ids
+        return filteredIds;
+    }
+
+    private static SearchHit[] queryES(TransportClient client, String esIndex) {
+        // Build bool query
+        BoolQueryBuilder boolQueryBuilder = buildQuery();
+
+        // Build complete search query/request
+        SearchSourceBuilder sourceBuilder = buildSource(boolQueryBuilder);
+
+        // Search
+        SearchResponse searchResponse =  searchES(esIndex,  sourceBuilder, client);
+
+        return searchResponse.getHits().getHits();
+    }
+
+    @SneakyThrows
+    static SearchHit[] queryES(TransportClient client, String esIndex, Integer limit) {
+        // Build bool query
+        BoolQueryBuilder boolQueryBuilder = buildQuery();
+
+        // Build complete search query/request
+        SearchSourceBuilder sourceBuilder = buildSource(boolQueryBuilder, limit);
+
+        // Search
+        SearchResponse searchResponse =  searchES(esIndex,  sourceBuilder, client);
+
+        return searchResponse.getHits().getHits();
+    }
+
+    private static BoolQueryBuilder buildQuery() {
         // Construct Match Queries
         MatchQueryBuilder typeQueryBuilder = new MatchQueryBuilder("_type", "donor");
         MatchQueryBuilder repoQueryBuilder = new MatchQueryBuilder("_summary.repository", "CGHub");
 
         // Compose bool query using match queries
         BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
-        boolQueryBuilder
-            .must(typeQueryBuilder)
-            .must(repoQueryBuilder);
 
-        // Build complete search query/request
+        return boolQueryBuilder
+                .must(typeQueryBuilder)
+                .must(repoQueryBuilder);
+    }
+
+    private static SearchSourceBuilder buildSource(BoolQueryBuilder boolQueryBuilder) {
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        String[] includeFields = new String[] {"specimen.specimen_id"};
-        sourceBuilder
-            .query(boolQueryBuilder)
-            .fetchSource(includeFields, null)
-            .size(10); // temp size for testing
 
+        return sourceBuilder
+                .query(boolQueryBuilder)
+                .fetchSource("specimen.specimen_id", "");
+    }
+
+    private static SearchSourceBuilder buildSource(BoolQueryBuilder boolQueryBuilder, Integer limit) {
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+
+        return sourceBuilder
+                .query(boolQueryBuilder)
+                .fetchSource("specimen.specimen_id", "")
+                .size(limit);
+    }
+
+    @SneakyThrows
+    private static SearchResponse searchES(String esIndex, SearchSourceBuilder sourceBuilder, TransportClient client) {
         // Restrict search to esIndex provided in config
         SearchRequest searchRequest = new SearchRequest(esIndex);
         searchRequest.source(sourceBuilder);
 
-        // Execute search on index and then close the client
-        SearchResponse searchResponse = client.search(searchRequest).get();
-
-        client.close();
-
-        val hits = searchResponse.getHits();
-
-        return "";
+        // Execute search on index and return the results
+        return client.search(searchRequest).get();
     }
 
-    static ArrayList<String> filterIds(String esQueryResponse) {
-        return new ArrayList<String>();
+    @SuppressWarnings("unchecked")
+    private static List<String> filterIds(SearchHit[] searchHits) {
+        return ((List) Arrays.stream(searchHits).flatMap((SearchHit hit) -> {
+            Map source = hit.getSource();
+            ArrayList<HashMap> specimens = (ArrayList<HashMap>) source.get("specimen");
+            return (specimens.stream().map(specimen -> {
+                return specimen.get("specimen_id").toString();
+            }));
+        }).collect(Collectors.toList()));
     }
 }
