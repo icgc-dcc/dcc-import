@@ -16,7 +16,7 @@ public class CGHubDonorsReaderTest {
 
     @Test
     public void testRead() {
-        val sequenceIds = CGHubDonorsReader.read(esURL, esIndex, 10);
+        val sequenceIds = CGHubDonorsReader.read(esURL, esIndex);
         assertThat(sequenceIds, not(IsEmptyCollection.empty()));
     }
 }

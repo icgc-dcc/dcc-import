@@ -118,7 +118,8 @@ public class CGHubDonorsReader {
 
         return sourceBuilder
                 .query(boolQueryBuilder)
-                .fetchSource("specimen.specimen_id", "");
+                .fetchSource("specimen.specimen_id", "")
+                .size(25000); // max Donors
     }
 
     private static SearchSourceBuilder buildSource(BoolQueryBuilder boolQueryBuilder, Integer limit) {
