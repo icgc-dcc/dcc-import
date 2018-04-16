@@ -1,13 +1,10 @@
 package org.icgc.dcc.imports.gdclegacy;
 
 import com.mongodb.MongoClientURI;
-
-import java.io.IOException;
-
 import org.junit.Ignore;
 import org.junit.Test;
 
-import lombok.val;
+import java.io.IOException;
 
 @Ignore("For development only")
 public class GDCLegacyImporterTest {

@@ -2,9 +2,7 @@ package org.icgc.dcc.imports.gdclegacy.reader;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.elasticsearch.search.SearchHit;
 import org.hamcrest.collection.IsEmptyCollection;
-import org.junit.Assert;
 import org.junit.Test;
 
 import static org.hamcrest.core.IsNot.not;

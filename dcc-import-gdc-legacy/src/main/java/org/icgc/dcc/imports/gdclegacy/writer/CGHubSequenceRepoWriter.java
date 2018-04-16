@@ -6,10 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.imports.core.util.AbstractJongoWriter;
 import org.icgc.dcc.imports.gdclegacy.model.CGHubSequenceRepo;
-import org.jongo.Jongo;
 import org.jongo.MongoCollection;
-
-import static org.icgc.dcc.common.core.model.ReleaseCollection.PROJECT_COLLECTION;
 
 /**
  * Copyright (c) 2018 The Ontario Institute for Cancer Research. All rights reserved.

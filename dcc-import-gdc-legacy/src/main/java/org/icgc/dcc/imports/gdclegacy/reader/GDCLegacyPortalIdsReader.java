@@ -18,13 +18,12 @@ package org.icgc.dcc.imports.gdclegacy.reader;
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.google.common.collect.Streams;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import com.google.common.collect.Streams;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 

@@ -13,7 +13,7 @@ import org.icgc.dcc.imports.gdclegacy.model.CGHubSequenceRepo;
 import org.icgc.dcc.imports.gdclegacy.reader.CGHubDonorsReader;
 import org.icgc.dcc.imports.gdclegacy.reader.GDCLegacyPortalIdsReader;
 import org.icgc.dcc.imports.gdclegacy.writer.CGHubSequenceRepoWriter;
-import org.springframework.beans.factory.annotation.*;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.net.URL;
 import java.util.List;

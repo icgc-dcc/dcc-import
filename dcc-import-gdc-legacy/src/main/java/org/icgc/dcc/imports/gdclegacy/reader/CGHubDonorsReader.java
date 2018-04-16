@@ -1,7 +1,5 @@
 package org.icgc.dcc.imports.gdclegacy.reader;
 
-import com.google.common.collect.Lists;
-import jdk.nashorn.internal.ir.annotations.Ignore;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -13,15 +11,12 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
-import org.springframework.util.StreamUtils;
 
 import java.net.InetAddress;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
