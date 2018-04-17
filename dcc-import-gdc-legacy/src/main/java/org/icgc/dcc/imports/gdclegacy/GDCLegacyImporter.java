@@ -68,7 +68,7 @@ public class GDCLegacyImporter implements SourceImporter {
         val gdcIds = GDCLegacyPortalIdsReader.read(gdcLegacyURL, specimenIds);
 
         // Construct data for insert into Mongo
-        val data = Lists.transform(gdcIds, GDCLegacyImporter::makeRepoItem);
+        val data = Lists.transform(gdcIds, this::makeRepoItem);
 
         // Write to mongo
         writeMongo(data);
@@ -79,7 +79,7 @@ public class GDCLegacyImporter implements SourceImporter {
         mongoWriter.writeValue(data);
     }
 
-    static CGHubSequenceRepo makeRepoItem(ImmutablePair itemIds) {
+    CGHubSequenceRepo makeRepoItem(ImmutablePair itemIds) {
         val specimenId = itemIds.getLeft().toString();
         val gdcId = itemIds.getRight().toString();
         val gdcLegacyUrl = formatGDCLegacyURL(gdcId);
@@ -92,7 +92,7 @@ public class GDCLegacyImporter implements SourceImporter {
                 .build();
     }
 
-    static URL formatGDCLegacyURL(String gdcId) {
+    URL formatGDCLegacyURL(String gdcId) {
         return getUrl("http://google.ca");
     }
 }
