@@ -27,6 +27,7 @@ import static org.icgc.dcc.imports.core.util.Jongos.createJongo;
 import org.icgc.dcc.common.client.api.cgp.CGPClient;
 import org.icgc.dcc.common.core.mail.Mailer;
 import org.icgc.dcc.imports.client.ClientMain;
+import org.icgc.dcc.imports.client.config.ClientProperties;
 import org.icgc.dcc.imports.core.model.ImportSource;
 import org.jongo.Jongo;
 import org.junit.Ignore;
@@ -67,12 +68,21 @@ public class ImporterTest {
   private Importer createImporter() {
     val userName = System.getProperty("cosmic.username");
     val password = System.getProperty("cosmic.password");
+    val gdcProperties = createGDCLegacyProperties();
 
-    return new Importer(mongoUri, createMailer(), cgpClient, userName, password);
+    return new Importer(mongoUri, createMailer(), cgpClient, userName, password, gdcProperties);
   }
 
   private Mailer createMailer() {
     return Mailer.builder().enabled(false).build();
+  }
+
+  private ClientProperties.GDCLegacyProperties createGDCLegacyProperties() {
+    val properties = new ClientProperties.GDCLegacyProperties();
+    properties.setEsIndex(System.getProperty("gdcLegacy.esUrl"));
+    properties.setEsIndex(System.getProperty("gdcLegacy.esIndex"));
+    properties.setPortalUrl(System.getProperty("gdcLegacy.portalUrl"));
+    return properties;
   }
 
   private long getCollectionSize(String collectionName) {

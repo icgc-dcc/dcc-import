@@ -49,7 +49,8 @@ public class ClientConfig {
         mailer,
         cgpClient,
         properties.getCosmic().getUserName(),
-        properties.getCosmic().getPassword());
+        properties.getCosmic().getPassword(),
+        properties.getGdcLegacy());
   }
 
   @Bean

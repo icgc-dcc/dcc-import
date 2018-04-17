@@ -27,11 +27,6 @@ import java.net.URL;
 @Data
 @Builder
 public class CGHubSequenceRepo {
-
-    // Mongo Id
-    ObjectId _id;
-
-    // Properties
     String specimenId;
     String gdcId;
     String gdcLegacyUrl;

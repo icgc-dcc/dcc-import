@@ -32,13 +32,13 @@ import java.util.List;
 @Slf4j
 public class GDCLegacyPortalIdsReaderTest {
 
-    private URL portalURL;
+    private String portalURL;
     private List<String> donorIds;
 
     @Before
     @SneakyThrows
     public void setUp() {
-        this.portalURL = new URL("https://api.gdc.cancer.gov/v0/legacy/cases/ids?query=");
+        this.portalURL = "https://api.gdc.cancer.gov/v0/legacy/cases/ids?query=";
         this.donorIds = Arrays.asList("TCGA-XF-AAMQ-01A", "TCGA-XF-AAMQ-10A", "TCGA-E9-A1NI-10A");
     }
 

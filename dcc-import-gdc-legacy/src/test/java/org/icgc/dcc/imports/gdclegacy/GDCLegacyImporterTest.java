@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Ignore("For development only")
 public class GDCLegacyImporterTest {
 
     GDCLegacyImporter importer;
@@ -25,11 +24,6 @@ public class GDCLegacyImporterTest {
     @Before
     public void setUp() {
         importer = createImporter();
-    }
-
-    @Test
-    public void testExecute() throws IOException {
-        importer.execute();
     }
 
     @Test
@@ -69,6 +63,6 @@ public class GDCLegacyImporterTest {
     }
 
     private GDCLegacyImporter createImporter() {
-        return new GDCLegacyImporter(new MongoClientURI("mongodb://localhost:27017/dcc-gdc-legacy"));
+        return new GDCLegacyImporter(new MongoClientURI("mongodb://localhost:27017/dcc-gdc-legacy"), "10.30.129.4", "icgc26-27", "https://api.gdc.cancer.gov/v0/legacy/cases/ids?query=");
     }
 }

@@ -48,14 +48,14 @@ public class GDCLegacyImporter implements SourceImporter {
     @NonNull
     private MongoClientURI mongoUri;
 
-    @Value("${gdcLegacy.gdcLegacyURL}")
-    private URL gdcLegacyURL;
-
-    @Value("${gdcLegacy.esURL}")
+    @NonNull
     private String esURL;
 
-    @Value("${gdcLegacy.esIndex}")
+    @NonNull
     private String esIndex;
+
+    @NonNull
+    private String gdcLegacyURL;
 
     @Override
     public ImportSource getSource() {

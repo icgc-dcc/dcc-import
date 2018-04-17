@@ -44,6 +44,8 @@ public class ClientProperties {
   MailProperties mail;
   @Valid
   CosmicProperties cosmic;
+  @Valid
+  GDCLegacyProperties gdcLegacy;
 
   @Data
   public static class ImportsProperties {
@@ -90,4 +92,12 @@ public class ClientProperties {
 
   }
 
+  @Data
+  public static class GDCLegacyProperties {
+
+    String esUrl;
+    String esIndex;
+    String portalUrl;
+
+  }
 }

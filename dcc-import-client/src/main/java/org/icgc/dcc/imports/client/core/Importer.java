@@ -30,6 +30,7 @@ import org.icgc.dcc.common.core.mail.Mailer;
 import org.icgc.dcc.common.core.report.BufferedReport;
 import org.icgc.dcc.common.core.report.ReportEmail;
 import org.icgc.dcc.imports.cgc.CgcImporter;
+import org.icgc.dcc.imports.client.config.ClientProperties;
 import org.icgc.dcc.imports.core.SourceImporter;
 import org.icgc.dcc.imports.core.model.ImportSource;
 import org.icgc.dcc.imports.diagram.DiagramImporter;
@@ -74,11 +75,14 @@ public class Importer {
   private final Mailer mailer;
   @NonNull
   private final Map<ImportSource, SourceImporter> importers;
+  @NonNull
+  private final ClientProperties.GDCLegacyProperties gdcLegacyProperties;
 
   public Importer(@NonNull MongoClientURI mongoUri, @NonNull Mailer mailer, @NonNull CGPClient cgpClient,
-      @NonNull String cosmicUserName, @NonNull String cosmicPassword) {
+                  @NonNull String cosmicUserName, @NonNull String cosmicPassword, @NonNull ClientProperties.GDCLegacyProperties gdcLegacyProperties) {
     this.mongoUri = mongoUri;
     this.mailer = mailer;
+    this.gdcLegacyProperties = gdcLegacyProperties;
     this.importers = createImporters(cgpClient, cosmicUserName, cosmicPassword);
   }
 
@@ -134,7 +138,7 @@ public class Importer {
         new GoImporter(mongoUri),
         new DiagramImporter(mongoUri),
         new VariantImporter(mongoUri),
-        new GDCLegacyImporter(mongoUri)
+        new GDCLegacyImporter(mongoUri, gdcLegacyProperties.getEsUrl(), gdcLegacyProperties.getEsIndex(), gdcLegacyProperties.getPortalUrl())
     );
 
     return uniqueIndex(importers, (SourceImporter importer) -> importer.getSource());

@@ -45,7 +45,7 @@ import static java.util.Optional.of;
 @Slf4j
 public class CGHubDonorsReader {
 
-    private static int maxDonors = 25000;
+    private static int maxDonors = 10;
 
     public static List<String> read(String esURL, String esIndex) {
         return read(esURL, esIndex, empty());
