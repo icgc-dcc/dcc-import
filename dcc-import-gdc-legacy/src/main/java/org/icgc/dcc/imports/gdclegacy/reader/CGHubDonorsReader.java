@@ -45,6 +45,8 @@ import static java.util.Optional.of;
 @Slf4j
 public class CGHubDonorsReader {
 
+    private static int maxDonors = 25000;
+
     public static List<String> read(String esURL, String esIndex) {
         return read(esURL, esIndex, empty());
     }
@@ -119,7 +121,7 @@ public class CGHubDonorsReader {
         return sourceBuilder
                 .query(boolQueryBuilder)
                 .fetchSource("specimen.specimen_id", "")
-                .size(25000); // max Donors
+                .size(maxDonors); // max Donors
     }
 
     private static SearchSourceBuilder buildSource(BoolQueryBuilder boolQueryBuilder, Integer limit) {
