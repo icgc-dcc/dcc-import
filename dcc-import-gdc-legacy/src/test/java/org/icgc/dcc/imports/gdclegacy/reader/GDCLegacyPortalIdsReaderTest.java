@@ -18,23 +18,35 @@ package org.icgc.dcc.imports.gdclegacy.reader;
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.hamcrest.collection.IsEmptyCollection;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
-import static org.hamcrest.core.IsNot.not;
-import static org.junit.Assert.assertThat;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
-public class CGHubDonorsReaderTest {
+public class GDCLegacyPortalIdsReaderTest {
 
-    private String esURL = "10.30.129.4"; // dev ES cluster
-    private String esIndex = "icgc26-27"; // dev ES index
+    private URL portalURL;
+    private List<String> donorIds;
+
+    @Before
+    @SneakyThrows
+    public void setUp() {
+        this.portalURL = new URL("https://api.gdc.cancer.gov/v0/legacy/cases/ids?query=");
+        this.donorIds = Arrays.asList("TCGA-XF-AAMQ-01A", "TCGA-XF-AAMQ-10A", "TCGA-E9-A1NI-10A");
+    }
 
     @Test
     public void testRead() {
-        val sequenceIds = CGHubDonorsReader.read(esURL, esIndex, 10);
-        assertThat(sequenceIds, not(IsEmptyCollection.empty()));
+        val gdcIds = GDCLegacyPortalIdsReader.read(portalURL, donorIds);
+        Assert.assertEquals(gdcIds.get(0).getRight(), "82f4c181-e022-4799-9f7f-01abcdc3803e");
+        Assert.assertEquals(gdcIds.get(1).getRight(), "c65b835a-2d38-4250-a173-0780d2c2cf58");
+        Assert.assertEquals(gdcIds.get(2).getRight(), "82f4c181-e022-4799-9f7f-01abcdc3803e");
     }
 }
