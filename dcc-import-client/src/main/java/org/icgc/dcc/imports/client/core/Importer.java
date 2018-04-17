@@ -34,6 +34,7 @@ import org.icgc.dcc.imports.core.SourceImporter;
 import org.icgc.dcc.imports.core.model.ImportSource;
 import org.icgc.dcc.imports.diagram.DiagramImporter;
 import org.icgc.dcc.imports.drug.DrugImporter;
+import org.icgc.dcc.imports.gdclegacy.GDCLegacyImporter;
 import org.icgc.dcc.imports.gene.GeneImporter;
 import org.icgc.dcc.imports.go.GoImporter;
 import org.icgc.dcc.imports.pathway.PathwayImporter;
@@ -61,7 +62,8 @@ public class Importer {
       ImportSource.PATHWAYS,
       ImportSource.GO,
       ImportSource.DIAGRAMS,
-      ImportSource.VARIANT);
+      ImportSource.VARIANT,
+      ImportSource.GDCLEGACY);
 
   /**
    * Configuration
@@ -131,7 +133,8 @@ public class Importer {
         new PathwayImporter(mongoUri),
         new GoImporter(mongoUri),
         new DiagramImporter(mongoUri),
-        new VariantImporter(mongoUri)
+        new VariantImporter(mongoUri),
+        new GDCLegacyImporter(mongoUri)
     );
 
     return uniqueIndex(importers, (SourceImporter importer) -> importer.getSource());

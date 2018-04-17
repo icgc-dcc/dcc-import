@@ -23,7 +23,7 @@ import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 
 import java.util.List;
 
-import org.elasticsearch.common.collect.Maps;
+import com.google.common.collect.Maps;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;

@@ -84,11 +84,34 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
       <groupId>${project.groupId}</groupId>
       <artifactId>dcc-import-variant</artifactId>
     </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>dcc-import-gdc-legacy</artifactId>
+    </dependency>
 
     <!-- Spring -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter</artifactId>
+    </dependency>
+
+    <!-- Jackson -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+
+    <!-- Log4j -->
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>2.9.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>2.9.1</version>
     </dependency>
 
     <!-- Validation -->
@@ -174,6 +197,9 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     <!-- Versions - Spring -->
     <spring-boot.version>1.2.5.RELEASE</spring-boot.version>
     <spring-maven-plugin.version>1.2.5.RELEASE</spring-maven-plugin.version>
+
+    <elasticsearch.version>5.6.8</elasticsearch.version>
+    <jackson.version>2.6.0</jackson.version>
   </properties>
 
 </project>
