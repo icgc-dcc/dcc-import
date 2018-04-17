@@ -40,16 +40,16 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GDCLegacyPortalIdsReader {
 
-    public static List<ImmutablePair> read(@NonNull URL portalURL, @NonNull List<String> specimenIds) {
+    public static List<ImmutablePair<String, String>> read(@NonNull URL portalURL, @NonNull List<String> specimenIds) {
         return getGDCLegacyIds(portalURL, specimenIds);
     }
 
-    private static List<ImmutablePair> getGDCLegacyIds(URL portalURL, List<String> specimenIds) {
+    private static List<ImmutablePair<String, String>> getGDCLegacyIds(URL portalURL, List<String> specimenIds) {
         // Process id's and return
-        return specimenIds.stream().map(specimenId -> new ImmutablePair<>(specimenId, queryGDCforId(portalURL, specimenId))).collect(Collectors.toList());
+        return specimenIds.stream().map(specimenId -> new ImmutablePair<>(specimenId, queryGDCForId(portalURL, specimenId))).collect(Collectors.toList());
     }
 
-    private static String queryGDCforId(URL url, String query) throws RuntimeException {
+    private static String queryGDCForId(URL url, String query) throws RuntimeException {
 
         // Initial setup
         URL queryURL;
