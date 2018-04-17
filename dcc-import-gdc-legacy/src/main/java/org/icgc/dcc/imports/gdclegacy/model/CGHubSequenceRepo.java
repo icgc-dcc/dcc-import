@@ -34,5 +34,5 @@ public class CGHubSequenceRepo {
     // Properties
     String specimenId;
     String gdcId;
-    URL gdcLegacyUrl;
+    String gdcLegacyUrl;
 }

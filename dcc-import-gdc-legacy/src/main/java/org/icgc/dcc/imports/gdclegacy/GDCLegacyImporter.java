@@ -15,7 +15,10 @@ import org.icgc.dcc.imports.gdclegacy.reader.GDCLegacyPortalIdsReader;
 import org.icgc.dcc.imports.gdclegacy.writer.CGHubSequenceRepoWriter;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.List;
 
 import static org.icgc.dcc.common.core.util.URLs.getUrl;
@@ -92,7 +95,8 @@ public class GDCLegacyImporter implements SourceImporter {
                 .build();
     }
 
-    URL formatGDCLegacyURL(String gdcId) {
-        return getUrl("http://google.ca");
+    String formatGDCLegacyURL(String gdcId) {
+        String templateString = "https://portal.gdc.cancer.gov/legacy-archive/search/f?filters=%7B%22op%22:%22and%22,%22content%22:%5B%7B%22op%22:%22in%22,%22content%22:%7B%22field%22:%22cases.case_id%22,%22value%22:%5B%22{0}%22%5D%7D%7D%5D%7D";
+        return templateString.replace("{0}", gdcId);
     }
 }

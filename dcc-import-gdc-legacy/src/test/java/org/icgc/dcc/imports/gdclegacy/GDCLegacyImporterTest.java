@@ -35,13 +35,12 @@ public class GDCLegacyImporterTest {
     }
 
     @Test
-    @SneakyThrows
     public void testMakeRepoItem() {
         ImmutablePair itemIds = new ImmutablePair<>("TCGA-XF-AAMQ-01A","82f4c181-e022-4799-9f7f-01abcdc3803e");
         CGHubSequenceRepo repo = importer.makeRepoItem(itemIds);
         Assert.assertEquals(repo.getSpecimenId(), "TCGA-XF-AAMQ-01A");
         Assert.assertEquals(repo.getGdcId(), "82f4c181-e022-4799-9f7f-01abcdc3803e");
-        Assert.assertEquals(repo.getGdcLegacyUrl(), new URL("https://portal.gdc.cancer.gov/legacy-archive/search/f?filters=%7B%22op%22:%22and%22,%22content%22:%5B%7B%22op%22:%22in%22,%22content%22:%7B%22field%22:%22cases.case_id%22,%22value%22:%5B%2282f4c181-e022-4799-9f7f-01abcdc3803e%22%5D%7D%7D%5D%7D"));
+        Assert.assertEquals(repo.getGdcLegacyUrl(), "https://portal.gdc.cancer.gov/legacy-archive/search/f?filters=%7B%22op%22:%22and%22,%22content%22:%5B%7B%22op%22:%22in%22,%22content%22:%7B%22field%22:%22cases.case_id%22,%22value%22:%5B%2282f4c181-e022-4799-9f7f-01abcdc3803e%22%5D%7D%7D%5D%7D");
     }
 
     private GDCLegacyImporter createImporter() {
