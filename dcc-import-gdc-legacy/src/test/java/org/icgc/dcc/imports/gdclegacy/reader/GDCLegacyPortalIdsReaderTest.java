@@ -46,7 +46,7 @@ public class GDCLegacyPortalIdsReaderTest {
     public void testRead() {
         val gdcIds = GDCLegacyPortalIdsReader.read(portalURL, donorIds);
         Assert.assertEquals(gdcIds.get(0).getRight(), "82f4c181-e022-4799-9f7f-01abcdc3803e");
-        Assert.assertEquals(gdcIds.get(1).getRight(), "c65b835a-2d38-4250-a173-0780d2c2cf58");
-        Assert.assertEquals(gdcIds.get(2).getRight(), "82f4c181-e022-4799-9f7f-01abcdc3803e");
+        Assert.assertEquals(gdcIds.get(1).getRight(), "82f4c181-e022-4799-9f7f-01abcdc3803e");
+        Assert.assertEquals(gdcIds.get(2).getRight(), "c65b835a-2d38-4250-a173-0780d2c2cf58");
     }
 }

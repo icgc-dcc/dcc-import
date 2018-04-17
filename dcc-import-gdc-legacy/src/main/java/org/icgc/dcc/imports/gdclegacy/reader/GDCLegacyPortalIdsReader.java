@@ -18,13 +18,20 @@ package org.icgc.dcc.imports.gdclegacy.reader;
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.google.common.collect.Streams;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -33,12 +40,59 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GDCLegacyPortalIdsReader {
 
-    public static List<ImmutablePair> read(@NonNull URL portalURL, @NonNull List<String> donorIds) {
-       return getGDCLegacyIds(portalURL, donorIds);
+    public static List<ImmutablePair> read(@NonNull URL portalURL, @NonNull List<String> specimenIds) {
+        return getGDCLegacyIds(portalURL, specimenIds);
     }
 
-    private static List<ImmutablePair> getGDCLegacyIds(URL portalURL, List<String> donorIds) {
+    private static List<ImmutablePair> getGDCLegacyIds(URL portalURL, List<String> specimenIds) {
         // Process id's and return
-        return Streams.zip(donorIds.stream(), donorIds.stream(), ImmutablePair::new).collect(Collectors.toList());
+        return specimenIds.stream().map(specimenId -> new ImmutablePair<>(specimenId, queryGDCforId(portalURL, specimenId))).collect(Collectors.toList());
+    }
+
+    private static String queryGDCforId(URL url, String query) throws RuntimeException {
+
+        // Initial setup
+        URL queryURL;
+        String id = "";
+
+        // Build the URL (base url + query which is the specimenId)
+        try {
+            queryURL = new URL(url + query);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            return "";
+        }
+
+        try {
+            HttpURLConnection conn = (HttpURLConnection) queryURL.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Accept", "application/json");
+            conn.disconnect();
+
+            if (conn.getResponseCode() != 200) {
+                throw new RuntimeException("Failed : HTTP error code : "
+                        + conn.getResponseCode());
+            }
+
+            // Get response
+            InputStream inputStream = conn.getInputStream();
+
+            // Parse to JSON
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String, Object> jsonMap = mapper.readValue(inputStream, Map.class);
+
+            id = extractId(jsonMap);
+        } catch (IOException e) {
+            // Covers malformed URL exception
+            e.printStackTrace();
+        }
+
+        return id;
+    }
+
+    private static String extractId(Map<String, Object> jsonMap) {
+        HashMap data = (HashMap) jsonMap.get("data");
+        HashMap hit = (HashMap) ((ArrayList) data.get("hits")).get(0);
+        return hit.get("id").toString();
     }
 }
