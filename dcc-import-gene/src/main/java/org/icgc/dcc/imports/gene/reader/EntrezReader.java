@@ -99,17 +99,9 @@ public class EntrezReader {
   }
 
   private static String getDownload(String platform) {
-    if (platform.contains("Windows")) {
-      return BASE_URI + "gene2xml.win32.zip";
-    } else if (platform.contains("Mac")) {
-      return BASE_URI + "gene2xml.Darwin-13.4.0-x86_64.gz";
-    } else if (platform.contains("Linux")) {
-      return BASE_URI + "gene2xml.Linux-2.6.32-573.7.1.el6.x86_64-x86_64.gz";
-    } else if (platform.contains("Sun")) {
-      return BASE_URI + "gene2xml.SunOS-5.10-sun4v.gz";
-    } else {
-      throw new RuntimeException("Your platform is not supported for the dcc-import-gene project.");
-    }
+
+      return BASE_URI + "gene2xml.Darwin-15.6.0-x86_64.gz";
+    
   }
 
 }

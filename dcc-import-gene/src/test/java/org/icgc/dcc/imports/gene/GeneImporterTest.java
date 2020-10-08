@@ -26,7 +26,6 @@ import org.junit.Test;
 
 import lombok.val;
 
-@Ignore("For development only")
 public class GeneImporterTest {
 
   @Test
