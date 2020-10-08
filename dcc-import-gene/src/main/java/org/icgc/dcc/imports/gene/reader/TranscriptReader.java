@@ -50,7 +50,7 @@ public class TranscriptReader extends TsvReader {
   }
 
   private String getStableId(List<String> record) {
-    return record.get(14);
+    return record.get(13);
   }
 
   private String getGeneId(List<String> record) {

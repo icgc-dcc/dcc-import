@@ -69,7 +69,7 @@ public class GeneMappingReader extends TsvReader {
   }
 
   private String getGeneId(List<String> record) {
-    return record.get(13);
+    return record.get(12);
   }
 
   private String getCanonicalTranscript(List<String> record) {
@@ -79,7 +79,7 @@ public class GeneMappingReader extends TsvReader {
   }
 
   private String getTranscriptId(List<String> record) {
-    return record.get(12);
+    return record.get(11);
   }
 
 }
