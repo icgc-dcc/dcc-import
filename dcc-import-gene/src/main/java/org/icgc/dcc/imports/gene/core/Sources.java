@@ -28,7 +28,7 @@ public final class Sources {
    * Versions.
    */
   private static final int ASSEMBLY_VERSION = 38;
-  private static final int ENSEMBL_RELEASE = 100;
+  private static final int ENSEMBL_RELEASE = 80;
 
   /**
    * Ensembl files.
